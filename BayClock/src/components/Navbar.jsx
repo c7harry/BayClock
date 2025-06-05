@@ -14,7 +14,7 @@ export default function Navbar() {
         src={logo}
         alt="BayClock Logo"
         className="h-8 w-10 square-full shadow-md"
-        style={{ height: "3rem", width: "6rem" }} 
+        style={{ height: "4rem", width: "8rem" }} 
         initial={{ rotate: -20, scale: 0.8 }}
         animate={{ rotate: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 120, damping: 8, delay: 0.2 }}
