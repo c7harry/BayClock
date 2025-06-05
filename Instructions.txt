@@ -1,0 +1,151 @@
+﻿Final Project Instructions - Front-End Application
+Part 1 - Developer log
+* Start Your Project Dev-Log
+   * You must create a Developer log for your project which keeps track of your work progress, as well as the different resources, repos, libraries, etc. that you used.
+   * Your dev log will also assist with accurately identifying your own work contribution if you are working in a small group.
+* Your Dev log should be some kind of shareable document or pdf or blog post, it does not need to be fancy but it at least needs text posts and links to relevant things.
+* For every Work session that you work on your project, you should create a short 2-5 sentence post Containing the following information:
+   * Date and TIme
+      * Example  02/01/2023 6:30 PM - 7:30 PM 
+      * (I recommend work sessions of 20 min to 90 min depending on “Flow”)
+   * What you specifically worked on
+      * Example: I worked on outlining in detail the functional design outline of X component on my app.
+   * Any resources and materials you used (as a list of links, or with basic info to find the resource or the author)
+      * Generally it is also good practice to download and save web-pages you use as reference locally, in-case they are later changed, or taken offline.
+      * Same with Repositories of projects possibly as well
+      * If you used Chat GPT or other AI to generate content or get help, please save all of the information from the queries and generated answers, or at least make a record of what you generated and what you wrote yourself.
+      * There is no restriction on using AI to generate content, you just need to let us know what you generated with AI and what work you did yourself manually.
+* Optional - If you would like to write more description and exposition (like tutorials or guides) of how you built certain features of your project you are always welcome to do so.  These guides/tutorials do not have to be part of your dev log, and they can be created separately if you choose to do this, this will make it easier to share and reuse in the Code Academy resources
+
+
+Part 2 - Front-End Application made with React
+* You may use any React Framework you wish
+   * Next.js
+   * Gatsby
+   * React Native
+
+
+* Your project doesn’t need to be a single page application, but it does need to have routing.  It can be a multi-page website, and even a blog type website, but it will need some useful features that you have created.
+* There must be a front-end made with React unless you obtain some sort of exception from your instructor, please email your instructor if you for some reason want to use a different JavaScript framework for the front-end.
+* You may have your project connect to as many APIs as you wish, 
+
+
+
+
+Step 1 - Finalize your group
+* This project should ideally only be groups of 1-2 people, but larger groups may be approved at instructor discretion.
+* Finalize your group members
+* You may work with a partner on this project, but there should be an equivalent amount of work created by both parties, and more features will be expected from teams of 2
+
+
+Step 2 - Brainstorm your Project topics
+* Make a list of at least 15 good project ideas.
+* Do some research for different kinds of apps you can work on or make
+* Keep in mind, building a useful application that is focused on something professional or relevant is going to have much more value than something really simple, or extremely niche.
+* Think of this project as displaying your core competencies as a Junior Web-Developer, and some of your own personal flair
+* Anything that is modular or that you can continue to build more on-to is an excellent topic
+* Keep your starting project scope simple, you can always add more complexity and features with time.
+* Think interactive, think programmatic
+   * You want to build something that people can actually use and interact with
+      * Parameters the user can change/customize
+   * This could be an interactive educational game/lesson
+   * An interactive display of data (it’s a web-page/web-app not a static picture! Make use of that!)
+   * It can be something mathematical, artistic, or business oriented
+* Examples of Acceptable topics/apps
+   * A Pinterest clone or Netflix clone
+   * A robust quiz application or learning platform
+   * An application that utilizes an AI service or platform, and adds additional functionality and customization
+   * A feature rich website or web app for your startup or business, or for a client. (Yes you may use a paid project for a client as your final project, just get approval from the client)
+   * A new custom built library of useful components that can be added on to, or even turned into an open source project.  The components need to have useful functionality and not just be custom styled simple web elements.
+   * See additional supporting videos and links for more ideas
+Step 3 - Finalize your topic
+* Pick your project idea and get it approved by your instructor
+
+
+Step 4 - Create your Functional Design Outline
+* This outline needs to define the Scope of work of the Minimum Viable Product that your project is going to be, try to get granular with all of the core functionality you need to build.  This will be the minimum required functionality for your app to function and provide value to a user.
+   * Example: My project is a web-app for a store that sells customized surfboards, and allows users to custom design their surfboards in every capacity, from construction, shape, and size to any graphics and decals
+      * Main page does XYZ
+      * Customizable editor for uploaded designs for the surfboard
+         * Upload images
+         * Crop images
+         * Move the image/skin that will go on the board to the correct position.
+      * Ability to select size, shape, and materials of the board with a UI
+      * Model of the board that can be viewed from different angles
+
+
+Step 5 - Design your Graphical User Interface wireframes
+* You may use any program you wish to create wireframes
+   * Pencil/paper 
+      * (if you choose this option all wireframes must be scanned and uploaded as a single PDF)
+   * Microsoft paint files
+   * Figma.com
+   * Photoshop
+   * Inkscape
+   * Some other design or illustration tool
+
+
+* Wireframes just need to be a sketch of the major sections and components and the layout of the pages.
+   * Desktop view
+   * Mobile view
+   * All major pages should have a wireframe
+   * You can start with a very simple wireframe, and then add more details to it if you would like
+   * You may get help from web-designers or look at other web-sites as reference for your layout 
+      * Remember, “steal” like an artist
+      * Any ideas copied/remixed, provide links to in your dev log.
+
+
+Step 6 - Create your starting project and get started on your first draft (get help as needed in class)
+* Component Libraries for React Projects
+   * https://mui.com/
+   * https://uiverse.io/
+   * https://react-bootstrap.github.io/
+   * https://tailwindui.com/components#product-ecommerce
+   * Google and find more you like
+
+
+
+
+Website with a lot of 3rd party APIs: https://apilist.fun/
+
+
+REMEMBER: Most of the time when you use a 3rd party API, you use it through your own API, not your front-end. There are certain exceptions for some APIs but for the most part you should be calling the 3rd party API from your Express app and returning the data from there.
+
+
+Resources for brainstorm ideas for designs and ideas
+
+
+16 front-end projects (with designs) to help improve your coding skills - DEV Community
+https://codepen.io/
+
+
+Step 7 - Finish your First Draft and participate in code reviews
+* Your first draft should have at least 2-3 components created
+* There should be some sort of working functionality
+* The app does not need to be finished
+* Landing page/homepage/dashboard  should be created even if it is just with placeholder sections/images
+
+
+Step 8 - Set up data storage and management (instructions in  progress)
+Step 9 - Done with the Front-End MVP
+* Your Application should have all of the Basic CRUD functionalities
+   * Create
+   * Read
+   * Update
+   * Delete 
+* Your application should have a clear topical focus, a clear use case, and a easy to use features and functionality
+* Your application needs to pass the “Spreadsheet” test
+   * The “Spreadsheet test” is basically, could this application just have been a simple spreadsheet with some formulas and automations/scripts built in?
+   * What is the value add of this project over a basic spreadsheet or basic website?
+* Your application should have some sort of functionality for storing data, as well as easily passing well organized data to a Back End API or database.
+   * You may use the json-server library as a prototype “fake” back-end
+   * You may also use local storage in some capacity, but this isn’t ideal
+   * You may use the file system and some sort of save data
+   * You may set up a simple back-end or database with some sort of service like firebase, Google API, google drive, or some other kind of basic data-storage
+   * You may use some sort of data store in your front-end application as a prototype or placeholder for a back-end or Data-base
+
+
+* All core MVP features should be built and debugged
+* Your code base should be well organized and well split up into appropriate files and folders
+* Your project should have a basic Readme file with information about how files are organized and how the project is structured, and also how to use the main features or APIs of the application so other developers (or your future self) can easily understand how to add on to the project 
+* Basic Instructions for how to use your app
