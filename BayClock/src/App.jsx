@@ -11,7 +11,7 @@ function Layout({ children }) {
   const location = useLocation();
   const isLanding = location.pathname === "/" || location.pathname === "/landingPage";
   if (isLanding) {
-    return <main className="flex-1 flex flex-col p-6 overflow-y-auto">{children}</main>;
+    return <>{children}</>;
   }
   return (
     <div className="flex h-screen">
