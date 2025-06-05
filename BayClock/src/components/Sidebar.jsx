@@ -31,8 +31,11 @@ export default function Sidebar() {
       </StyledWrapper>
       <div className="sidebar-content">
         <div className="logo-area">
-          <span className="logo-square">HD</span>
+          <span className="logo-square">Logo</span>
           {open && <span className="logo-text">Username</span>}
+        </div>
+        <div className="username-underline-container">
+          {open && <div className="username-underline" />}
         </div>
         <nav className="nav-links">
           <NavLink
@@ -103,27 +106,36 @@ const StyledSidebar = styled.div`
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 20px 24px 20px;
-    border-bottom: 1px solid #ececec;
-    min-height: 56px;
+    padding: 0 20px 0 20px;
+    min-height: 40px; 
+    position: relative;
+    overflow: hidden;
+    transition: min-height 0.25s cubic-bezier(.4,0,.2,1);
   }
-  .logo-square {
-    background:#ff6910;
-    font-weight: bold;
-    font-size: 1.3rem;
-    color:#ffffff;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 1px;
-  }
+
   .logo-text {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #222;
-    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.2s, margin 0.2s;
+    opacity: ${({ open }) => (open ? 1 : 0)};
+    margin-left: ${({ open }) => (open ? "8px" : "0")};
+    max-width: ${({ open }) => (open ? "120px" : "0")};
+    display: inline-block;
+  }
+
+  .username-underline-container {
+    height: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 15px;
+  }
+
+  .username-underline {
+    width: 100%;
+    height: 4px;
+    background: #ff6910;
+    border-radius: 1px;
   }
 
   .nav-links {
