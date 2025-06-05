@@ -1,0 +1,76 @@
+﻿Functional Design Outline – Clockwise (Clockify Clone)
+
+
+Project Description: Clockwise 
+
+
+* React-based time tracking app designed for freelancers and teams to manage tasks, log work hours, and generate reports. The MVP will focus on core time tracking functionality with an intuitive UI and local data persistence.
+
+
+Minimum Viable Product (MVP) Features
+Home / Dashboard
+
+
+* Displays summary of hours tracked today/week
+* Recent time entries (last 5)
+* Total hours tracked this week
+* Link to start timer or add manual entry
+Time Tracker Page
+* Start/pause/stop timer
+* Input description of task
+* Choose project from dropdown
+* Assign date and time
+* Manual duration input/edit
+Projects Page
+* View all projects
+* Add new project
+* Edit/delete project
+Tasks Page
+* View all tasks assigned to each project
+* Add/edit/delete tasks
+Reports Page
+* Filter by date range/project
+* Show total hours
+* Pie chart or bar chart of time by project
+* Export (mock only) to CSV
+
+User Settings
+   * Toggle light/dark mode
+   * Change name
+   * Data reset button (clear localStorage)
+
+Core App Functionality
+Feature
+	Description
+	Create
+	Time entries, tasks, projects
+	Read
+	View logs, reports, dashboards
+	Update
+	Edit time durations, names, projects
+	Delete
+	Remove tasks, entries, projects
+	
+
+Data Storage
+
+
+      * Use json-server or localStorage to simulate a backend
+      * Organize data as:
+      * Projects.json
+      * tasks.json
+      * entries.json
+
+Tech Stack
+
+
+         * React (Vite or Create React App)
+         * React Router
+         * MUI or TailwindCSS
+         * Optional: Chart.js or Recharts for reports
+
+
+
+
+Wireframe 
+         * (Not Required as I am using the Clockify layout)
