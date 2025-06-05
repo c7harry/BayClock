@@ -7,22 +7,19 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div
-      className={`relative card bg-gradient-to-b from-orange-50 via-white to-orange-100 p-5 shadow-lg border-r-2 border-orange-200 rounded-md min-h-screen flex flex-col items-center transition-all duration-300 ${
-        open ? "w-72" : "w-20"
-      }`}
-    >
-      {/* Custom Drawer Toggle Button */}
+    <StyledSidebar open={open}>
+      {/* Drawer Toggle Button */}
       <StyledWrapper>
         <button
-          className="cta absolute left-full top-1/2 -translate-y-1/2 z-10"
-          style={{ width: "20px", height: "20px", padding: 0, marginLeft: "-10px" }} 
+          className="cta"
+          style={{
+            left: open ? "calc(100% - 16px)" : "calc(100% - 16px)",
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
         >
-          <span className="span" style={{ fontSize: 0, padding: 0 }}>
-            {/* Hide text, only show arrow */}
-          </span>
           <span className="second">
             {open ? (
               <FaChevronLeft size={18} color="#fff" />
@@ -32,79 +29,160 @@ export default function Sidebar() {
           </span>
         </button>
       </StyledWrapper>
-      <div className="w-full flex flex-col items-center flex-1 justify-center gap-8">
-        <NavLink
-          to="/dashboard"
-          className={({ isActive }) =>
-            `flex items-center justify-center ${open ? "gap-4" : ""} px-3 py-2 my-2 group font-semibold rounded-full bg-cover transition-all ease-linear
-            hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
-            ${isActive ? "bg-orange-100 text-[#ff6910] shadow" : "text-gray-700"}`
-          }
-        >
-          <span className="pr-4 flex items-center justify-center">
-            <FaHome size={40} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
-          </span>
-          {open && <span className="text-lg">Dashboard</span>}
-        </NavLink>
-        <NavLink
-          to="/tracker"
-          className={({ isActive }) =>
-            `flex items-center justify-center ${open ? "gap-4" : ""} px-3 py-2 my-2 group font-semibold rounded-full bg-cover transition-all ease-linear
-            hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
-            ${isActive ? "bg-orange-100 text-[#ff6910] shadow" : "text-gray-700"}`
-          }
-        >
-          <span className="pr-4 flex items-center justify-center">
-            <FaRegClock size={40} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
-          </span>
-          {open && <span className="text-lg">Time Tracker</span>}
-        </NavLink>
-        <NavLink
-          to="/projects"
-          className={({ isActive }) =>
-            `flex items-center justify-center ${open ? "gap-4" : ""} px-3 py-2 my-2 group font-semibold rounded-full bg-cover transition-all ease-linear
-            hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
-            ${isActive ? "bg-orange-100 text-[#ff6910] shadow" : "text-gray-700"}`
-          }
-        >
-          <span className="pr-4 flex items-center justify-center">
-            <FaFolderOpen size={40} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
-          </span>
-          {open && <span className="text-lg">Projects</span>}
-        </NavLink>
-        <NavLink
-          to="/reports"
-          className={({ isActive }) =>
-            `flex items-center justify-center ${open ? "gap-4" : ""} px-3 py-2 my-2 group font-semibold rounded-full bg-cover transition-all ease-linear
-            hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
-            ${isActive ? "bg-orange-100 text-[#ff6910] shadow" : "text-gray-700"}`
-          }
-        >
-          <span className="pr-4 flex items-center justify-center">
-            <FaChartBar size={40} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
-          </span>
-          {open && <span className="text-lg">Reports</span>}
-        </NavLink>
+      <div className="sidebar-content">
+        <div className="logo-area">
+          <span className="logo-square">HD</span>
+          {open && <span className="logo-text">Username</span>}
+        </div>
+        <nav className="nav-links">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
+            }
+          >
+            <FaHome size={open ? 24 : 32} />
+            {open && <span>Dashboard</span>}
+          </NavLink>
+          <NavLink
+            to="/tracker"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
+            }
+          >
+            <FaRegClock size={open ? 24 : 32} />
+            {open && <span>Time Tracker</span>}
+          </NavLink>
+          <NavLink
+            to="/projects"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
+            }
+          >
+            <FaFolderOpen size={open ? 24 : 32} />
+            {open && <span>Projects</span>}
+          </NavLink>
+          <NavLink
+            to="/reports"
+            className={({ isActive }) =>
+              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
+            }
+          >
+            <FaChartBar size={open ? 24 : 32} />
+            {open && <span>Reports</span>}
+          </NavLink>
+        </nav>
       </div>
-    </div>
+    </StyledSidebar>
   );
 }
 
+const StyledSidebar = styled.div`
+  position: relative;
+  background: linear-gradient(to bottom, #fff 0%, #f7f7f7 100%);
+  border-right: 1.5px solid #ececec;
+  min-height: 100vh;
+  width: ${({ open }) => (open ? "220px" : "64px")};
+  transition: width 0.25s cubic-bezier(.4,0,.2,1);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-shadow: 2px 0 8px 0 rgba(0,0,0,0.04);
+  z-index: 20;
+
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex: 1;
+    justify-content: space-between;
+    padding: 18px 0 12px 0;
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px 24px 20px;
+    border-bottom: 1px solid #ececec;
+    min-height: 56px;
+  }
+  .logo-square {
+    background:#ff6910;
+    font-weight: bold;
+    font-size: 1.3rem;
+    color:#ffffff;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+  }
+  .logo-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #222;
+    letter-spacing: 1px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 24px;
+    flex: 1;
+  }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 10px 18px;
+    border-radius: 8px;
+    color: #444;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background 0.18s, color 0.18s, gap 0.18s;
+    cursor: pointer;
+    margin: 0 8px;
+    svg {
+      margin-right: ${({ open }) => (open ? "16px" : "0")};
+      color: #bdbdbd;
+      transition: color 0.18s;
+    }
+  }
+  .nav-link.open {
+    gap: 16px;
+  }
+  .nav-link.active,
+  .nav-link:hover {
+    background: #ffe6d3;
+    color: #ff6910;
+    svg {
+      color: #ff6910;
+    }
+  }
+`;
+
 const StyledWrapper = styled.div`
   .cta {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translate(-50%, -50%) skewX(-15deg);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    background:rgb(252, 125, 51);
-    transition: 1s;
-    box-shadow: 4px 4px 0 black;
-    transform: skewX(-15deg);
+    background: rgb(252, 125, 51);
+    transition: 0.25s;
+    box-shadow: 2px 2px 0 #e0e0e0;
     border: none;
     cursor: pointer;
     border-radius: 50%;
     width: 32px;
     height: 32px;
+    z-index: 30;
   }
 
   .cta:focus {
@@ -112,9 +190,8 @@ const StyledWrapper = styled.div`
   }
 
   .cta:hover {
-    transition: 0.5s;
-    box-shadow: 7px 7px 0 #fbc638;
-    background:rgb(255, 94, 0);
+    box-shadow: 4px 4px 0 #fbc638;
+    background: rgb(255, 94, 0);
   }
 
   .span {
