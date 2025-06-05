@@ -1,49 +1,63 @@
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
-
-const navItems = [
-  { to: "/dashboard", icon: "🏠", label: "Dashboard" },
-  { to: "/tracker", icon: "⏱", label: "Time Tracker" },
-  { to: "/projects", icon: "📁", label: "Projects" },
-  { to: "/reports", icon: "📊", label: "Reports" },
-];
+import { FaHome, FaRegClock, FaFolderOpen, FaChartBar } from "react-icons/fa";
 
 export default function Sidebar() {
-  const [open, setOpen] = useState(false);
-
   return (
-    <aside
-      className={`h-full bg-gray-100 dark:bg-gray-800 p-4 transition-all duration-300 flex flex-col ${
-        open ? "w-72" : "w-20 items-center"
-      }`}
-    >
-      <div className="flex-shrink-0" style={{ height: "15rem" }} />
-      {/* Toggle Button */}
-      <button
-        className="mb-10 p-3 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-      >
-        <span className="text-2xl">{open ? "⬅️" : "➡️"}</span>
-      </button>
-      {/* Navigation */}
-      <nav className="space-y-8 flex-1">
-        {navItems.map((item) => (
+    <div className="card w-72 bg-white p-5 shadow-md shadow-orange-200/50 rounded-md min-h-screen flex flex-col">
+      <div className="w-full flex flex-col gap-2 flex-1">
+        <div className="flex-center cursor-pointer w-full whitespace-nowrap">
           <NavLink
-            key={item.to}
-            to={item.to}
+            to="/dashboard"
             className={({ isActive }) =>
-              `flex items-center gap-4 py-4 px-2 rounded transition hover:bg-gray-200 dark:hover:bg-gray-700 ${
-                isActive ? "bg-orange-100 dark:bg-orange-900 font-bold" : ""
-              }`
+              `flex items-center gap-4 p-4 group font-semibold rounded-full bg-cover transition-all ease-linear
+              hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
+              ${isActive ? "bg-orange-100 text-[#ff6910]" : "text-gray-700"}`
             }
-            title={!open ? item.label : undefined}
           >
-            <span className="text-4xl">{item.icon}</span>
-            {open && <span className="whitespace-nowrap text-lg">{item.label}</span>}
+            <FaHome size={24} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
+            Dashboard
           </NavLink>
-        ))}
-      </nav>
-    </aside>
+        </div>
+        <div className="flex-center cursor-pointer w-full whitespace-nowrap">
+          <NavLink
+            to="/tracker"
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-4 group font-semibold rounded-full bg-cover transition-all ease-linear
+              hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
+              ${isActive ? "bg-orange-100 text-[#ff6910]" : "text-gray-700"}`
+            }
+          >
+            <FaRegClock size={24} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
+            Time Tracker
+          </NavLink>
+        </div>
+        <div className="flex-center cursor-pointer w-full whitespace-nowrap">
+          <NavLink
+            to="/projects"
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-4 group font-semibold rounded-full bg-cover transition-all ease-linear
+              hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
+              ${isActive ? "bg-orange-100 text-[#ff6910]" : "text-gray-700"}`
+            }
+          >
+            <FaFolderOpen size={24} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
+            Projects
+          </NavLink>
+        </div>
+        <div className="flex-center cursor-pointer w-full whitespace-nowrap">
+          <NavLink
+            to="/reports"
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-4 group font-semibold rounded-full bg-cover transition-all ease-linear
+              hover:bg-orange-100 hover:shadow-inner focus:bg-gradient-to-r from-orange-400 to-orange-600 focus:text-white
+              ${isActive ? "bg-orange-100 text-[#ff6910]" : "text-gray-700"}`
+            }
+          >
+            <FaChartBar size={24} className="group-focus:text-white group-hover:text-[#ff6910] transition-colors" />
+            Reports
+          </NavLink>
+        </div>
+      </div>
+    </div>
   );
 }
