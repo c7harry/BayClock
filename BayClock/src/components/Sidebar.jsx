@@ -32,7 +32,7 @@ export default function Sidebar() {
       <div className="sidebar-content">
         <div className="logo-area">
           <span className="logo-square">Logo</span>
-          {open && <span className="logo-text">Username</span>}
+          {open && <span className="logo-text">Name</span>}
         </div>
         <div className="username-underline-container">
           {open && <div className="username-underline" />}
@@ -117,7 +117,26 @@ const StyledSidebar = styled.div`
     min-height: 40px; 
     position: relative;
     overflow: hidden;
-    transition: min-height 0.25s cubic-bezier(.4,0,.2,1);
+    transition: min-height 0.25s cubic-bezier(.4,0,.2,1), justify-content 0.25s;
+    justify-content: ${({ open }) => (open ? "flex-start" : "center")};
+  }
+
+  .logo-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 35px;
+    background: #ff6910;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    transition: background 0.3s;
+  }
+  html.dark & .logo-square {
+    background: #ff9c4a;
+    color: #23232a;
   }
 
   .logo-text {
