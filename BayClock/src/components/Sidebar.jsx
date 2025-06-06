@@ -38,43 +38,24 @@ export default function Sidebar() {
           {open && <div className="username-underline" />}
         </div>
         <nav className="nav-links">
+        {[
+          { to: "/dashboard", icon: FaHome, label: "Dashboard" },
+          { to: "/tracker", icon: FaRegClock, label: "Time Tracker" },
+          { to: "/projects", icon: FaFolderOpen, label: "Projects" },
+          { to: "/reports", icon: FaChartBar, label: "Reports" },
+        ].map(({ to, icon: Icon, label }) => (
           <NavLink
-            to="/dashboard"
+            key={to}
+            to={to}
             className={({ isActive }) =>
               `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
             }
           >
-            <FaHome size={open ? 24 : 32} />
-            {open && <span>Dashboard</span>}
+            <Icon size={open ? 24 : 34} />
+            {open && <span>{label}</span>}
           </NavLink>
-          <NavLink
-            to="/tracker"
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
-            }
-          >
-            <FaRegClock size={open ? 24 : 32} />
-            {open && <span>Time Tracker</span>}
-          </NavLink>
-          <NavLink
-            to="/projects"
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
-            }
-          >
-            <FaFolderOpen size={open ? 24 : 32} />
-            {open && <span>Projects</span>}
-          </NavLink>
-          <NavLink
-            to="/reports"
-            className={({ isActive }) =>
-              `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
-            }
-          >
-            <FaChartBar size={open ? 24 : 32} />
-            {open && <span>Reports</span>}
-          </NavLink>
-        </nav>
+        ))}
+      </nav>
       </div>
     </StyledSidebar>
   );
@@ -178,8 +159,9 @@ const StyledSidebar = styled.div`
   .nav-link {
     display: flex;
     align-items: center;
+    justify-content: ${({ open }) => (open ? "flex-start" : "center")};
     gap: 0;
-    padding: 10px 18px;
+    padding: ${({ open }) => (open ? "10px 18px" : "12px 0")};
     border-radius: 8px;
     color: #444;
     font-size: 1rem;
