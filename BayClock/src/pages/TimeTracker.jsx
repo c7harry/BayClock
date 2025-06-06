@@ -17,9 +17,14 @@ export default function TimeTracker() {
   const [mode, setMode] = useState(
     document.documentElement.classList.contains("dark") ? "dark" : "light"
   );
+
   useEffect(() => {
+    const getMode = () =>
+      document.documentElement.classList.contains("dark") ? "dark" : "light";
+    setMode(getMode());
+
     const observer = new MutationObserver(() => {
-      setMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+      setMode(getMode());
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
