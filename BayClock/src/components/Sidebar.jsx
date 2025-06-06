@@ -82,11 +82,11 @@ export default function Sidebar() {
 
 const StyledSidebar = styled.div`
   position: relative;
-  background: linear-gradient(to bottom, #fff 0%, #f7f7f7 100%);
+  background: #fff;
   border-right: 1.5px solid #ececec;
   min-height: 100vh;
   width: ${({ open }) => (open ? "220px" : "64px")};
-  transition: width 0.25s cubic-bezier(.4,0,.2,1);
+  transition: width 0.25s cubic-bezier(.4,0,.2,1), background 0.3s;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -95,7 +95,7 @@ const StyledSidebar = styled.div`
 
   /* Dark mode styles */
   html.dark & {
-    background: linear-gradient(to bottom, #23232a 0%, #18181b 100%);
+    background: #18181b;
     border-right: 1.5px solid #23232a;
     box-shadow: 2px 0 8px 0 rgba(0,0,0,0.18);
   }
@@ -105,15 +105,15 @@ const StyledSidebar = styled.div`
     flex-direction: column;
     height: 100%;
     flex: 1;
-    justify-content: space-between;
-    padding: 18px 0 12px 0;
+    justify-content: flex-start;
+    padding: 0 0 12px 0;
   }
 
   .logo-area {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 20px 0 20px;
+    padding: 13px 20px 0 20px;
     min-height: 40px; 
     position: relative;
     overflow: hidden;
