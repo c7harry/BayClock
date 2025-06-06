@@ -3,6 +3,7 @@ import { Card, CardContent, Typography, Box } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion } from "framer-motion";
 import { FaHome } from "react-icons/fa";
+import EntryCard from "../components/EntryCard";
 
 export default function Dashboard() {
   // Dark/Light mode with Tailwind
@@ -194,76 +195,12 @@ export default function Dashboard() {
                 ) : (
                   <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                     {entries.slice(0, 5).map((entry) => (
-                      <motion.li
+                      <EntryCard
                         key={entry.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Card
-                          elevation={2}
-                          sx={{
-                            borderRadius: 3,
-                            bgcolor: "background.default",
-                            display: "flex",
-                            flexDirection: { xs: "column", sm: "row" },
-                            alignItems: { sm: "center" },
-                            justifyContent: "space-between",
-                            gap: 2,
-                            px: 2,
-                            py: 1.5,
-                          }}
-                        >
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight={600}
-                                color="text.primary"
-                                sx={{ flex: 1, minWidth: 0, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
-                              >
-                                {entry.description}
-                              </Typography>
-                              <Box
-                                sx={{
-                                  bgcolor: "warning.light",
-                                  color: "warning.dark",
-                                  borderRadius: 2,
-                                  px: 1.5,
-                                  py: 0.5,
-                                  fontSize: 12,
-                                  fontWeight: 500,
-                                  ml: 1,
-                                }}
-                              >
-                                {entry.project}
-                              </Box>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary">
-                              <span style={{ color: "#aaa" }}>Date:</span>{" "}
-                              <span
-                                style={{
-                                  color:
-                                    mode === "dark"
-                                      ? "#fff"
-                                      : "#444",
-                                  fontFamily: "inherit",
-                                }}
-                              >
-                                {entry.date}
-                              </span>
-                            </Typography>
-                          </Box>
-                          <Box sx={{ minWidth: 80, textAlign: "right" }}>
-                            <Typography variant="h6" fontWeight={700} color="warning.main">
-                              {entry.duration}
-                            </Typography>
-                            <Typography variant="caption" color="text.disabled">
-                              Duration
-                            </Typography>
-                          </Box>
-                        </Card>
-                      </motion.li>
+                        entry={entry}
+                        mode={mode}
+                        //The difference between Time tracker is edit and delete elements aren't passed, might change this later
+                      />
                     ))}
                   </Box>
                 )}

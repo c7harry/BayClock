@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { FaPlay, FaPause, FaStop, FaRegClock } from "react-icons/fa";
 import { motion } from "framer-motion";
-import DeleteIcon from "@mui/icons-material/Delete";
+
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -18,6 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
+import EntryCard from "../components/EntryCard";
 
 export default function TimeTracker() {
   // Dark/Light mode with Tailwind
@@ -445,87 +446,13 @@ export default function TimeTracker() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <Card
-                          elevation={2}
-                          sx={{
-                            borderRadius: 3,
-                            bgcolor: "background.default",
-                            display: "flex",
-                            flexDirection: { xs: "column", sm: "row" },
-                            alignItems: { sm: "center" },
-                            justifyContent: "space-between",
-                            gap: 2,
-                            px: 2,
-                            py: 1.5,
-                          }}
-                        >
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight={600}
-                                color="text.primary"
-                                sx={{ flex: 1, minWidth: 0, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}
-                              >
-                                {entry.description}
-                              </Typography>
-                              <Box
-                                sx={{
-                                  bgcolor: "warning.light",
-                                  color: "warning.dark",
-                                  borderRadius: 2,
-                                  px: 1.5,
-                                  py: 0.5,
-                                  fontSize: 12,
-                                  fontWeight: 500,
-                                  ml: 1,
-                                }}
-                              >
-                                {entry.project}
-                              </Box>
-                            </Box>
-                            <Typography variant="body2" color="text.secondary">
-                              <span style={{ color: "#aaa" }}>Date:</span>{" "}
-                              <span
-                                style={{
-                                  color:
-                                    mode === "dark"
-                                      ? "#fff"
-                                      : "#444",
-                                  fontFamily: "inherit",
-                                }}
-                              >
-                                {entry.date}
-                              </span>
-                            </Typography>
-                          </Box>
-                          <Box sx={{ minWidth: 80, textAlign: "right" }}>
-                            <Typography variant="h6" fontWeight={700} color="warning.main">
-                              {entry.duration}
-                            </Typography>
-                            <Typography variant="caption" color="text.disabled">
-                              Duration
-                            </Typography>
-                            <IconButton
-                              aria-label="edit"
-                              color="primary"
-                              size="small"
-                              onClick={() => handleEditOpen(entry)}
-                              sx={{ mt: 1, mr: 1 }}
-                            >
-                              <span className="material-icons" style={{ fontSize: 18 }}>edit</span>
-                            </IconButton>
-                            <IconButton
-                              aria-label="delete"
-                              color="error"
-                              size="small"
-                              onClick={() => handleDeleteEntry(entry.id)}
-                              sx={{ mt: 1 }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </Card>
+                        <EntryCard
+                          entry={entry}
+                          mode={mode}
+                          onEdit={handleEditOpen}
+                          onDelete={handleDeleteEntry}
+                          showActions
+                        />
                       </motion.li>
                     ))}
                   </Box>
