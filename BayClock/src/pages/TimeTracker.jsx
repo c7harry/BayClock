@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { FaPlay, FaPause, FaStop, FaRegClock } from "react-icons/fa";
 import { motion } from "framer-motion";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -58,8 +59,7 @@ export default function TimeTracker() {
       }),
     [mode]
   );
-  // ------------------------------------------
-
+  
   // Timer state
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -134,6 +134,13 @@ export default function TimeTracker() {
     if (h > 0) durationStr += `${h}h `;
     if (m > 0) durationStr += `${m}m`;
     addEntry(durationStr.trim());
+  };
+
+  // Delete entry handler
+  const handleDeleteEntry = (id) => {
+    const updated = entries.filter((entry) => entry.id !== id);
+    setEntries(updated);
+    localStorage.setItem("entries", JSON.stringify(updated));
   };
 
   // Utility: seconds to "1h 23m 45s"
@@ -448,6 +455,15 @@ export default function TimeTracker() {
                             <Typography variant="caption" color="text.disabled">
                               Duration
                             </Typography>
+                            <IconButton
+                              aria-label="delete"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDeleteEntry(entry.id)}
+                              sx={{ mt: 1 }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
                           </Box>
                         </Card>
                       </motion.li>
