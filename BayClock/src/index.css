@@ -30,6 +30,14 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: #fff;
+  color: #213547;
+  transition: background 0.3s, color 0.3s;
+}
+
+html.dark body {
+  background: #18181b;
+  color: #f3f4f6;
 }
 
 h1 {

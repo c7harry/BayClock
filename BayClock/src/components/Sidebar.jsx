@@ -93,6 +93,13 @@ const StyledSidebar = styled.div`
   box-shadow: 2px 0 8px 0 rgba(0,0,0,0.04);
   z-index: 20;
 
+  /* Dark mode styles */
+  html.dark & {
+    background: linear-gradient(to bottom, #23232a 0%, #18181b 100%);
+    border-right: 1.5px solid #23232a;
+    box-shadow: 2px 0 8px 0 rgba(0,0,0,0.18);
+  }
+
   .sidebar-content {
     display: flex;
     flex-direction: column;
@@ -122,6 +129,10 @@ const StyledSidebar = styled.div`
     margin-left: ${({ open }) => (open ? "8px" : "0")};
     max-width: ${({ open }) => (open ? "120px" : "0")};
     display: inline-block;
+    color: #444;
+  }
+  html.dark & .logo-text {
+    color: #f3f4f6;
   }
 
   .username-underline-container {
@@ -157,10 +168,18 @@ const StyledSidebar = styled.div`
     transition: background 0.18s, color 0.18s, gap 0.18s;
     cursor: pointer;
     margin: 0 8px;
+    background: transparent;
     svg {
       margin-right: ${({ open }) => (open ? "16px" : "0")};
       color: #bdbdbd;
       transition: color 0.18s;
+    }
+  }
+  html.dark & .nav-link {
+    color: #e5e7eb;
+    background: transparent;
+    svg {
+      color: #888;
     }
   }
   .nav-link.open {
@@ -172,6 +191,14 @@ const StyledSidebar = styled.div`
     color: #ff6910;
     svg {
       color: #ff6910;
+    }
+  }
+  html.dark & .nav-link.active,
+  html.dark & .nav-link:hover {
+    background: #2a2320;
+    color: #ff9c4a;
+    svg {
+      color: #ff9c4a;
     }
   }
 `;

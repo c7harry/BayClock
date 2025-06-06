@@ -93,6 +93,7 @@ const SwitchWrapper = styled.div`
     box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.15), 0em 0.062em 0.125em rgba(255, 255, 255, 0.7);
     transition: var(--transition);
     position: relative;
+    box-shadow: 0 2px 14px 0 rgba(255, 104, 16, 0.6);
   }
   .theme-switch__container::before {
     content: "";
@@ -225,6 +226,7 @@ export default function Navbar() {
           animate={{ rotate: 0, scale: 1 }}
           transition={{ type: "spring", stiffness: 120, damping: 8, delay: 0.2 }}
         />
+        <span className="navbar-title">BayClock</span>
       </div>
       <div className="navbar-right">
         <Switch />
@@ -247,19 +249,36 @@ const StyledNavbar = styled(motion.header)`
   top: 0;
   z-index: 50;
 
+  /* Dark mode styles */
+  html.dark & {
+    background: #18181b;
+    border-bottom: 1.5px solid #23232a;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.18);
+  }
+
   .navbar-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 5px;
   }
 
   .navbar-logo {
-    height: 50px;
-    width: 100px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px 0 rgba(255, 105, 16, 0.08);
-    background: #fff;
+    width: 40px;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
     object-fit: contain;
+  }
+  html.dark & .navbar-logo {
+    background: transparent;
+  }
+
+  .navbar-title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: rgba(254,101,50,255);
+    transition: color 0.3s;
   }
 
   .navbar-right {
