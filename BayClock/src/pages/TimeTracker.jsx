@@ -2,6 +2,10 @@ import { useState, useMemo, useEffect } from "react";
 import { FaPlay, FaPause, FaStop, FaRegClock } from "react-icons/fa";
 import { motion } from "framer-motion";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -161,6 +165,53 @@ export default function TimeTracker() {
   const tileVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
+
+  // Edit dialog state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editEntry, setEditEntry] = useState(null);
+  const [editDescription, setEditDescription] = useState("");
+  const [editProject, setEditProject] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editHours, setEditHours] = useState("");
+  const [editMins, setEditMins] = useState("");
+
+  // Open edit dialog
+  const handleEditOpen = (entry) => {
+    setEditEntry(entry);
+    setEditDescription(entry.description);
+    setEditProject(entry.project);
+    setEditDate(entry.date);
+    // Parse duration string like "1h 23m"
+    const hMatch = entry.duration.match(/(\d+)h/);
+    const mMatch = entry.duration.match(/(\d+)m/);
+    setEditHours(hMatch ? hMatch[1] : "");
+    setEditMins(mMatch ? mMatch[1] : "");
+    setEditOpen(true);
+  };
+
+  // Save edit
+  const handleEditSave = () => {
+    if (!editDescription || !editProject || !editDate) return;
+    let durationStr = "";
+    if (parseInt(editHours, 10) > 0) durationStr += `${parseInt(editHours, 10)}h `;
+    if (parseInt(editMins, 10) > 0) durationStr += `${parseInt(editMins, 10)}m`;
+    durationStr = durationStr.trim() || "0m";
+    const updated = entries.map((entry) =>
+      entry.id === editEntry.id
+        ? {
+            ...entry,
+            description: editDescription,
+            project: editProject,
+            date: editDate,
+            duration: durationStr,
+          }
+        : entry
+    );
+    setEntries(updated);
+    localStorage.setItem("entries", JSON.stringify(updated));
+    setEditOpen(false);
+    setEditEntry(null);
   };
 
   return (
@@ -456,6 +507,15 @@ export default function TimeTracker() {
                               Duration
                             </Typography>
                             <IconButton
+                              aria-label="edit"
+                              color="primary"
+                              size="small"
+                              onClick={() => handleEditOpen(entry)}
+                              sx={{ mt: 1, mr: 1 }}
+                            >
+                              <span className="material-icons" style={{ fontSize: 18 }}>edit</span>
+                            </IconButton>
+                            <IconButton
                               aria-label="delete"
                               color="error"
                               size="small"
@@ -474,6 +534,76 @@ export default function TimeTracker() {
             </Card>
           </motion.div>
         </Box>
+        {/* Edit Dialog */}
+        <Dialog open={editOpen} onClose={() => setEditOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle>Edit Entry</DialogTitle>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            <TextField
+              label="Task Description"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              fullWidth
+              autoFocus
+            />
+            <TextField
+              select
+              label="Project"
+              value={editProject}
+              onChange={(e) => setEditProject(e.target.value)}
+              fullWidth
+            >
+              <MenuItem value="">Select</MenuItem>
+              {projects.map((p) => (
+                <MenuItem key={p} value={p}>
+                  {p}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Date"
+              type="date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+            />
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <TextField
+                label="Hours"
+                type="number"
+                inputProps={{ min: 0 }}
+                value={editHours}
+                onChange={(e) => setEditHours(e.target.value.replace(/[^0-9]/g, ""))}
+                sx={{ width: 90 }}
+              />
+              <TextField
+                label="Minutes"
+                type="number"
+                inputProps={{ min: 0, max: 59 }}
+                value={editMins}
+                onChange={(e) => {
+                  let val = e.target.value.replace(/[^0-9]/g, "");
+                  if (parseInt(val, 10) > 59) val = "59";
+                  setEditMins(val);
+                }}
+                sx={{ width: 110 }}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setEditOpen(false)} color="inherit">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEditSave}
+              variant="contained"
+              color="primary"
+              disabled={!editDescription || !editProject || !editDate}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </ThemeProvider>
   );
