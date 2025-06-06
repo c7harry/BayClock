@@ -144,7 +144,7 @@ const StyledSidebar = styled.div`
 
   .username-underline {
     width: 100%;
-    height: 4px;
+    height: 2px;
     background: #ff6910;
     border-radius: 1px;
   }

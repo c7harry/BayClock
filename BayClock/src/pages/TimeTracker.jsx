@@ -11,6 +11,8 @@ import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
 export default function TimeTracker() {
   // Dark/Light mode with Tailwind
@@ -256,33 +258,57 @@ export default function TimeTracker() {
                     >
                       {timerToDuration(timer) || "0s"}
                     </Typography>
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      sx={{ borderRadius: "50%", minWidth: 0, p: 1.5 }}
-                      onClick={handleStart}
-                      disabled={isRunning || !description || !project}
-                    >
-                      <FaPlay />
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="inherit"
-                      sx={{ borderRadius: "50%", minWidth: 0, p: 1.5 }}
-                      onClick={handlePause}
-                      disabled={!isRunning}
-                    >
-                      <FaPause />
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="inherit"
-                      sx={{ borderRadius: "50%", minWidth: 0, p: 1.5 }}
-                      onClick={handleStop}
-                      disabled={!timer}
-                    >
-                      <FaStop />
-                    </Button>
+                    <Tooltip title="Start" arrow>
+                      <span>
+                        <IconButton
+                          color="warning"
+                          onClick={handleStart}
+                          disabled={isRunning || !description || !project}
+                          sx={{
+                            bgcolor: "warning.main",
+                            color: "#fff",
+                            "&:hover": { bgcolor: "warning.dark" },
+                            mx: 0.5,
+                          }}
+                        >
+                          <FaPlay />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="Pause" arrow>
+                      <span>
+                        <IconButton
+                          color="default"
+                          onClick={handlePause}
+                          disabled={!isRunning}
+                          sx={{
+                            bgcolor: "grey.200",
+                            color: "text.primary",
+                            "&:hover": { bgcolor: "grey.300" },
+                            mx: 0.5,
+                          }}
+                        >
+                          <FaPause />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="Stop & Save" arrow>
+                      <span>
+                        <IconButton
+                          color="default"
+                          onClick={handleStop}
+                          disabled={!timer}
+                          sx={{
+                            bgcolor: "grey.200",
+                            color: "text.primary",
+                            "&:hover": { bgcolor: "grey.300" },
+                            mx: 0.5,
+                          }}
+                        >
+                          <FaStop />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
                   </Box>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
                     <TextField
