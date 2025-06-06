@@ -71,6 +71,10 @@ export default function TimeTracker() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [manualDuration, setManualDuration] = useState("");
 
+  // Manual entry state: separate hours and minutes
+  const [manualHours, setManualHours] = useState("");
+  const [manualMins, setManualMins] = useState("");
+
   // Entries state (simulate localStorage)
   const [entries, setEntries] = useState(() => {
     const saved = localStorage.getItem("entries");
@@ -117,13 +121,19 @@ export default function TimeTracker() {
     localStorage.setItem("entries", JSON.stringify(updated));
     setDescription("");
     setProject("");
-    setManualDuration("");
+    setManualHours("");
+    setManualMins("");
   };
 
-  // Manual entry handler
+  // Manual entry handler (combine hours and mins)
   const handleManualAdd = () => {
-    if (!manualDuration) return;
-    addEntry(manualDuration);
+    const h = parseInt(manualHours, 10) || 0;
+    const m = parseInt(manualMins, 10) || 0;
+    if (h === 0 && m === 0) return;
+    let durationStr = "";
+    if (h > 0) durationStr += `${h}h `;
+    if (m > 0) durationStr += `${m}m`;
+    addEntry(durationStr.trim());
   };
 
   // Utility: seconds to "1h 23m 45s"
@@ -310,20 +320,38 @@ export default function TimeTracker() {
                       </span>
                     </Tooltip>
                   </Box>
+                  {/* Manual Duration Entry: Separate Hours and Minutes */}
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
                     <TextField
-                      label="Manual Duration"
-                      placeholder="e.g. 1h 30m"
-                      value={manualDuration}
-                      onChange={(e) => setManualDuration(e.target.value)}
-                      sx={{ minWidth: 120, bgcolor: "background.default", borderRadius: 2 }}
+                      label="Hours"
+                      type="number"
+                      inputProps={{ min: 0 }}
+                      value={manualHours}
+                      onChange={(e) => setManualHours(e.target.value.replace(/[^0-9]/g, ""))}
+                      sx={{ width: 90, bgcolor: "background.default", borderRadius: 2 }}
+                    />
+                    <TextField
+                      label="Minutes"
+                      type="number"
+                      inputProps={{ min: 0, max: 59 }}
+                      value={manualMins}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/[^0-9]/g, "");
+                        if (parseInt(val, 10) > 59) val = "59";
+                        setManualMins(val);
+                      }}
+                      sx={{ width: 110, bgcolor: "background.default", borderRadius: 2 }}
                     />
                     <Button
                       variant="contained"
                       color="warning"
                       sx={{ borderRadius: 2, fontWeight: 600, px: 3, py: 1.5 }}
                       onClick={handleManualAdd}
-                      disabled={!manualDuration || !description || !project}
+                      disabled={
+                        (!manualHours && !manualMins) ||
+                        !description ||
+                        !project
+                      }
                     >
                       Add Manual Entry
                     </Button>

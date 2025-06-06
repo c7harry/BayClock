@@ -108,7 +108,7 @@ const StyledSidebar = styled.div`
     justify-content: center;
     width: 60px;
     height: 35px;
-    background:rgb(255, 105, 16);
+    background: rgb(252, 125, 51);
     color: #fff;
     font-weight: bold;
     border-radius: 8px;
@@ -116,7 +116,7 @@ const StyledSidebar = styled.div`
     transition: background 0.3s;
   }
   html.dark & .logo-square {
-    background:  rgba(254,101,50,255);
+    background: rgb(252, 125, 51);
     color: #23232a;
   }
 
