@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, Typography, Box, Stack, IconButton, Tooltip, Collapse, Avatar, Divider, Menu, MenuItem } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import { motion } from "framer-motion";
 
 // Helper to format date as "Wed, Jun 4"
@@ -100,6 +101,7 @@ export function EntryCardGroup({
   onDelete,
   showActions = false,
   motionProps = {},
+  onResume, // <-- add this prop
 }) {
   const [expanded, setExpanded] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null); // For menu
@@ -261,6 +263,21 @@ export function EntryCardGroup({
                     }
                   </Typography>
                 </Box>
+                {/* Resume Task Button */}
+                <IconButton
+                  aria-label="resume"
+                  color="warning"
+                  sx={{
+                    bgcolor: "warning.light",
+                    color: "warning.dark",
+                    ml: 1,
+                    "&:hover": { bgcolor: "warning.main", color: "#fff" },
+                  }}
+                  size="small"
+                  onClick={() => onResume && onResume(entry)}
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </IconButton>
                 {/* Vertical button stays at the right */}
                 {showActions && onDelete && (
                   <>
@@ -344,7 +361,8 @@ export default function EntryCard({
   showActions = false,
   motionProps = {},
   hideDate = false,
-  showTimeRange = false, // new prop
+  showTimeRange = false,
+  onResume, // <-- add this prop
 }) {
   // Always show time range for single entries
   const displayTimeRange = entry.start && entry.end;
@@ -482,6 +500,21 @@ export default function EntryCard({
                     </Typography>
                   </Box>
                 )}
+                {/* Resume Task Button */}
+                <IconButton
+                  aria-label="resume"
+                  color="warning"
+                  sx={{
+                    bgcolor: "warning.light",
+                    color: "warning.dark",
+                    ml: 1,
+                    "&:hover": { bgcolor: "warning.main", color: "#fff" },
+                  }}
+                  size="small"
+                  onClick={() => onResume && onResume(entry)}
+                >
+                  <PlayArrowIcon fontSize="small" />
+                </IconButton>
                 {/* 3 vertical dots menu for actions */}
                 {showActions && (
                   <>

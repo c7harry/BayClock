@@ -273,6 +273,34 @@ export default function TimeTracker() {
     return acc;
   }, {});
 
+  // Resume task handler
+  const handleResumeTask = (entry) => {
+    // If the date is today, just prefill and start timer
+    const today = new Date().toISOString().slice(0, 10);
+    if (entry.date === today) {
+      setDescription(entry.description);
+      setProject(entry.project);
+      setDate(today);
+      setTimer(0);
+      setIsRunning(true);
+      if (intervalId) clearInterval(intervalId);
+      const id = setInterval(() => setTimer((t) => t + 1), 1000);
+      setIntervalId(id);
+    } else {
+      // If not today, create a new entry for today and start timer
+      setDescription(entry.description);
+      setProject(entry.project);
+      setDate(today);
+      setTimer(0);
+      setIsRunning(true);
+      if (intervalId) clearInterval(intervalId);
+      const id = setInterval(() => setTimer((t) => t + 1), 1000);
+      setIntervalId(id);
+      // (Note to self according to video): you can auto-add a new entry here if you want an immediate record
+      // or just let the timer run and user can stop/save as usual
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -508,6 +536,7 @@ export default function TimeTracker() {
                             onEdit={handleEditOpen}
                             onDelete={handleDeleteEntry}
                             showActions
+                            onResume={handleResumeTask}
                           />
                         ) : (
                           <EntryCard
@@ -517,6 +546,7 @@ export default function TimeTracker() {
                             onEdit={handleEditOpen}
                             onDelete={handleDeleteEntry}
                             showActions
+                            onResume={handleResumeTask}
                           />
                         )
                       )}
