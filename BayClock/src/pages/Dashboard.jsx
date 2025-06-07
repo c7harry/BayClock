@@ -198,7 +198,7 @@ export default function Dashboard() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: { xs: 700, md: 1600 },
+            maxWidth: { xs: 700, md: 1500 },
             display: "flex",
             flexDirection: "column",
             gap: 2,
@@ -266,10 +266,24 @@ export default function Dashboard() {
                 gap: 4,
                 justifyContent: "center",
                 alignItems: "stretch",
-                width: "100%", 
+                width: "100%",
+                flexWrap: { xs: "nowrap", md: "wrap" }, 
+                overflowX: { xs: "auto", md: "visible" },
               }}
             >
-              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 0 }}>
+              <Card
+                elevation={4}
+                sx={{
+                  flex: 1,
+                  borderRadius: 5,
+                  bgcolor: "background.paper",
+                  minWidth: 0,
+                  minWidth: { xs: 320, md: 400 }, 
+                  maxWidth: { xs: "100%", md: "50%" }, 
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
                 <CardContent>
                   <Typography variant="h6" fontWeight={700} color="text.secondary" mb={2} sx={{ textAlign: "center" }}>
                     Hours Worked (Last 7 Days)
@@ -287,13 +301,11 @@ export default function Dashboard() {
                             align: "end",
                             color: "#fb923c",
                             font: { weight: "bold", size: 14 },
-                            // Format as "Hh Mm Ss"
                             formatter: (value) => {
                               const totalSeconds = Math.round(value * 3600);
                               const h = Math.floor(totalSeconds / 3600);
                               const m = Math.floor((totalSeconds % 3600) / 60);
                               const s = totalSeconds % 60;
-                              // Pad with zeros for HH:MM:SS
                               const pad = (n) => n.toString().padStart(2, "0");
                               return `${pad(h)}:${pad(m)}:${pad(s)}`;
                             },
@@ -314,7 +326,20 @@ export default function Dashboard() {
                   </Box>
                 </CardContent>
               </Card>
-              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 0, display: "flex", flexDirection: { xs: "column", md: "row" }, alignItems: "stretch" }}>
+              <Card
+                elevation={4}
+                sx={{
+                  flex: 1,
+                  borderRadius: 5,
+                  bgcolor: "background.paper",
+                  minWidth: 0,
+                  minWidth: { xs: 320, md: 400 },
+                  maxWidth: { xs: "100%", md: "50%" },
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  alignItems: "stretch",
+                }}
+              >
                 <CardContent sx={{ flex: 2, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <Typography variant="h6" fontWeight={700} color="text.secondary" mb={2} sx={{ textAlign: "center" }}>
                     Hours by Project
@@ -326,7 +351,7 @@ export default function Dashboard() {
                         responsive: true,
                         cutout: "70%",
                         plugins: {
-                          legend: { display: false }, 
+                          legend: { display: false },
                           tooltip: { enabled: true },
                           datalabels: { display: false },
                           centerText: {
@@ -380,27 +405,26 @@ export default function Dashboard() {
                     pl: { xs: 0, md: 2 },
                     pr: 2,
                     minWidth: 180,
+                    maxWidth: { xs: "100%", md: 220 }, 
                     mt: { xs: 2, md: 0 },
+                    overflowX: "auto",
                   }}
                 >
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: { xs: "center", md: "left" } }}>
                     Project Breakdown
                   </Typography>
                   {pieLabels.map((project, idx) => {
-                    // Calculate total hours for this project
                     const hours = pieData[idx];
-                    // Calculate percent of total
                     const percent = pieData.reduce((a, b) => a + b, 0) > 0
                       ? (hours / pieData.reduce((a, b) => a + b, 0)) * 100
                       : 0;
-                    // Format hours as HH:MM:SS
                     const totalSeconds = Math.round(hours * 3600);
                     const h = Math.floor(totalSeconds / 3600);
                     const m = Math.floor((totalSeconds % 3600) / 60);
                     const s = totalSeconds % 60;
                     const pad = (n) => n.toString().padStart(2, "0");
                     return (
-                      <Box key={project} sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+                      <Box key={project} sx={{ display: "flex", alignItems: "center", mb: 1.5, flexWrap: "wrap" }}>
                         <Box
                           sx={{
                             width: 16,
