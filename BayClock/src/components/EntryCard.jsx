@@ -233,6 +233,8 @@ export function EntryCardGroup({
                     • {entry.project}
                   </Typography>
                 </Box>
+                {/* Spacer for extra padding between project type and time range*/}
+                <Box sx={{ width: 32 }} />
                 {/* Time range display */}
                 <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
                   <Typography
@@ -457,6 +459,8 @@ export default function EntryCard({
                     • {entry.project}
                   </Typography>
                 </Box>
+                {/* Spacer for extra padding */}
+                <Box sx={{ width: 32 /* or 24, adjust as needed */ }} />
                 {/* Always show time range for single entry */}
                 {displayTimeRange && (
                   <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
