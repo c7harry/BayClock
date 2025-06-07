@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, Typography, Box, Stack, IconButton, Tooltip, Collapse, Avatar, Divider } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { motion } from "framer-motion";
 
 // Helper to format date as "Wed, Jun 4"
@@ -40,6 +39,41 @@ function sumDurations(durations) {
   return out.join(" ") || "0s";
 }
 
+// Helper to format time as "2:09 AM"
+function formatEntryTime(timeStr) {
+  if (!timeStr) return "";
+  // Accepts "14:09" or "2:09" or "2:09 AM"
+  let [h, m] = timeStr.split(":");
+  if (m && m.length > 2) m = m.slice(0, 2); // handle "14:09:00"
+  let date = new Date();
+  date.setHours(Number(h), Number(m), 0, 0);
+  return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+// Get first start and last end from entries
+function getTimeRange(entries) {
+  // Only consider entries with both start and end
+  const valid = entries.filter(e => e.start && e.end);
+  if (!valid.length) return ["", ""];
+  // Sort by start time
+  valid.sort((a, b) => a.start.localeCompare(b.start));
+  const firstStart = valid[0].start;
+  // Sort by end time
+  valid.sort((a, b) => a.end.localeCompare(b.end));
+  const lastEnd = valid[valid.length - 1].end;
+  return [firstStart, lastEnd];
+}
+
+// Get overall min start and max end for a group
+function getOverallTimeRange(entries) {
+  const starts = entries.map(e => e.start).filter(Boolean);
+  const ends = entries.map(e => e.end).filter(Boolean);
+  if (!starts.length || !ends.length) return ["", ""];
+  const minStart = starts.reduce((a, b) => (a < b ? a : b));
+  const maxEnd = ends.reduce((a, b) => (a > b ? a : b));
+  return [minStart, maxEnd];
+}
+
 /**
  * EntryCardGroup groups entries by date and shows a badge with the count.
  * When clicked, it expands to show all entries for that date.
@@ -59,6 +93,10 @@ export function EntryCardGroup({
 }) {
   const [expanded, setExpanded] = useState(false);
   const entry = entries[0];
+
+  // Get time range for minimized and expanded
+  const [firstStart, lastEnd] = getTimeRange(entries);
+  const [overallStart, overallEnd] = getOverallTimeRange(entries);
 
   return (
     <motion.li
@@ -164,7 +202,7 @@ export function EntryCardGroup({
                 </Typography>
                 <Box
                   sx={{
-                    minWidth: 100, 
+                    minWidth: 100,
                     display: "flex",
                     justifyContent: "flex-end",
                   }}
@@ -188,6 +226,23 @@ export function EntryCardGroup({
                     • {entry.project}
                   </Typography>
                 </Box>
+                {/* Time range display */}
+                <Box sx={{ minWidth: 120, ml: 2 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 500 }}
+                  >
+                    {!expanded
+                      ? (firstStart && lastEnd
+                          ? `${formatEntryTime(firstStart)} - ${formatEntryTime(lastEnd)}`
+                          : "")
+                      : (overallStart && overallEnd
+                          ? `${formatEntryTime(overallStart)} - ${formatEntryTime(overallEnd)}`
+                          : "")
+                    }
+                  </Typography>
+                </Box>
               </Stack>
             </Box>
           </Stack>
@@ -204,6 +259,7 @@ export function EntryCardGroup({
                 showActions={showActions}
                 motionProps={{ initial: false, animate: true }}
                 hideDate
+                showTimeRange // pass this prop to show time range on single cards
               />
             ))}
           </Box>
@@ -222,7 +278,11 @@ export default function EntryCard({
   showActions = false,
   motionProps = {},
   hideDate = false,
+  showTimeRange = false, // new prop
 }) {
+  // Always show time range for single entries
+  const displayTimeRange = entry.start && entry.end;
+
   return (
     <motion.li
       initial={{ opacity: 0, y: 20 }}
@@ -290,7 +350,6 @@ export default function EntryCard({
           }}
         >
           <Stack direction="row" alignItems="center" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
-            {/* Avatar removed */}
             <Box sx={{ flex: 1, minWidth: 0 }}>
               {/* Task description and project on the same row */}
               <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
@@ -312,7 +371,7 @@ export default function EntryCard({
                 </Typography>
                 <Box
                   sx={{
-                    minWidth: 100, 
+                    minWidth: 100,
                     display: "flex",
                     justifyContent: "flex-end",
                   }}
@@ -336,6 +395,18 @@ export default function EntryCard({
                     • {entry.project}
                   </Typography>
                 </Box>
+                {/* Always show time range for single entry */}
+                {displayTimeRange && (
+                  <Box sx={{ minWidth: 120, ml: 2 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontWeight: 500 }}
+                    >
+                      {formatEntryTime(entry.start)} - {formatEntryTime(entry.end)}
+                    </Typography>
+                  </Box>
+                )}
               </Stack>
             </Box>
           </Stack>

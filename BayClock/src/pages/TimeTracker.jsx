@@ -106,28 +106,52 @@ export default function TimeTracker() {
     setIsRunning(false);
     clearInterval(intervalId);
     if (timer > 0) {
+      // Optionally, set start/end as now (or leave blank)
       addEntry(timerToDuration(timer));
     }
     setTimer(0);
   };
 
   // Add entry (timer or manual)
-  const addEntry = (durationStr) => {
+  const addEntry = (durationStr, startTime = "", endTime = "") => {
     if (!description || !project || !date || !durationStr) return;
+
+    // If no start/end provided (i.e., timer entry), use current time for both
+    let start = startTime;
+    let end = endTime;
+    if (!start || !end) {
+      const now = new Date();
+      // Use timer duration to calculate start time
+      if (timer > 0) {
+        const endDate = new Date(now);
+        const startDate = new Date(now - timer * 1000);
+        const pad = (n) => n.toString().padStart(2, "0");
+        start = `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`;
+        end = `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`;
+      } else {
+        // fallback: use now for both
+        const pad = (n) => n.toString().padStart(2, "0");
+        start = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        end = start;
+      }
+    }
+
     const newEntry = {
       id: Date.now(),
       description,
       project,
       date,
       duration: durationStr,
+      start,
+      end,
     };
     const updated = [newEntry, ...entries];
     setEntries(updated);
     localStorage.setItem("entries", JSON.stringify(updated));
     setDescription("");
     setProject("");
-    setManualHours("");
-    setManualMins("");
+    setManualHours && setManualHours("");
+    setManualMins && setManualMins("");
   };
 
   // Manual entry handler (combine hours and mins)
@@ -149,7 +173,7 @@ export default function TimeTracker() {
 
     if (diffSec <= 0) return;
 
-    addEntry(timerToDuration(diffSec));
+    addEntry(timerToDuration(diffSec), manualStart, manualEnd);
     setManualStart("");
     setManualEnd("");
   };
