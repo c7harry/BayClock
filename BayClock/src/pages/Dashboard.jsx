@@ -120,14 +120,28 @@ export default function Dashboard() {
 
   // --- Chart Data Preparation ---
 
+  // Helper to get YYYY-MM-DD in local time
+  function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   // Bar Chart: Hours per Day (last 7 days)
   const last7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().slice(0, 10);
+    return formatLocalDate(d); // Use local date string
   });
+  function parseLocalDateString(str) {
+    // str is "YYYY-MM-DD"
+    const [year, month, day] = str.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
   const barLabels = last7Days.map((d) =>
-    new Date(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
+  parseLocalDateString(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
   );
   const barData = last7Days.map((date) =>
     entries
@@ -305,7 +319,32 @@ export default function Dashboard() {
                         responsive: true,
                         plugins: {
                           legend: { display: false },
-                          tooltip: { enabled: true },
+                          tooltip: {
+                            enabled: true,
+                            callbacks: {
+                              title: function(context) {
+                                // context[0].dataIndex gives the bar index
+                                const idx = context[0].dataIndex;
+                                const dateStr = last7Days[idx];
+                                const date = new Date(dateStr);
+                                return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+                              },
+                              label: function(context) {
+                                const value = context.raw || 0;
+                                const totalSeconds = Math.round(value * 3600);
+                                const h = Math.floor(totalSeconds / 3600);
+                                const m = Math.floor((totalSeconds % 3600) / 60);
+                                const s = totalSeconds % 60;
+                                const pad = (n) => n.toString().padStart(2, "0");
+                                // Each bar is 100%
+                                return [
+                                  `${barLabels[context.dataIndex]}`,
+                                  `${pad(h)}:${pad(m)}:${pad(s)}`,
+                                  `(100.0%)`
+                                ];
+                              }
+                            }
+                          },
                           datalabels: {
                             anchor: "end",
                             align: "end",
@@ -362,7 +401,26 @@ export default function Dashboard() {
                         cutout: "70%",
                         plugins: {
                           legend: { display: false },
-                          tooltip: { enabled: true },
+                          tooltip: {
+                            enabled: true,
+                            callbacks: {
+                              label: function(context) {
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percent = total > 0 ? (value / total) * 100 : 0;
+                                const totalSeconds = Math.round(value * 3600);
+                                const h = Math.floor(totalSeconds / 3600);
+                                const m = Math.floor((totalSeconds % 3600) / 60);
+                                const s = totalSeconds % 60;
+                                const pad = (n) => n.toString().padStart(2, "0");
+                                return [
+                                  `${context.label}`,
+                                  `${pad(h)}:${pad(m)}:${pad(s)}`,
+                                  `(${percent.toFixed(1)}%)`
+                                ];
+                              }
+                            }
+                          },
                           datalabels: { display: false },
                           centerText: {
                             display: true,
