@@ -237,27 +237,26 @@ export default function Dashboard() {
       <CssBaseline />
       <Box
         sx={{
-          minHeight: "80vh",
+          minHeight: "100vh",
           bgcolor: "background.default",
-          py: 6,
-          px: 2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          transition: "background-color 0.3s",
-          width: "100vw",
+          py: { xs: 2, md: 4 },
+          px: { xs: 0, sm: 1, md: 2 },
+          width: "100%",
+          boxSizing: "border-box",
           overflowX: "auto",
         }}
       >
         <Box
-          key={windowWidth} 
+          key={windowWidth}
           sx={{
             width: "100%",
-            maxWidth: { xs: 700, md: 1500 },
+            maxWidth: "100%",
+            mx: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: 2,
-            ml: 7,
+            gap: { xs: 2, md: 3 },
+            px: { xs: 0.5, sm: 2, md: 4 },
+            boxSizing: "border-box",
           }}
         >
           {/* Header */}
@@ -295,10 +294,11 @@ export default function Dashboard() {
                 gap: 3,
                 flexDirection: { xs: "column", md: "row" },
                 width: "100%",
+                overflowX: "auto", // <-- Add this line
               }}
             >
               {/* Hours Today */}
-              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 220 }}>
+              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: { xs: 220, md: 0 }, maxWidth: "100%" }}>
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="subtitle2" color="text.secondary" mb={1}>
                     Hours Today
