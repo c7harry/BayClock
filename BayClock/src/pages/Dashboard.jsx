@@ -220,6 +220,18 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const [showTop10, setShowTop10] = useState(true);
+
+  // Calculate most tracked activities (by project)
+  const totalHoursAll = Object.values(projectTotals).reduce((a, b) => a + b, 0);
+  const mostTracked = Object.entries(projectTotals)
+    .map(([project, hours]) => ({
+      project,
+      hours,
+      percent: totalHoursAll > 0 ? (hours / totalHoursAll) * 100 : 0,
+    }))
+    .sort((a, b) => b.hours - a.hours);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -299,6 +311,89 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </Box>
+          </motion.div>
+
+          {/* Most Tracked Activities */}
+          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.15 }}>
+            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", mb: 3 }}>
+              <CardContent>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                  <Typography variant="h6" fontWeight={700} color="text.secondary">
+                    Most Tracked Activities
+                  </Typography>
+                  <Box>
+                    <button
+                      onClick={() => setShowTop10(true)}
+                      style={{
+                        marginRight: 8,
+                        padding: "4px 12px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: showTop10 ? "#fb923c" : "#e5e7eb",
+                        color: showTop10 ? "#fff" : "#18181b",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      Top 10
+                    </button>
+                    <button
+                      onClick={() => setShowTop10(false)}
+                      style={{
+                        padding: "4px 12px",
+                        borderRadius: 6,
+                        border: "none",
+                        background: !showTop10 ? "#fb923c" : "#e5e7eb",
+                        color: !showTop10 ? "#fff" : "#18181b",
+                        fontWeight: 600,
+                        cursor: "pointer"
+                      }}
+                    >
+                      All
+                    </button>
+                  </Box>
+                </Box>
+                <Box>
+                  {mostTracked
+                    .slice(0, showTop10 ? 10 : mostTracked.length)
+                    .map((item, idx) => {
+                      const totalSeconds = Math.round(item.hours * 3600);
+                      const h = Math.floor(totalSeconds / 3600);
+                      const m = Math.floor((totalSeconds % 3600) / 60);
+                      const s = totalSeconds % 60;
+                      const pad = (n) => n.toString().padStart(2, "0");
+                      return (
+                        <Box key={item.project} sx={{ display: "flex", alignItems: "center", mb: 1.2 }}>
+                          <Box
+                            sx={{
+                              width: 14,
+                              height: 14,
+                              borderRadius: "50%",
+                              bgcolor: pieColors[idx % pieColors.length],
+                              mr: 1.2,
+                              border: "1.5px solid #e5e7eb",
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
+                            {item.project}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                            {`${pad(h)}:${pad(m)}:${pad(s)}`}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            ({item.percent.toFixed(1)}%)
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                  {mostTracked.length === 0 && (
+                    <Typography variant="body2" color="text.secondary">
+                      No activities tracked yet.
+                    </Typography>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Charts */}
