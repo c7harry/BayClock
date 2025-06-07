@@ -18,7 +18,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import EntryCard from "../components/EntryCard";
+import EntryCard, { EntryCardGroup } from "../components/EntryCard";
 
 export default function TimeTracker() {
   // Dark/Light mode with Tailwind
@@ -239,6 +239,13 @@ export default function TimeTracker() {
     setEditOpen(false);
     setEditEntry(null);
   };
+
+  // Group entries by date
+  const grouped = entries.reduce((acc, entry) => {
+    acc[entry.date] = acc[entry.date] || [];
+    acc[entry.date].push(entry);
+    return acc;
+  }, {});
 
   return (
     <ThemeProvider theme={theme}>
@@ -463,22 +470,30 @@ export default function TimeTracker() {
                   </Typography>
                 ) : (
                   <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-                    {entries.slice(0, 5).map((entry) => (
-                      <motion.li
-                        key={entry.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <EntryCard
-                          entry={entry}
-                          mode={mode}
-                          onEdit={handleEditOpen}
-                          onDelete={handleDeleteEntry}
-                          showActions
-                        />
-                      </motion.li>
-                    ))}
+                    {Object.entries(grouped)
+                      .sort((a, b) => b[0].localeCompare(a[0])) // newest date first
+                      .slice(0, 5)
+                      .map(([date, group]) =>
+                        group.length > 1 ? (
+                          <EntryCardGroup
+                            key={date}
+                            entries={group}
+                            mode={mode}
+                            onEdit={handleEditOpen}
+                            onDelete={handleDeleteEntry}
+                            showActions
+                          />
+                        ) : (
+                          <EntryCard
+                            key={group[0].id}
+                            entry={group[0]}
+                            mode={mode}
+                            onEdit={handleEditOpen}
+                            onDelete={handleDeleteEntry}
+                            showActions
+                          />
+                        )
+                      )}
                   </Box>
                 )}
               </CardContent>

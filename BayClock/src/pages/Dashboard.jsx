@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, Box } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion } from "framer-motion";
 import { FaHome } from "react-icons/fa";
-import EntryCard from "../components/EntryCard";
+import EntryCard, { EntryCardGroup } from "../components/EntryCard";
 
 export default function Dashboard() {
   // Dark/Light mode with Tailwind
@@ -106,6 +106,13 @@ export default function Dashboard() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  // Group entries by date
+  const grouped = entries.reduce((acc, entry) => {
+    acc[entry.date] = acc[entry.date] || [];
+    acc[entry.date].push(entry);
+    return acc;
+  }, {});
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -194,14 +201,25 @@ export default function Dashboard() {
                   </Typography>
                 ) : (
                   <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-                    {entries.slice(0, 5).map((entry) => (
-                      <EntryCard
-                        key={entry.id}
-                        entry={entry}
-                        mode={mode}
-                        //The difference between Time tracker is edit and delete elements aren't passed, might change this later
-                      />
-                    ))}
+                    {Object.entries(grouped)
+                      .sort((a, b) => b[0].localeCompare(a[0])) // newest date first
+                      .slice(0, 5)
+                      .map(([date, group]) =>
+                        group.length > 1 ? (
+                          <EntryCardGroup
+                            key={date}
+                            entries={group}
+                            mode={mode}
+                            //The difference between Time tracker is edit and delete elements aren't passed, might change this later
+                          />
+                        ) : (
+                          <EntryCard
+                            key={group[0].id}
+                            entry={group[0]}
+                            mode={mode}
+                          />
+                        )
+                      )}
                   </Box>
                 )}
               </CardContent>
