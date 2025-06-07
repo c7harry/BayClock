@@ -201,22 +201,27 @@ export function EntryCardGroup({
             <Box sx={{ flex: 1, minWidth: 0 }}>
               {/* Task description and project on the same row */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
-                <Typography
-                  variant="subtitle1"
-                  fontWeight={600}
-                  color="text.primary"
-                  sx={{
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    fontSize: 17,
-                    mb: 0.2,
-                    minWidth: 0,
-                    flexGrow: 1,
-                  }}
-                >
-                  {entry.description}
-                </Typography>
+                <Tooltip title={entry.description} arrow>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    color="text.primary"
+                    sx={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 17,
+                      mb: 0.2,
+                      minWidth: 0,
+                      flexGrow: 1,
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {entry.description}
+                  </Typography>
+                </Tooltip>
                 <Box
                   sx={{
                     minWidth: 100,
@@ -443,22 +448,27 @@ export default function EntryCard({
             <Box sx={{ flex: 1, minWidth: 0 }}>
               {/* Task description and project on the same row */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0 }}>
-                <Typography
-                  variant="subtitle1"
-                  fontWeight={600}
-                  color="text.primary"
-                  sx={{
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    fontSize: 17,
-                    mb: 0.2,
-                    minWidth: 0,
-                    flexGrow: 1,
-                  }}
-                >
-                  {entry.description}
-                </Typography>
+                <Tooltip title={entry.description} arrow>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    color="text.primary"
+                    sx={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      fontSize: 17,
+                      mb: 0.2,
+                      minWidth: 0,
+                      flexGrow: 1,
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {entry.description}
+                  </Typography>
+                </Tooltip>
                 <Box
                   sx={{
                     minWidth: 100,
