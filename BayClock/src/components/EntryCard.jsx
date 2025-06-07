@@ -7,6 +7,15 @@ import { motion } from "framer-motion";
 // Helper to format date as "Wed, Jun 4"
 function formatEntryDate(dateStr) {
   if (!dateStr) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+  }
   const date = new Date(dateStr);
   if (isNaN(date)) return dateStr;
   return date.toLocaleDateString("en-US", {
