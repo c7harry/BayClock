@@ -28,14 +28,14 @@ function sumDurations(durations) {
       if (match[3]) totalSeconds += parseInt(match[3]);
     }
   });
-  // Format back to "Xh Ym Zs"
+  // Always show "Xh Ym Zs"
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
   let out = [];
   if (h) out.push(`${h}h`);
   if (m) out.push(`${m}m`);
-  if (s && !h && !m) out.push(`${s}s`);
+  out.push(`${s}s`); // Always show seconds, even if 0
   return out.join(" ") || "0s";
 }
 
@@ -333,7 +333,7 @@ export default function EntryCard({
               color="warning.main"
               sx={{ fontSize: 13, fontWeight: 700 }}
             >
-              Total: {entry.duration}
+              Total: {sumDurations([entry.duration])}
             </Typography>
           </Box>
         )}
