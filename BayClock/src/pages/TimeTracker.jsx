@@ -148,10 +148,13 @@ export default function TimeTracker() {
     const updated = [newEntry, ...entries];
     setEntries(updated);
     localStorage.setItem("entries", JSON.stringify(updated));
+    // Reset all user entry inputs after adding the task
     setDescription("");
     setProject("");
-    setManualHours && setManualHours("");
-    setManualMins && setManualMins("");
+    setDate(new Date().toISOString().slice(0, 10));
+    setManualDuration("");
+    setManualStart("");
+    setManualEnd("");
   };
 
   // Manual entry handler (combine hours and mins)
@@ -174,8 +177,7 @@ export default function TimeTracker() {
     if (diffSec <= 0) return;
 
     addEntry(timerToDuration(diffSec), manualStart, manualEnd);
-    setManualStart("");
-    setManualEnd("");
+    // Inputs are already reset in addEntry
   };
 
   // Delete entry handler
