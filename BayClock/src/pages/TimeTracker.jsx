@@ -76,9 +76,9 @@ export default function TimeTracker() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [manualDuration, setManualDuration] = useState("");
 
-  // Manual entry state: separate hours and minutes
-  const [manualHours, setManualHours] = useState("");
-  const [manualMins, setManualMins] = useState("");
+  // Manual entry state: start and end time
+  const [manualStart, setManualStart] = useState("");
+  const [manualEnd, setManualEnd] = useState("");
 
   // Entries state (simulate localStorage)
   const [entries, setEntries] = useState(() => {
@@ -132,13 +132,26 @@ export default function TimeTracker() {
 
   // Manual entry handler (combine hours and mins)
   const handleManualAdd = () => {
-    const h = parseInt(manualHours, 10) || 0;
-    const m = parseInt(manualMins, 10) || 0;
-    if (h === 0 && m === 0) return;
-    let durationStr = "";
-    if (h > 0) durationStr += `${h}h `;
-    if (m > 0) durationStr += `${m}m`;
-    addEntry(durationStr.trim());
+    if (!manualStart || !manualEnd) return;
+    // Parse times as Date objects (today's date)
+    const [startH, startM] = manualStart.split(":").map(Number);
+    const [endH, endM] = manualEnd.split(":").map(Number);
+    const start = new Date();
+    start.setHours(startH, startM, 0, 0);
+    const end = new Date();
+    end.setHours(endH, endM, 0, 0);
+
+    // If end is before start, treat as next day
+    if (end < start) end.setDate(end.getDate() + 1);
+
+    const diffMs = end - start;
+    const diffSec = Math.floor(diffMs / 1000);
+
+    if (diffSec <= 0) return;
+
+    addEntry(timerToDuration(diffSec));
+    setManualStart("");
+    setManualEnd("");
   };
 
   // Delete entry handler
@@ -174,8 +187,8 @@ export default function TimeTracker() {
   const [editDescription, setEditDescription] = useState("");
   const [editProject, setEditProject] = useState("");
   const [editDate, setEditDate] = useState("");
-  const [editHours, setEditHours] = useState("");
-  const [editMins, setEditMins] = useState("");
+  const [editStart, setEditStart] = useState(""); 
+  const [editEnd, setEditEnd] = useState("");   
 
   // Open edit dialog
   const handleEditOpen = (entry) => {
@@ -183,21 +196,31 @@ export default function TimeTracker() {
     setEditDescription(entry.description);
     setEditProject(entry.project);
     setEditDate(entry.date);
-    // Parse duration string like "1h 23m"
-    const hMatch = entry.duration.match(/(\d+)h/);
-    const mMatch = entry.duration.match(/(\d+)m/);
-    setEditHours(hMatch ? hMatch[1] : "");
-    setEditMins(mMatch ? mMatch[1] : "");
+
+    // Try to extract start/end time from entry (if you store them), else leave blank
+    // If not stored, try to estimate from duration (not precise, so leave blank)
+    setEditStart(entry.start || "");
+    setEditEnd(entry.end || "");
     setEditOpen(true);
   };
 
   // Save edit
   const handleEditSave = () => {
-    if (!editDescription || !editProject || !editDate) return;
-    let durationStr = "";
-    if (parseInt(editHours, 10) > 0) durationStr += `${parseInt(editHours, 10)}h `;
-    if (parseInt(editMins, 10) > 0) durationStr += `${parseInt(editMins, 10)}m`;
-    durationStr = durationStr.trim() || "0m";
+    if (!editDescription || !editProject || !editDate || !editStart || !editEnd) return;
+
+    // Calculate duration from start/end time
+    const [startH, startM] = editStart.split(":").map(Number);
+    const [endH, endM] = editEnd.split(":").map(Number);
+    const start = new Date();
+    start.setHours(startH, startM, 0, 0);
+    const end = new Date();
+    end.setHours(endH, endM, 0, 0);
+    if (end < start) end.setDate(end.getDate() + 1);
+    const diffMs = end - start;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec <= 0) return;
+    const durationStr = timerToDuration(diffSec);
+
     const updated = entries.map((entry) =>
       entry.id === editEntry.id
         ? {
@@ -206,6 +229,8 @@ export default function TimeTracker() {
             project: editProject,
             date: editDate,
             duration: durationStr,
+            start: editStart,
+            end: editEnd,
           }
         : entry
     );
@@ -382,24 +407,22 @@ export default function TimeTracker() {
                   {/* Manual Duration Entry: Separate Hours and Minutes */}
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, flex: 1 }}>
                     <TextField
-                      label="Hours"
-                      type="number"
-                      inputProps={{ min: 0 }}
-                      value={manualHours}
-                      onChange={(e) => setManualHours(e.target.value.replace(/[^0-9]/g, ""))}
-                      sx={{ width: 90, bgcolor: "background.default", borderRadius: 2 }}
+                      label="Start Time"
+                      type="time"
+                      value={manualStart}
+                      onChange={(e) => setManualStart(e.target.value)}
+                      sx={{ width: 130, bgcolor: "background.default", borderRadius: 2 }}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ step: 60 }}
                     />
                     <TextField
-                      label="Minutes"
-                      type="number"
-                      inputProps={{ min: 0, max: 59 }}
-                      value={manualMins}
-                      onChange={(e) => {
-                        let val = e.target.value.replace(/[^0-9]/g, "");
-                        if (parseInt(val, 10) > 59) val = "59";
-                        setManualMins(val);
-                      }}
-                      sx={{ width: 110, bgcolor: "background.default", borderRadius: 2 }}
+                      label="End Time"
+                      type="time"
+                      value={manualEnd}
+                      onChange={(e) => setManualEnd(e.target.value)}
+                      sx={{ width: 130, bgcolor: "background.default", borderRadius: 2 }}
+                      InputLabelProps={{ shrink: true }}
+                      inputProps={{ step: 60 }}
                     />
                     <Button
                       variant="contained"
@@ -407,7 +430,8 @@ export default function TimeTracker() {
                       sx={{ borderRadius: 2, fontWeight: 600, px: 3, py: 1.5 }}
                       onClick={handleManualAdd}
                       disabled={
-                        (!manualHours && !manualMins) ||
+                        !manualStart ||
+                        !manualEnd ||
                         !description ||
                         !project
                       }
@@ -496,24 +520,22 @@ export default function TimeTracker() {
             />
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
-                label="Hours"
-                type="number"
-                inputProps={{ min: 0 }}
-                value={editHours}
-                onChange={(e) => setEditHours(e.target.value.replace(/[^0-9]/g, ""))}
-                sx={{ width: 90 }}
+                label="Start Time"
+                type="time"
+                value={editStart}
+                onChange={(e) => setEditStart(e.target.value)}
+                sx={{ width: 120 }}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 60 }}
               />
               <TextField
-                label="Minutes"
-                type="number"
-                inputProps={{ min: 0, max: 59 }}
-                value={editMins}
-                onChange={(e) => {
-                  let val = e.target.value.replace(/[^0-9]/g, "");
-                  if (parseInt(val, 10) > 59) val = "59";
-                  setEditMins(val);
-                }}
-                sx={{ width: 110 }}
+                label="End Time"
+                type="time"
+                value={editEnd}
+                onChange={(e) => setEditEnd(e.target.value)}
+                sx={{ width: 120 }}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 60 }}
               />
             </Box>
           </DialogContent>
@@ -525,7 +547,7 @@ export default function TimeTracker() {
               onClick={handleEditSave}
               variant="contained"
               color="primary"
-              disabled={!editDescription || !editProject || !editDate}
+              disabled={!editDescription || !editProject || !editDate || !editStart || !editEnd}
             >
               Save
             </Button>

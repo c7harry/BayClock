@@ -2,6 +2,17 @@ import { Card, Typography, Box, Avatar, Stack, IconButton, Tooltip } from "@mui/
 import DeleteIcon from "@mui/icons-material/Delete";
 import { motion } from "framer-motion";
 
+function formatEntryDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date)) return dateStr;
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function EntryCard({
   entry,
   mode = "light",
@@ -91,7 +102,7 @@ export default function EntryCard({
                 color="text.disabled"
                 sx={{ fontSize: 12, ml: 0.5 }}
               >
-                {entry.date}
+                {formatEntryDate(entry.date)}
               </Typography>
             </Stack>
           </Box>
