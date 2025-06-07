@@ -347,7 +347,7 @@ export default function Dashboard() {
                           },
                           datalabels: {
                             anchor: "end",
-                            align: "end",
+                            align: "top", 
                             color: "#fb923c",
                             font: { weight: "bold", size: 14 },
                             formatter: (value) => {
@@ -359,6 +359,14 @@ export default function Dashboard() {
                               return `${pad(h)}:${pad(m)}:${pad(s)}`;
                             },
                             display: true,
+                            clamp: true,
+                            clip: false,
+                            offset: 8,
+                          },
+                        },
+                        layout: {
+                          padding: {
+                            top: 32,
                           },
                         },
                         scales: {
