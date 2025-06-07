@@ -191,9 +191,19 @@ export default function Dashboard() {
           flexDirection: "column",
           alignItems: "center",
           transition: "background-color 0.3s",
+          width: "100vw", 
+          overflowX: "auto",
         }}
       >
-        <Box sx={{ width: "100%", maxWidth: 700, display: "flex", flexDirection: "column", gap: 4 }}>
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: { xs: 700, md: 1600 },
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           {/* Header */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible">
             <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
@@ -249,7 +259,16 @@ export default function Dashboard() {
 
           {/* Charts */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 4, justifyContent: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: 4,
+                justifyContent: "center",
+                alignItems: "stretch",
+                width: "100%", 
+              }}
+            >
               <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 0 }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight={700} color="text.secondary" mb={2} sx={{ textAlign: "center" }}>
