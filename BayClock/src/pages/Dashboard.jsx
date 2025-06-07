@@ -149,16 +149,40 @@ export default function Dashboard() {
       .reduce((sum, e) => sum + durationToSeconds(e.duration) / 3600, 0)
   );
 
+  // Pie/Bar chart colors (use same for both)
+  const pieColors = [
+    "#fb923c", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#facc15"
+  ];
+
+  // Get all unique projects from entries in the last 7 days
+  const projects = Array.from(
+    new Set(
+      entries
+        .filter(e => last7Days.includes(e.date))
+        .map(e => e.project)
+        .filter(Boolean)
+    )
+  );
+
+  // Assign a color for each project
+  const projectColors = projects.map((_, i) => pieColors[i % pieColors.length]);
+
+  // Build datasets for stacked bar chart (each project is a dataset)
+  const barDatasets = projects.map((project, i) => ({
+    label: project,
+    data: last7Days.map(date =>
+      entries
+        .filter(e => e.date === date && e.project === project)
+        .reduce((sum, e) => sum + durationToSeconds(e.duration) / 3600, 0)
+    ),
+    backgroundColor: projectColors[i],
+    stack: "stack1",
+    borderRadius: 8,
+  }));
+
   const barChartData = {
     labels: barLabels,
-    datasets: [
-      {
-        label: "Hours Worked",
-        data: barData,
-        backgroundColor: "#fb923c",
-        borderRadius: 8,
-      },
-    ],
+    datasets: barDatasets,
   };
 
   // Pie Chart: Hours by Project (all time)
@@ -169,10 +193,6 @@ export default function Dashboard() {
   });
   const pieLabels = Object.keys(projectTotals);
   const pieData = Object.values(projectTotals);
-
-  const pieColors = [
-    "#fb923c", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#f87171", "#facc15"
-  ];
 
   const pieChartData = {
     labels: pieLabels,
@@ -321,44 +341,63 @@ export default function Dashboard() {
                           legend: { display: false },
                           tooltip: {
                             enabled: true,
+                            mode: "index",
+                            intersect: false,
                             callbacks: {
                               title: function(context) {
-                                // context[0].dataIndex gives the bar index
                                 const idx = context[0].dataIndex;
                                 const dateStr = last7Days[idx];
-                                const date = new Date(dateStr);
-                                return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+                                const date = parseLocalDateString(dateStr);
+                                // Calculate total for this day
+                                const values = context[0].chart.data.datasets.map(ds => ds.data[idx]);
+                                const total = values.reduce((a, b) => a + b, 0);
+                                const totalSeconds = Math.round(total * 3600);
+                                const h = Math.floor(totalSeconds / 3600);
+                                const m = Math.floor((totalSeconds % 3600) / 60);
+                                const s = totalSeconds % 60;
+                                const pad = (n) => n.toString().padStart(2, "0");
+                                // Show date and total on the same row
+                                return `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} — Total: ${pad(h)}:${pad(m)}:${pad(s)}`;
                               },
                               label: function(context) {
                                 const value = context.raw || 0;
+                                if (!value) return null;
                                 const totalSeconds = Math.round(value * 3600);
                                 const h = Math.floor(totalSeconds / 3600);
                                 const m = Math.floor((totalSeconds % 3600) / 60);
                                 const s = totalSeconds % 60;
                                 const pad = (n) => n.toString().padStart(2, "0");
-                                // Each bar is 100%
-                                return [
-                                  `${barLabels[context.dataIndex]}`,
-                                  `${pad(h)}:${pad(m)}:${pad(s)}`,
-                                  `(100.0%)`
-                                ];
+                                const idx = context.dataIndex;
+                                const values = context.chart.data.datasets.map(ds => ds.data[idx]);
+                                const total = values.reduce((a, b) => a + b, 0);
+                                const percent = total > 0 ? (value / total) * 100 : 0;
+                                return `${context.dataset.label}: ${pad(h)}:${pad(m)}:${pad(s)} (${percent.toFixed(1)}%)`;
+                              },
+                              afterBody: function() {
+                                return [];
                               }
                             }
                           },
                           datalabels: {
                             anchor: "end",
-                            align: "top", 
+                            align: "top",
                             color: "#fb923c",
                             font: { weight: "bold", size: 14 },
-                            formatter: (value) => {
-                              const totalSeconds = Math.round(value * 3600);
+                            formatter: (value, context) => {
+                              // Only show the total for the day at the top of the bar (once per bar)
+                              if (context.datasetIndex !== 0) return "";
+                              const idx = context.dataIndex;
+                              const values = context.chart.data.datasets.map(ds => ds.data[idx]);
+                              const total = values.reduce((a, b) => a + b, 0);
+                              if (!total) return "";
+                              const totalSeconds = Math.round(total * 3600);
                               const h = Math.floor(totalSeconds / 3600);
                               const m = Math.floor((totalSeconds % 3600) / 60);
                               const s = totalSeconds % 60;
                               const pad = (n) => n.toString().padStart(2, "0");
                               return `${pad(h)}:${pad(m)}:${pad(s)}`;
                             },
-                            display: true,
+                            display: (context) => context.datasetIndex === 0, // Only display on the bottom segment so it appears at the top of the stack
                             clamp: true,
                             clip: false,
                             offset: 8,
@@ -370,7 +409,9 @@ export default function Dashboard() {
                           },
                         },
                         scales: {
+                          x: { stacked: true },
                           y: {
+                            stacked: true,
                             beginAtZero: true,
                             ticks: { stepSize: 1 },
                             title: { display: true, text: "Hours" },
@@ -489,8 +530,9 @@ export default function Dashboard() {
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: { xs: "center", md: "left" } }}>
                     Project Breakdown
                   </Typography>
-                  {pieLabels.map((project, idx) => {
-                    const hours = pieData[idx];
+                  {projects.map((project, idx) => {
+                    // Use the same color and total as in the pie chart
+                    const hours = projectTotals[project] || 0;
                     const percent = pieData.reduce((a, b) => a + b, 0) > 0
                       ? (hours / pieData.reduce((a, b) => a + b, 0)) * 100
                       : 0;
