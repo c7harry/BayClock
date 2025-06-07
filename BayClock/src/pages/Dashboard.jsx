@@ -178,6 +178,14 @@ export default function Dashboard() {
     return acc;
   }, {});
 
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -196,6 +204,7 @@ export default function Dashboard() {
         }}
       >
         <Box
+          key={windowWidth} 
           sx={{
             width: "100%",
             maxWidth: { xs: 700, md: 1500 },
