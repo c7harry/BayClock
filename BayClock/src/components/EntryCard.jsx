@@ -144,36 +144,50 @@ export function EntryCardGroup({
               </Avatar>
             </Tooltip>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={600}
-                color="text.primary"
-                sx={{
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  fontSize: 17,
-                  mb: 0.2,
-                }}
-              >
-                {entry.description}
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
+              {/* Task description and project on the same row */}
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
                 <Typography
-                  variant="caption"
+                  variant="subtitle1"
+                  fontWeight={600}
+                  color="text.primary"
                   sx={{
-                    bgcolor: "warning.light",
-                    color: "warning.dark",
-                    borderRadius: 2,
-                    px: 1.2,
-                    py: 0.2,
-                    fontWeight: 500,
-                    fontSize: 12,
-                    letterSpacing: 0.2,
+                    textOverflow: "ellipsis",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    fontSize: 17,
+                    mb: 0.2,
+                    minWidth: 0,
+                    flexGrow: 1,
                   }}
                 >
-                  {entry.project}
+                  {entry.description}
                 </Typography>
+                <Box
+                  sx={{
+                    minWidth: 100, 
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      bgcolor: "warning.light",
+                      color: "warning.dark",
+                      borderRadius: 2,
+                      px: 1.2,
+                      py: 0.2,
+                      fontWeight: 500,
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                      textAlign: "center",
+                      display: "inline-block",
+                      width: "100%",
+                    }}
+                  >
+                    • {entry.project}
+                  </Typography>
+                </Box>
               </Stack>
             </Box>
           </Stack>
@@ -189,6 +203,7 @@ export function EntryCardGroup({
                 onDelete={onDelete}
                 showActions={showActions}
                 motionProps={{ initial: false, animate: true }}
+                hideDate
               />
             ))}
           </Box>
@@ -198,7 +213,7 @@ export function EntryCardGroup({
   );
 }
 
-// Single entry card (date row on top)
+// Single entry card (date row on top, optionally hidden)
 export default function EntryCard({
   entry,
   mode = "light",
@@ -206,6 +221,7 @@ export default function EntryCard({
   onDelete,
   showActions = false,
   motionProps = {},
+  hideDate = false,
 }) {
   return (
     <motion.li
@@ -233,33 +249,35 @@ export default function EntryCard({
         }}
       >
         {/* Date and duration row on top */}
-        <Box
-          sx={{
-            px: { xs: 1.5, sm: 3 },
-            pt: 1.2,
-            pb: 0.5,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-          }}
-        >
-          <Typography
-            variant="caption"
-            color="text.disabled"
-            sx={{ fontSize: 13, fontWeight: 600 }}
+        {!hideDate && (
+          <Box
+            sx={{
+              px: { xs: 1.5, sm: 3 },
+              pt: 1.2,
+              pb: 0.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
           >
-            {formatEntryDate(entry.date)}
-          </Typography>
-          <Typography
-            variant="caption"
-            color="warning.main"
-            sx={{ fontSize: 13, fontWeight: 700 }}
-          >
-            Total: {entry.duration}
-          </Typography>
-        </Box>
-        <Divider />
+            <Typography
+              variant="caption"
+              color="text.disabled"
+              sx={{ fontSize: 13, fontWeight: 600 }}
+            >
+              {formatEntryDate(entry.date)}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="warning.main"
+              sx={{ fontSize: 13, fontWeight: 700 }}
+            >
+              Total: {entry.duration}
+            </Typography>
+          </Box>
+        )}
+        {!hideDate && <Divider />}
         <Box
           sx={{
             display: "flex",
@@ -274,36 +292,50 @@ export default function EntryCard({
           <Stack direction="row" alignItems="center" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
             {/* Avatar removed */}
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={600}
-                color="text.primary"
-                sx={{
-                  textOverflow: "ellipsis",
-                  overflow: "hidden",
-                  whiteSpace: "nowrap",
-                  fontSize: 17,
-                  mb: 0.2,
-                }}
-              >
-                {entry.description}
-              </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
+              {/* Task description and project on the same row */}
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
                 <Typography
-                  variant="caption"
+                  variant="subtitle1"
+                  fontWeight={600}
+                  color="text.primary"
                   sx={{
-                    bgcolor: "warning.light",
-                    color: "warning.dark",
-                    borderRadius: 2,
-                    px: 1.2,
-                    py: 0.2,
-                    fontWeight: 500,
-                    fontSize: 12,
-                    letterSpacing: 0.2,
+                    textOverflow: "ellipsis",
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    fontSize: 17,
+                    mb: 0.2,
+                    minWidth: 0,
+                    flexGrow: 1,
                   }}
                 >
-                  {entry.project}
+                  {entry.description}
                 </Typography>
+                <Box
+                  sx={{
+                    minWidth: 100, 
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      bgcolor: "warning.light",
+                      color: "warning.dark",
+                      borderRadius: 2,
+                      px: 1.2,
+                      py: 0.2,
+                      fontWeight: 500,
+                      fontSize: 13,
+                      letterSpacing: 0.2,
+                      textAlign: "center",
+                      display: "inline-block",
+                      width: "100%",
+                    }}
+                  >
+                    • {entry.project}
+                  </Typography>
+                </Box>
               </Stack>
             </Box>
           </Stack>
