@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Card, Typography, Box, Stack, IconButton, Tooltip, Collapse, Avatar, Divider } from "@mui/material";
+import { Card, Typography, Box, Stack, IconButton, Tooltip, Collapse, Avatar, Divider, Menu, MenuItem } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { motion } from "framer-motion";
 
 // Helper to format date as "Wed, Jun 4"
@@ -92,6 +93,11 @@ export function EntryCardGroup({
   motionProps = {},
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null); // For menu
+  const menuOpen = Boolean(anchorEl);
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
+
   const entry = entries[0];
 
   // Get time range for minimized and expanded
@@ -226,8 +232,8 @@ export function EntryCardGroup({
                     • {entry.project}
                   </Typography>
                 </Box>
-                {/* Time range display */}
-                <Box sx={{ minWidth: 120, ml: 2 }}>
+                {/* Time range display and vertical menu */}
+                <Box sx={{ minWidth: 120, ml: 2, display: "flex", alignItems: "center" }}>
                   <Typography
                     variant="caption"
                     color="text.secondary"
@@ -242,6 +248,53 @@ export function EntryCardGroup({
                           : "")
                     }
                   </Typography>
+                  {showActions && onDelete && (
+                    <>
+                      <IconButton
+                        aria-label="more"
+                        aria-controls={menuOpen ? "entry-group-menu" : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={menuOpen ? "true" : undefined}
+                        onClick={handleMenuOpen}
+                        sx={{
+                          ml: 1,
+                          bgcolor: "background.paper",
+                          borderRadius: 2,
+                          boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
+                          "&:hover": { bgcolor: "grey.100" },
+                          p: 0.7,
+                        }}
+                        size="small"
+                      >
+                        <MoreVertIcon />
+                      </IconButton>
+                      <Menu
+                        id="entry-group-menu"
+                        anchorEl={anchorEl}
+                        open={menuOpen}
+                        onClose={handleMenuClose}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "right",
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "right",
+                        }}
+                      >
+                        <MenuItem
+                          onClick={() => {
+                            handleMenuClose();
+                            // Delete all entries in this group (by date)
+                            entries.forEach((e) => onDelete(e.id));
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                          Delete All
+                        </MenuItem>
+                      </Menu>
+                    </>
+                  )}
                 </Box>
               </Stack>
             </Box>
@@ -282,6 +335,12 @@ export default function EntryCard({
 }) {
   // Always show time range for single entries
   const displayTimeRange = entry.start && entry.end;
+
+  // State for menu
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
     <motion.li
@@ -410,50 +469,66 @@ export default function EntryCard({
               </Stack>
             </Box>
           </Stack>
-          <Stack alignItems="flex-end" spacing={0.5} sx={{ minWidth: 90 }}>
-            {showActions && (
-              <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
+          {/* 3 vertical dots menu for actions */}
+          {showActions && (
+            <>
+              <IconButton
+                aria-label="more"
+                aria-controls={menuOpen ? "entry-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={menuOpen ? "true" : undefined}
+                onClick={handleMenuOpen}
+                sx={{
+                  ml: 1,
+                  bgcolor: "background.paper",
+                  borderRadius: 2,
+                  boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
+                  "&:hover": { bgcolor: "grey.100" },
+                  p: 0.7,
+                }}
+                size="small"
+              >
+                <MoreVertIcon />
+              </IconButton>
+              <Menu
+                id="entry-menu"
+                anchorEl={anchorEl}
+                open={menuOpen}
+                onClose={handleMenuClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "right",
+                }}
+              >
                 {onEdit && (
-                  <Tooltip title="Edit" arrow>
-                    <IconButton
-                      aria-label="edit"
-                      color="primary"
-                      size="small"
-                      onClick={() => onEdit(entry)}
-                      sx={{
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                        boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
-                        "&:hover": { bgcolor: "primary.light" },
-                        p: 0.7,
-                      }}
-                    >
-                      <span className="material-icons" style={{ fontSize: 18 }}>edit</span>
-                    </IconButton>
-                  </Tooltip>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      onEdit(entry);
+                    }}
+                  >
+                    <span className="material-icons" style={{ fontSize: 18, marginRight: 8 }}></span>
+                    Edit
+                  </MenuItem>
                 )}
                 {onDelete && (
-                  <Tooltip title="Delete" arrow>
-                    <IconButton
-                      aria-label="delete"
-                      color="error"
-                      size="small"
-                      onClick={() => onDelete(entry.id)}
-                      sx={{
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                        boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
-                        "&:hover": { bgcolor: "error.light" },
-                        p: 0.7,
-                      }}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      onDelete(entry.id);
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                    Delete
+                  </MenuItem>
                 )}
-              </Stack>
-            )}
-          </Stack>
+              </Menu>
+            </>
+          )}
         </Box>
       </Card>
     </motion.li>
