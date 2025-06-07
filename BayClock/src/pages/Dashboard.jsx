@@ -287,10 +287,18 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          {/* Stats */}
+          {/* Stats and Most Tracked Activities */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Box sx={{ display: "flex", gap: 3, flexDirection: { xs: "column", sm: "row" } }}>
-              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 3,
+                flexDirection: { xs: "column", md: "row" },
+                width: "100%",
+              }}
+            >
+              {/* Hours Today */}
+              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 220 }}>
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="subtitle2" color="text.secondary" mb={1}>
                     Hours Today
@@ -300,7 +308,8 @@ export default function Dashboard() {
                   </Typography>
                 </CardContent>
               </Card>
-              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper" }}>
+              {/* Hours This Week */}
+              <Card elevation={4} sx={{ flex: 1, borderRadius: 5, bgcolor: "background.paper", minWidth: 220 }}>
                 <CardContent sx={{ textAlign: "center" }}>
                   <Typography variant="subtitle2" color="text.secondary" mb={1}>
                     Hours This Week
@@ -310,90 +319,87 @@ export default function Dashboard() {
                   </Typography>
                 </CardContent>
               </Card>
-            </Box>
-          </motion.div>
-
-          {/* Most Tracked Activities */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.15 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", mb: 3 }}>
-              <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  <Typography variant="h6" fontWeight={700} color="text.secondary">
-                    Most Tracked Activities
-                  </Typography>
-                  <Box>
-                    <button
-                      onClick={() => setShowTop10(true)}
-                      style={{
-                        marginRight: 8,
-                        padding: "4px 12px",
-                        borderRadius: 6,
-                        border: "none",
-                        background: showTop10 ? "#fb923c" : "#e5e7eb",
-                        color: showTop10 ? "#fff" : "#18181b",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
-                    >
-                      Top 10
-                    </button>
-                    <button
-                      onClick={() => setShowTop10(false)}
-                      style={{
-                        padding: "4px 12px",
-                        borderRadius: 6,
-                        border: "none",
-                        background: !showTop10 ? "#fb923c" : "#e5e7eb",
-                        color: !showTop10 ? "#fff" : "#18181b",
-                        fontWeight: 600,
-                        cursor: "pointer"
-                      }}
-                    >
-                      All
-                    </button>
-                  </Box>
-                </Box>
-                <Box>
-                  {mostTracked
-                    .slice(0, showTop10 ? 10 : mostTracked.length)
-                    .map((item, idx) => {
-                      const totalSeconds = Math.round(item.hours * 3600);
-                      const h = Math.floor(totalSeconds / 3600);
-                      const m = Math.floor((totalSeconds % 3600) / 60);
-                      const s = totalSeconds % 60;
-                      const pad = (n) => n.toString().padStart(2, "0");
-                      return (
-                        <Box key={item.project} sx={{ display: "flex", alignItems: "center", mb: 1.2 }}>
-                          <Box
-                            sx={{
-                              width: 14,
-                              height: 14,
-                              borderRadius: "50%",
-                              bgcolor: pieColors[idx % pieColors.length],
-                              mr: 1.2,
-                              border: "1.5px solid #e5e7eb",
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
-                            {item.project}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-                            {`${pad(h)}:${pad(m)}:${pad(s)}`}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            ({item.percent.toFixed(1)}%)
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  {mostTracked.length === 0 && (
-                    <Typography variant="body2" color="text.secondary">
-                      No activities tracked yet.
+              {/* Most Tracked Activities */}
+              <Card elevation={4} sx={{ flex: 2, borderRadius: 5, bgcolor: "background.paper", minWidth: 320 }}>
+                <CardContent>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Typography variant="h6" fontWeight={700} color="text.secondary">
+                      Most Tracked Activities
                     </Typography>
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
+                    <Box>
+                      <button
+                        onClick={() => setShowTop10(true)}
+                        style={{
+                          marginRight: 8,
+                          padding: "4px 12px",
+                          borderRadius: 6,
+                          border: "none",
+                          background: showTop10 ? "#fb923c" : "#e5e7eb",
+                          color: showTop10 ? "#fff" : "#18181b",
+                          fontWeight: 600,
+                          cursor: "pointer"
+                        }}
+                      >
+                        Top 10
+                      </button>
+                      <button
+                        onClick={() => setShowTop10(false)}
+                        style={{
+                          padding: "4px 12px",
+                          borderRadius: 6,
+                          border: "none",
+                          background: !showTop10 ? "#fb923c" : "#e5e7eb",
+                          color: !showTop10 ? "#fff" : "#18181b",
+                          fontWeight: 600,
+                          cursor: "pointer"
+                        }}
+                      >
+                        All
+                      </button>
+                    </Box>
+                  </Box>
+                  <Box>
+                    {mostTracked
+                      .slice(0, showTop10 ? 10 : mostTracked.length)
+                      .map((item, idx) => {
+                        const totalSeconds = Math.round(item.hours * 3600);
+                        const h = Math.floor(totalSeconds / 3600);
+                        const m = Math.floor((totalSeconds % 3600) / 60);
+                        const s = totalSeconds % 60;
+                        const pad = (n) => n.toString().padStart(2, "0");
+                        return (
+                          <Box key={item.project} sx={{ display: "flex", alignItems: "center", mb: 1.2 }}>
+                            <Box
+                              sx={{
+                                width: 14,
+                                height: 14,
+                                borderRadius: "50%",
+                                bgcolor: pieColors[idx % pieColors.length],
+                                mr: 1.2,
+                                border: "1.5px solid #e5e7eb",
+                              }}
+                            />
+                            <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
+                              {item.project}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
+                              {`${pad(h)}:${pad(m)}:${pad(s)}`}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              ({item.percent.toFixed(1)}%)
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    {mostTracked.length === 0 && (
+                      <Typography variant="body2" color="text.secondary">
+                        No activities tracked yet.
+                      </Typography>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
           </motion.div>
 
           {/* Charts */}
