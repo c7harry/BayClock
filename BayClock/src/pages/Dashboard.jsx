@@ -385,9 +385,20 @@ export default function Dashboard() {
                             font: { weight: "bold", size: 14 },
                             formatter: (value, context) => {
                               // Only show the total for the day at the top of the bar (once per bar)
-                              if (context.datasetIndex !== 0) return "";
                               const idx = context.dataIndex;
-                              const values = context.chart.data.datasets.map(ds => ds.data[idx]);
+                              const datasets = context.chart.data.datasets;
+                              // Find the last dataset index with a value for this bar
+                              let lastDatasetWithValue = -1;
+                              for (let i = datasets.length - 1; i >= 0; i--) {
+                                if (datasets[i].data[idx] > 0) {
+                                  lastDatasetWithValue = i;
+                                  break;
+                                }
+                              }
+                              // Only show label on the top segment
+                              if (context.datasetIndex !== lastDatasetWithValue) return "";
+                              // Sum all project values for this day
+                              const values = datasets.map(ds => ds.data[idx]);
                               const total = values.reduce((a, b) => a + b, 0);
                               if (!total) return "";
                               const totalSeconds = Math.round(total * 3600);
@@ -397,7 +408,7 @@ export default function Dashboard() {
                               const pad = (n) => n.toString().padStart(2, "0");
                               return `${pad(h)}:${pad(m)}:${pad(s)}`;
                             },
-                            display: (context) => context.datasetIndex === 0, // Only display on the bottom segment so it appears at the top of the stack
+                            display: true,
                             clamp: true,
                             clip: false,
                             offset: 8,
