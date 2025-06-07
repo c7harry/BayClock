@@ -189,9 +189,9 @@ export default function Dashboard() {
           px: 2,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "flex-start",
           transition: "background-color 0.3s",
-          width: "100vw", 
+          width: "100vw",
           overflowX: "auto",
         }}
       >
@@ -202,6 +202,7 @@ export default function Dashboard() {
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            ml: 7,
           }}
         >
           {/* Header */}
