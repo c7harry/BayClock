@@ -64,9 +64,28 @@ export default function AllEntries() {
   }, []);
 
   return (
-    <Box sx={{ p: 5, maxWidth: "1100px", mx: "auto" }}>
+    <Box
+      sx={{
+        p: { xs: 1, md: 5 },
+        width: "100%",
+        maxWidth: "1550px",
+        mx: "auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
       {/* Title Card */}
-      <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper", mb: 3 }}>
+      <Card
+        elevation={6}
+        sx={{
+          borderRadius: 5,
+          bgcolor: "background.paper",
+          mb: 3,
+          width: "100%",
+          maxWidth: "100%",
+        }}
+      >
         <CardContent
           sx={{
             display: "flex",
@@ -90,7 +109,15 @@ export default function AllEntries() {
         </CardContent>
       </Card>
       {/* Entries Table Card */}
-      <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+      <Card
+        elevation={4}
+        sx={{
+          borderRadius: 5,
+          bgcolor: "background.paper",
+          width: "100%",
+          maxWidth: "100%",
+        }}
+      >
         <CardContent sx={{ p: 0 }}>
           <TableContainer
             component={Paper}
@@ -101,17 +128,25 @@ export default function AllEntries() {
               overflowX: "auto",
             }}
           >
-            <Table stickyHeader size="small" aria-label="entries table">
+            <Table
+              stickyHeader
+              size="small"
+              aria-label="entries table"
+              sx={{
+                mx: "auto",
+                tableLayout: "fixed", 
+              }}
+            >
               <TableHead>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>User</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Start</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>End</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Duration</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200 }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Project</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>User</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Email</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Start</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>End</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Duration</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200, textAlign: "center" }}>Description</TableCell>
+                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Project</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -124,17 +159,17 @@ export default function AllEntries() {
                       transition: "background 0.2s",
                     }}
                   >
-                    <TableCell>{entry.profile?.full_name || entry.user_id}</TableCell>
-                    <TableCell sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <TableCell align="center">{entry.profile?.full_name || entry.user_id}</TableCell>
+                    <TableCell align="center" sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       <Tooltip title={entry.profile?.email || ""} arrow>
                         <span>{entry.profile?.email || ""}</span>
                       </Tooltip>
                     </TableCell>
-                    <TableCell>{entry.date}</TableCell>
-                    <TableCell>{entry.start}</TableCell>
-                    <TableCell>{entry.end}</TableCell>
-                    <TableCell>{entry.duration}</TableCell>
-                    <TableCell sx={{ maxWidth: 200, p: 0.5 }}>
+                    <TableCell align="center">{entry.date}</TableCell>
+                    <TableCell align="center">{entry.start}</TableCell>
+                    <TableCell align="center">{entry.end}</TableCell>
+                    <TableCell align="center">{entry.duration}</TableCell>
+                    <TableCell align="center" sx={{ maxWidth: 200, p: 0.5 }}>
                       <Tooltip title={entry.description || ""} arrow>
                         <Typography
                           variant="body2"
@@ -152,7 +187,7 @@ export default function AllEntries() {
                         </Typography>
                       </Tooltip>
                     </TableCell>
-                    <TableCell>
+                    <TableCell align="center">
                       <Chip
                         label={entry.projectName}
                         color="warning"

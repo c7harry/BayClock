@@ -237,7 +237,7 @@ export default function Projects() {
           py: { xs: 2, md: 4 },
           px: { xs: 0, sm: 1, md: 2 },
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "100%", // Allow full width
           boxSizing: "border-box",
           overflowX: "auto",
         }}
@@ -245,7 +245,7 @@ export default function Projects() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: "900px",
+            maxWidth: "1600px",
             mx: "auto",
             display: "flex",
             flexDirection: "column",
@@ -256,7 +256,15 @@ export default function Projects() {
         >
           {/* Header Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card
+              elevation={6}
+              sx={{
+                borderRadius: 5,
+                bgcolor: "background.paper",
+                width: "100%", 
+                maxWidth: "100%",
+              }}
+            >
               <CardContent
                 sx={{
                   display: "flex",
@@ -283,7 +291,15 @@ export default function Projects() {
 
           {/* Projects Table Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card
+              elevation={4}
+              sx={{
+                borderRadius: 5,
+                bgcolor: "background.paper",
+                width: "100%",
+                maxWidth: "100%",
+              }}
+            >
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                     <Typography
@@ -398,7 +414,16 @@ export default function Projects() {
           {/* Deleted Projects Tile */}
           {deletedProjects.length > 0 && (
             <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-              <Card elevation={2} sx={{ borderRadius: 5, bgcolor: "background.paper", mt: 3 }}>
+              <Card
+                elevation={2}
+                sx={{
+                  borderRadius: 5,
+                  bgcolor: "background.paper",
+                  mt: 3,
+                  width: "100%",
+                  maxWidth: "100%",
+                }}
+              >
                 <CardContent>
                   <Typography variant="h6" fontWeight={700} color="text.secondary" sx={{ mb: 2 }}>
                     Recently Deleted Projects

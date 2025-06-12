@@ -262,13 +262,13 @@ export default function AdminPanel() {
           width: "100%",
           maxWidth: "100%",
           boxSizing: "border-box",
-          overflowX: "hidden", // Prevent horizontal scroll
+          overflowX: "hidden",
         }}
       >
         <Box
           sx={{
             width: "100%",
-            maxWidth: "900px",
+            maxWidth: "1600px", 
             mx: "auto",
             display: "flex",
             flexDirection: "column",
@@ -279,7 +279,15 @@ export default function AdminPanel() {
         >
           {/* Header Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card
+              elevation={6}
+              sx={{
+                borderRadius: 5,
+                bgcolor: "background.paper",
+                width: "100%", 
+                maxWidth: "100%",
+              }}
+            >
               <CardContent
                 sx={{
                   display: "flex",
@@ -306,7 +314,15 @@ export default function AdminPanel() {
 
           {/* Workspace Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card
+              elevation={4}
+              sx={{
+                borderRadius: 5,
+                bgcolor: "background.paper",
+                width: "100%", 
+                maxWidth: "100%",
+              }}
+            >
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
                   Workspace
@@ -423,7 +439,15 @@ export default function AdminPanel() {
 
           {/* Profiles Table Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card
+              elevation={4}
+              sx={{
+                borderRadius: 5,
+                bgcolor: "background.paper",
+                width: "100%",
+                maxWidth: "100%",
+              }}
+            >
               <CardContent>
                 <Typography
                   variant="h6"
