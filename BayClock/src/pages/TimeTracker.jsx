@@ -406,8 +406,7 @@ export default function TimeTracker() {
           py: { xs: 2, md: 4 },
           px: { xs: 0, sm: 1, md: 2 },
           width: "100%",
-          maxWidth: "1000px",
-          mx: "auto",      
+          maxWidth: "100%", 
           boxSizing: "border-box",
           overflowX: "hidden",
         }}
@@ -415,19 +414,19 @@ export default function TimeTracker() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: "100%",
+            maxWidth: "1600px",
             mx: "auto",
             display: "flex",
             flexDirection: "column",
             gap: { xs: 2, md: 3 },
             px: { xs: 0.5, sm: 2, md: 4 },
             boxSizing: "border-box",
-            overflowX: "hidden", // Prevent horizontal scroll
+            overflowX: "hidden",
           }}
         >
           {/* Header Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent
                 sx={{
                   display: "flex",
@@ -456,7 +455,7 @@ export default function TimeTracker() {
 
           {/* Entry Form Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent>
                 <Box
                   component="form"
@@ -465,6 +464,7 @@ export default function TimeTracker() {
                     flexDirection: { xs: "column", md: "row" },
                     gap: 2,
                     mb: 3,
+                    width: "100%", // Full width for form
                   }}
                   noValidate
                   autoComplete="off"
@@ -509,6 +509,7 @@ export default function TimeTracker() {
                     flexDirection: { xs: "column", md: "row" },
                     alignItems: { md: "center" },
                     gap: 2,
+                    width: "100%", // Full width for controls
                   }}
                 >
                   {/* Timer display */}
@@ -617,7 +618,7 @@ export default function TimeTracker() {
 
           {/* Entries List Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
+            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent>
                 <Typography
                   variant="h6"
@@ -633,7 +634,18 @@ export default function TimeTracker() {
                     No entries yet.
                   </Typography>
                 ) : (
-                  <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Box
+                    component="ul"
+                    sx={{
+                      listStyle: "none",
+                      p: 0,
+                      m: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      width: "100%",
+                    }}
+                  >
                     {Object.entries(grouped)
                       .sort((a, b) => b[0].localeCompare(a[0]))
                       .slice(0, 5)
