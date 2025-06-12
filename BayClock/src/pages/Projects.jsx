@@ -339,6 +339,7 @@ export default function Projects() {
                         <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                        <TableCell sx={{ fontWeight: 700 }}>Workspace</TableCell>
                         <TableCell sx={{ fontWeight: 700 }} align="right">
                           Actions
                         </TableCell>
@@ -347,7 +348,7 @@ export default function Projects() {
                     <TableBody>
                       {(role === "admin" ? projects : filteredProjects).length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={4} align="center" sx={{ color: "text.disabled" }}>
+                          <TableCell colSpan={5} align="center" sx={{ color: "text.disabled" }}>
                             No projects yet.
                           </TableCell>
                         </TableRow>
@@ -377,6 +378,12 @@ export default function Projects() {
                               >
                                 {project.status}
                               </Box>
+                            </TableCell>
+                            <TableCell>
+                              {
+                                // Show workspace name if available
+                                workspaces.find(ws => ws.id === project.workspace_id)?.name || "—"
+                              }
                             </TableCell>
                             <TableCell align="right">
                               {role === "admin" && (
