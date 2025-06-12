@@ -20,7 +20,8 @@ export default function LoginPage() {
   const [signupData, setSignupData] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    confirmPassword: "", // Add confirmPassword for signup
   });
 
   const [showNamePrompt, setShowNamePrompt] = useState(false);
@@ -74,7 +75,11 @@ export default function LoginPage() {
   // Signup form submit handler
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
-    const { name, email, password } = signupData;
+    const { name, email, password, confirmPassword } = signupData;
+    if (password !== confirmPassword) {
+      setSignupMessage("Passwords do not match.");
+      return;
+    }
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
@@ -377,6 +382,15 @@ export default function LoginPage() {
                           placeholder="Password" 
                           type="password" 
                           value={signupData.password}
+                          onChange={handleSignupChange}
+                          required
+                        />
+                        <input 
+                          className="flip-card__input" 
+                          name="confirmPassword" 
+                          placeholder="Re-enter Password" 
+                          type="password" 
+                          value={signupData.confirmPassword}
                           onChange={handleSignupChange}
                           required
                         />
