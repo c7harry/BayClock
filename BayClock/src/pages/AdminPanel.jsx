@@ -54,6 +54,11 @@ export default function AdminPanel() {
   const [editingWorkspace, setEditingWorkspace] = useState(null);
   const [editWorkspaceName, setEditWorkspaceName] = useState("");
 
+  // Search and sort states
+  const [searchEmail, setSearchEmail] = useState("");
+  const [sortField, setSortField] = useState(""); // "totalTime" or "created"
+  const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+
   // Theme (match Projects page)
   const [mode, setMode] = useState(
     document.documentElement.classList.contains("dark") ? "dark" : "light"
@@ -113,7 +118,8 @@ export default function AdminPanel() {
   // Fetch all profiles, workspaces, and projects
   useEffect(() => {
     async function fetchData() {
-      const { data: profilesData } = await supabase.from("profiles").select("id, full_name, email, workspace_id, role");
+      // Add created_at to select for sorting
+      const { data: profilesData } = await supabase.from("profiles").select("id, full_name, email, workspace_id, role, created_at");
       const { data: workspacesData } = await supabase.from("workspaces").select("id, name");
       const { data: projectsData } = await supabase.from("projects").select("id, name");
       setProfiles(profilesData || []);
@@ -250,6 +256,30 @@ export default function AdminPanel() {
     });
     setUserTimes(grouped);
   }, [allEntries]);
+
+  // Filter and sort profiles
+  const filteredProfiles = useMemo(() => {
+    let filtered = profiles;
+    if (searchEmail.trim()) {
+      filtered = filtered.filter((profile) =>
+        (profile.email || "").toLowerCase().includes(searchEmail.trim().toLowerCase())
+      );
+    }
+    if (sortField === "totalTime") {
+      filtered = [...filtered].sort((a, b) => {
+        const aTime = userTimes[a.id] || 0;
+        const bTime = userTimes[b.id] || 0;
+        return sortOrder === "asc" ? aTime - bTime : bTime - aTime;
+      });
+    } else if (sortField === "created") {
+      filtered = [...filtered].sort((a, b) => {
+        const aDate = new Date(a.created_at || 0);
+        const bDate = new Date(b.created_at || 0);
+        return sortOrder === "asc" ? aDate - bDate : bDate - aDate;
+      });
+    }
+    return filtered;
+  }, [profiles, searchEmail, sortField, sortOrder, userTimes]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -459,25 +489,68 @@ export default function AdminPanel() {
                   User Profiles
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
+
+                {/* Search and Filter Controls */}
+                <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
+                  <TextField
+                    label="Search by Email"
+                    value={searchEmail}
+                    onChange={e => setSearchEmail(e.target.value)}
+                    size="small"
+                    variant="outlined"
+                  />
+                  <Select
+                    value={sortField}
+                    onChange={e => setSortField(e.target.value)}
+                    size="small"
+                    displayEmpty
+                    sx={{ minWidth: 160 }}
+                  >
+                    <MenuItem value="">Sort By...</MenuItem>
+                    <MenuItem value="totalTime">Total Time</MenuItem>
+                    <MenuItem value="created">Created Date</MenuItem>
+                  </Select>
+                  {sortField && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                    >
+                      {sortOrder === "asc" ? "Ascending" : "Descending"}
+                    </Button>
+                  )}
+                  {sortField && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      color="inherit"
+                      onClick={() => { setSortField(""); setSortOrder("desc"); }}
+                    >
+                      Clear Sort
+                    </Button>
+                  )}
+                </Box>
+
                 <Table size="small" aria-label="user profiles table">
                   <TableHead>
                     <TableRow sx={{ bgcolor: "background.default" }}>
-                      <TableCell sx={{ fontWeight: 700, width: "22%", textAlign: "center" }}>User</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "28%", textAlign: "center" }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "12%", textAlign: "center" }}>Role</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "22%", textAlign: "center" }}>Workspace</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Total Time</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>User</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "24%", textAlign: "center" }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "10%", textAlign: "center" }}>Role</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>Workspace</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "14%", textAlign: "center" }}>Total Time</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Created</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {profiles.length === 0 ? (
+                    {filteredProfiles.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ color: "text.disabled" }}>
+                        <TableCell colSpan={6} align="center" sx={{ color: "text.disabled" }}>
                           No profiles found.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      profiles.map((profile) => (
+                      filteredProfiles.map((profile) => (
                         <TableRow key={profile.id} hover>
                           <TableCell align="center">
                             <Button
@@ -523,6 +596,13 @@ export default function AdminPanel() {
                               {userTimes[profile.id]
                                 ? formatSecondsToHMS(userTimes[profile.id])
                                 : "00:00:00"}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                              {profile.created_at
+                                ? new Date(profile.created_at).toLocaleDateString()
+                                : "—"}
                             </Typography>
                           </TableCell>
                         </TableRow>
