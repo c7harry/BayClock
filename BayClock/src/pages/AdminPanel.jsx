@@ -10,6 +10,7 @@ import { FaUserShield } from "react-icons/fa";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
+import Pagination from "@mui/material/Pagination";
 
 // Helper to parse durations like "4h", "1m 41s", "2h 3m 10s", etc
 function parseDurationTextToSeconds(duration) {
@@ -281,6 +282,21 @@ export default function AdminPanel() {
     return filtered;
   }, [profiles, searchEmail, sortField, sortOrder, userTimes]);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
+
+  // Paginated profiles
+  const paginatedProfiles = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    return filteredProfiles.slice(start, start + rowsPerPage);
+  }, [filteredProfiles, page]);
+
+  // Reset to first page if filter changes and current page is out of range
+  useEffect(() => {
+    setPage(1);
+  }, [searchEmail, sortField, sortOrder]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -543,14 +559,14 @@ export default function AdminPanel() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredProfiles.length === 0 ? (
+                    {paginatedProfiles.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} align="center" sx={{ color: "text.disabled" }}>
                           No profiles found.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredProfiles.map((profile) => (
+                      paginatedProfiles.map((profile) => (
                         <TableRow key={profile.id} hover>
                           <TableCell align="center">
                             <Button
@@ -610,6 +626,15 @@ export default function AdminPanel() {
                     )}
                   </TableBody>
                 </Table>
+                {/* Pagination controls */}
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                  <Pagination
+                    count={Math.ceil(filteredProfiles.length / rowsPerPage)}
+                    page={page}
+                    onChange={(_, value) => setPage(value)}
+                    color="primary"
+                  />
+                </Box>
               </CardContent>
             </Card>
           </motion.div>
