@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { FaUserShield } from "react-icons/fa";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
 
 // Helper to parse durations like "4h", "1m 41s", "2h 3m 10s", etc
 function parseDurationTextToSeconds(duration) {
@@ -307,7 +308,7 @@ export default function AdminPanel() {
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
               <CardContent>
-                <Typography variant="h6" fontWeight={600} mb={1}>
+                <Typography variant="h6" fontWeight={600} mb={2}>
                   Workspace
                 </Typography>
                 <Stack direction="row" spacing={2} mb={2}>
@@ -327,82 +328,95 @@ export default function AdminPanel() {
                     Create
                   </Button>
                 </Stack>
-                {/* List of workspaces */}
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: 120 }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {workspaces.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={2} align="center" sx={{ color: "text.disabled" }}>
-                          No workspaces found.
+                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, boxShadow: "none" }}>
+                  <Table size="small" aria-label="workspace table">
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: "background.default" }}>
+                        <TableCell sx={{ fontWeight: 700, width: "65%" }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "35%" }} align="right">
+                          Actions
                         </TableCell>
                       </TableRow>
-                    ) : (
-                      workspaces.map((ws) => (
-                        <TableRow key={ws.id}>
-                          <TableCell>
-                            {editingWorkspace?.id === ws.id ? (
-                              <TextField
-                                value={editWorkspaceName}
-                                onChange={e => setEditWorkspaceName(e.target.value)}
-                                size="small"
-                                variant="standard"
-                                autoFocus
-                              />
-                            ) : (
-                              ws.name
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {editingWorkspace?.id === ws.id ? (
-                              <>
-                                <Button
-                                  size="small"
-                                  color="primary"
-                                  onClick={handleSaveWorkspace}
-                                  disabled={!editWorkspaceName.trim()}
-                                  sx={{ mr: 1 }}
-                                >
-                                  Save
-                                </Button>
-                                <Button
-                                  size="small"
-                                  color="inherit"
-                                  onClick={handleCancelEditWorkspace}
-                                >
-                                  Cancel
-                                </Button>
-                              </>
-                            ) : (
-                              <>
-                                <Button
-                                  size="small"
-                                  color="primary"
-                                  onClick={() => handleEditWorkspace(ws)}
-                                  sx={{ mr: 1 }}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleDeleteWorkspace(ws)}
-                                >
-                                  Delete
-                                </Button>
-                              </>
-                            )}
+                    </TableHead>
+                    <TableBody>
+                      {workspaces.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={2} align="center" sx={{ color: "text.disabled" }}>
+                            No workspaces found.
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : (
+                        workspaces.map((ws) => (
+                          <TableRow key={ws.id} hover>
+                            <TableCell>
+                              {editingWorkspace?.id === ws.id ? (
+                                <TextField
+                                  value={editWorkspaceName}
+                                  onChange={e => setEditWorkspaceName(e.target.value)}
+                                  size="small"
+                                  variant="standard"
+                                  autoFocus
+                                  fullWidth
+                                  sx={{ minWidth: 120 }}
+                                />
+                              ) : (
+                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                  {ws.name}
+                                </Typography>
+                              )}
+                            </TableCell>
+                            <TableCell align="right">
+                              {editingWorkspace?.id === ws.id ? (
+                                <>
+                                  <Button
+                                    size="small"
+                                    color="primary"
+                                    onClick={handleSaveWorkspace}
+                                    disabled={!editWorkspaceName.trim()}
+                                    sx={{ mr: 1, minWidth: 36 }}
+                                    variant="contained"
+                                  >
+                                    <MdSave />
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    color="inherit"
+                                    onClick={handleCancelEditWorkspace}
+                                    sx={{ minWidth: 36 }}
+                                    variant="outlined"
+                                  >
+                                    <MdCancel />
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => handleEditWorkspace(ws)}
+                                    sx={{ mr: 1, minWidth: 36 }}
+                                    variant="outlined"
+                                  >
+                                    <MdEdit />
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    color="error"
+                                    onClick={() => handleDeleteWorkspace(ws)}
+                                    sx={{ minWidth: 36 }}
+                                    variant="outlined"
+                                  >
+                                    <MdDelete />
+                                  </Button>
+                                </>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </CardContent>
             </Card>
           </motion.div>
@@ -414,66 +428,84 @@ export default function AdminPanel() {
                 <Typography
                   variant="h6"
                   fontWeight={600}
-                  mb={1}
+                  mb={2}
                   color="text.primary"
                   sx={{ fontSize: "1.25rem" }}
                 >
                   User Profiles
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Box sx={{ overflowX: "auto" }}>
-                  <Table size="small">
-                    <TableHead>
+                <Table size="small" aria-label="user profiles table">
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: "background.default" }}>
+                      <TableCell sx={{ fontWeight: 700, width: "22%", textAlign: "center" }}>User</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "28%", textAlign: "center" }}>Email</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "12%", textAlign: "center" }}>Role</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "22%", textAlign: "center" }}>Workspace</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Total Time</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {profiles.length === 0 ? (
                       <TableRow>
-                        <TableCell sx={{ fontWeight: 700 }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Workspace</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Total Time</TableCell> {/* New column */}
+                        <TableCell colSpan={5} align="center" sx={{ color: "text.disabled" }}>
+                          No profiles found.
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {profiles.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} align="center" sx={{ color: "text.disabled" }}>
-                            No profiles found.
+                    ) : (
+                      profiles.map((profile) => (
+                        <TableRow key={profile.id} hover>
+                          <TableCell align="center">
+                            <Button
+                              variant="text"
+                              onClick={() => handleShowEntries(profile)}
+                              sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
+                            >
+                              {profile.full_name || profile.id}
+                            </Button>
                           </TableCell>
-                        </TableRow>
-                      ) : (
-                        profiles.map((profile) => (
-                          <TableRow key={profile.id}>
-                            <TableCell>
-                              <Button variant="text" onClick={() => handleShowEntries(profile)}>
-                                {profile.full_name || profile.id}
-                              </Button>
-                            </TableCell>
-                            <TableCell>{profile.email || ""}</TableCell>
-                            <TableCell>{profile.role}</TableCell>
-                            <TableCell>
-                              <Select
-                                value={profile.workspace_id || ""}
-                                onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
-                                size="small"
-                              >
-                                <MenuItem value="">None</MenuItem>
-                                {workspaces.map((ws) => (
-                                  <MenuItem key={ws.id} value={ws.id}>
-                                    {ws.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </TableCell>
-                            <TableCell>
+                          <TableCell align="center">
+                            <Typography variant="body2">{profile.email || ""}</Typography>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={profile.role}
+                              color={profile.role === "admin" ? "warning" : "default"}
+                              size="small"
+                              sx={{
+                                fontWeight: 600,
+                                bgcolor: profile.role === "admin" ? "warning.light" : "grey.200",
+                                color: profile.role === "admin" ? "warning.dark" : "text.primary",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Select
+                              value={profile.workspace_id || ""}
+                              onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
+                              size="small"
+                              sx={{ minWidth: 120, bgcolor: "background.default" }}
+                            >
+                              <MenuItem value="">None</MenuItem>
+                              {workspaces.map((ws) => (
+                                <MenuItem key={ws.id} value={ws.id}>
+                                  {ws.name}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </TableCell>
+                          <TableCell align="center">
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
                               {userTimes[profile.id]
                                 ? formatSecondsToHMS(userTimes[profile.id])
                                 : "00:00:00"}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </Box>
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </motion.div>
