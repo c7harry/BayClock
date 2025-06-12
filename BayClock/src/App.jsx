@@ -12,6 +12,7 @@ import AdminSidebar from "./components/AdminSidebar";
 import { supabase } from "./supabaseClient";
 import { useEffect, useState } from "react";
 import AllEntries from "./pages/AdminEntries";
+import ResetPassword from "./pages/ResetPassword";
 
 // Helper: Protect routes by role
 function ProtectedRoute({ children, allowedRoles }) {
@@ -215,6 +216,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </Layout>
       </BackgroundWrapper>
