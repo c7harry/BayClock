@@ -225,7 +225,7 @@ export default function CalendarPage() {
         <Box
           sx={{
             width: "100%",
-            maxWidth: "1200px",
+            maxWidth: "1600px",
             mx: "auto",
             display: "flex",
             flexDirection: "column",
@@ -241,7 +241,8 @@ export default function CalendarPage() {
               sx={{
                 borderRadius: 5,
                 bgcolor: "background.paper",
-                width: "100%",
+                width: "100%", // Full width
+                maxWidth: "100%",
                 boxShadow: mode === "dark"
                   ? "0 4px 24px 0 rgba(0,0,0,0.24)"
                   : "0 4px 24px 0 rgba(251,146,60,0.06)",
