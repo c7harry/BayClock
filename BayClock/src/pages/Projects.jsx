@@ -286,9 +286,13 @@ export default function Projects() {
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  <Typography variant="h6" fontWeight={700} color="text.secondary">
-                    Project List
-                  </Typography>
+                    <Typography
+                      variant="h6"
+                      fontWeight={600}
+                      mb={1}
+                      color="text.primary"
+                      sx={{ fontSize: "1.25rem" }}
+                      >Project List</Typography>
                   {role === "admin" ? (
                     <Button
                       variant="contained"

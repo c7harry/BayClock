@@ -50,6 +50,8 @@ export default function AdminPanel() {
   const [selectedUserEntries, setSelectedUserEntries] = useState([]);
   const [selectedUserName, setSelectedUserName] = useState("");
   const [projects, setProjects] = useState([]);
+  const [editingWorkspace, setEditingWorkspace] = useState(null);
+  const [editWorkspaceName, setEditWorkspaceName] = useState("");
 
   // Theme (match Projects page)
   const [mode, setMode] = useState(
@@ -134,6 +136,46 @@ export default function AdminPanel() {
       setWorkspaces((prev) => [...prev, data]);
       setSnackbar({ open: true, message: "Workspace created!", severity: "success" });
       setNewWorkspace("");
+    }
+  };
+
+  // Edit workspace handlers
+  const handleEditWorkspace = (ws) => {
+    setEditingWorkspace(ws);
+    setEditWorkspaceName(ws.name);
+  };
+  const handleCancelEditWorkspace = () => {
+    setEditingWorkspace(null);
+    setEditWorkspaceName("");
+  };
+  const handleSaveWorkspace = async () => {
+    if (!editWorkspaceName.trim()) return;
+    const { error } = await supabase
+      .from("workspaces")
+      .update({ name: editWorkspaceName.trim() })
+      .eq("id", editingWorkspace.id);
+    if (error) {
+      setSnackbar({ open: true, message: error.message, severity: "error" });
+    } else {
+      setWorkspaces((prev) =>
+        prev.map((ws) =>
+          ws.id === editingWorkspace.id ? { ...ws, name: editWorkspaceName.trim() } : ws
+        )
+      );
+      setSnackbar({ open: true, message: "Workspace updated!", severity: "success" });
+      handleCancelEditWorkspace();
+    }
+  };
+
+  // Delete workspace handler
+  const handleDeleteWorkspace = async (ws) => {
+    if (!window.confirm(`Delete workspace "${ws.name}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from("workspaces").delete().eq("id", ws.id);
+    if (error) {
+      setSnackbar({ open: true, message: error.message, severity: "error" });
+    } else {
+      setWorkspaces((prev) => prev.filter((w) => w.id !== ws.id));
+      setSnackbar({ open: true, message: "Workspace deleted.", severity: "success" });
     }
   };
 
@@ -261,14 +303,14 @@ export default function AdminPanel() {
             </Card>
           </motion.div>
 
-          {/* Create Workspace Tile */}
+          {/* Workspace Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
               <CardContent>
-                <Typography variant="h6" fontWeight={600} mb={2}>
-                  Create New Workspace
+                <Typography variant="h6" fontWeight={600} mb={1}>
+                  Workspace
                 </Typography>
-                <Stack direction="row" spacing={2}>
+                <Stack direction="row" spacing={2} mb={2}>
                   <TextField
                     label="Workspace Name"
                     value={newWorkspace}
@@ -285,6 +327,82 @@ export default function AdminPanel() {
                     Create
                   </Button>
                 </Stack>
+                {/* List of workspaces */}
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700, width: 120 }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {workspaces.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={2} align="center" sx={{ color: "text.disabled" }}>
+                          No workspaces found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      workspaces.map((ws) => (
+                        <TableRow key={ws.id}>
+                          <TableCell>
+                            {editingWorkspace?.id === ws.id ? (
+                              <TextField
+                                value={editWorkspaceName}
+                                onChange={e => setEditWorkspaceName(e.target.value)}
+                                size="small"
+                                variant="standard"
+                                autoFocus
+                              />
+                            ) : (
+                              ws.name
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {editingWorkspace?.id === ws.id ? (
+                              <>
+                                <Button
+                                  size="small"
+                                  color="primary"
+                                  onClick={handleSaveWorkspace}
+                                  disabled={!editWorkspaceName.trim()}
+                                  sx={{ mr: 1 }}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="small"
+                                  color="inherit"
+                                  onClick={handleCancelEditWorkspace}
+                                >
+                                  Cancel
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  size="small"
+                                  color="primary"
+                                  onClick={() => handleEditWorkspace(ws)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleDeleteWorkspace(ws)}
+                                >
+                                  Delete
+                                </Button>
+                              </>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </motion.div>
@@ -293,7 +411,13 @@ export default function AdminPanel() {
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
               <CardContent>
-                <Typography variant="h6" fontWeight={700} color="text.secondary" sx={{ mb: 2 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={600}
+                  mb={1}
+                  color="text.primary"
+                  sx={{ fontSize: "1.25rem" }}
+                >
                   User Profiles
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
