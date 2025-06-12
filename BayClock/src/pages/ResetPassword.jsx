@@ -41,11 +41,17 @@ const GlassForm = styled.div`
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setMessage("");
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
@@ -88,7 +94,24 @@ export default function ResetPassword() {
             style={{
               width: "100%",
               padding: 12,
-              margin: "16px 0",
+              margin: "16px 0 8px 0",
+              borderRadius: 8,
+              border: "1.5px solid #ccc",
+              fontSize: "1.1rem",
+              background: "rgba(255,255,255,0.7)",
+              color: "#0F2D52"
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Re-enter new password"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: 12,
+              margin: "8px 0 16px 0",
               borderRadius: 8,
               border: "1.5px solid #ccc",
               fontSize: "1.1rem",
