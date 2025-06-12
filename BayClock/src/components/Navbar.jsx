@@ -3,6 +3,73 @@ import { motion } from "framer-motion";
 import styled, { createGlobalStyle } from "styled-components";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { FaRegClock } from "react-icons/fa";
+
+const TIMER_STATE_KEY = "timerState";
+
+// Utility: seconds to "1h 23m 45s"
+function timerToDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return [
+    h ? `${h}h` : "",
+    m ? `${m}m` : "",
+    s ? `${s}s` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function TimerNavDisplay() {
+  const [timer, setTimer] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useEffect(() => {
+    function updateTimer() {
+      const saved = localStorage.getItem(TIMER_STATE_KEY);
+      if (saved) {
+        const { isRunning, timer, startedAt } = JSON.parse(saved);
+        if (isRunning && startedAt) {
+          const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+          setTimer(elapsed);
+          setIsRunning(true);
+        } else {
+          setTimer(timer || 0);
+          setIsRunning(false);
+        }
+      } else {
+        setTimer(0);
+        setIsRunning(false);
+      }
+    }
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    window.addEventListener("storage", updateTimer);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("storage", updateTimer);
+    };
+  }, []);
+
+  if (!isRunning) return null;
+
+  return (
+    <div style={{
+      marginRight: 24,
+      fontWeight: 700,
+      color: "#fb923c",
+      fontSize: "1.1rem",
+      letterSpacing: 1,
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+    }}>
+      <FaRegClock style={{ marginRight: 4 }} />
+      {timerToDuration(timer)}
+    </div>
+  );
+}
 
 // --- Day/Night Switch Component ---
 const Switch = () => {
@@ -404,6 +471,7 @@ export default function Navbar() {
           </div>
         </div>
         <div className="navbar-right">
+          <TimerNavDisplay /> 
           <Switch />
           <LogoutButton />
         </div>
