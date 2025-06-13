@@ -587,8 +587,12 @@ export default function AdminPanel() {
                               size="small"
                               sx={{
                                 fontWeight: 600,
-                                bgcolor: profile.role === "admin" ? "warning.light" : "grey.200",
-                                color: profile.role === "admin" ? "warning.dark" : "text.primary",
+                                bgcolor: profile.role === "admin"
+                                  ? "warning.light"
+                                  : (mode === "dark" ? "grey.800" : "grey.200"),
+                                color: profile.role === "admin"
+                                  ? "warning.dark"
+                                  : (mode === "dark" ? "#fff" : "text.primary"),
                               }}
                             />
                           </TableCell>
