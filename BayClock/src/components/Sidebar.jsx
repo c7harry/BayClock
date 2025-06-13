@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaRegClock, FaFolderOpen, FaChartBar, FaChevronLeft, FaChevronRight, FaCalendar, FaCog } from "react-icons/fa";
+import { FaHome, FaRegClock, FaFolderOpen, FaChevronLeft, FaChevronRight, FaCalendar, FaCog } from "react-icons/fa";
 import styled, { css } from "styled-components";
 import {DndContext,closestCenter,PointerSensor,useSensor,useSensors,} from "@dnd-kit/core";
 import {arrayMove,SortableContext,useSortable,verticalListSortingStrategy,} from "@dnd-kit/sortable";
@@ -12,6 +12,7 @@ import Switch from "@mui/material/Switch";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
 
 const SIDEBAR_ORDER_KEY = "sidebarOrder";
 
@@ -68,19 +69,21 @@ function SortableSidebarLink({ link, open, index }) {
 }
 
 // --- Theme Switch Styled (copied from Navbar) ---
+// Make the switch bigger by increasing --toggle-size and related variables
 const SwitchWrapper = styled.div`
   margin-right: 0;
   display: flex;
   align-items: center;
+  /* Make the switch bigger */
   .theme-switch {
-    --toggle-size: 18px;
-    --container-width: 2.8em;
-    --container-height: 1.2em;
-    --container-radius: 1.5em;
+    --toggle-size: 20px;
+    --container-width: 4.2em;
+    --container-height: 2em;
+    --container-radius: 2.2em;
     --container-light-bg: #3D7EAE;
     --container-night-bg: #1D1F2C;
-    --circle-container-diameter: 1.3em;
-    --sun-moon-diameter: 0.8em;
+    --circle-container-diameter: 2.1em;
+    --sun-moon-diameter: 1.3em;
     --sun-bg: #ECCA2F;
     --moon-bg: #C4C9D1;
     --spot-color: #959DB1;
@@ -260,20 +263,90 @@ function ThemeSwitchInDrawer({ dark, setDark }) {
 // --- Settings Drawer Content ---
 function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
   return (
-    <Box sx={{ width: 260, p: 2, bgcolor: "background.paper", height: "100%" }}>
-      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-        Settings
-      </Typography>
-      <Divider sx={{ mb: 2 }} />
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography>Dark Mode</Typography>
-        <ThemeSwitchInDrawer dark={dark} setDark={setDark} />
+    <Paper
+      elevation={8}
+      sx={{
+        width: 280,
+        minHeight: "100vh",
+        bgcolor: dark ? "#18181b" : "#fff7ed",
+        background: dark
+          ? "linear-gradient(135deg, #18181b 60%, #23232a 100%)"
+          : "linear-gradient(135deg, #fff7ed 60%, #ffe6d3 100%)",
+        borderTopLeftRadius: 22,
+        borderBottomLeftRadius: 22,
+        boxShadow: dark
+          ? "0 8px 32px 0 #0008, 0 1.5px 8px 0 #fff2"
+          : "0 8px 32px 0 #ff691055, 0 1.5px 8px 0 #fff2",
+        p: 0,
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+      }}
+    >
+      <Box
+        sx={{
+          px: 3,
+          pt: 3,
+          pb: 1,
+          borderBottom: "1.5px solid",
+          borderColor: dark ? "#23232a" : "#ffe6d3",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <FaCog size={22} color={dark ? "#fb923c" : "#fb923c"} />
+        <Typography
+          variant="h6"
+          fontWeight={800}
+          sx={{
+            color: dark ? "#fff" : "#18181b",
+            letterSpacing: 0.5,
+            fontSize: 22,
+          }}
+        >
+          Settings
+        </Typography>
       </Box>
-      <Divider sx={{ mb: 2 }} />
-      <Box sx={{ display: "flex", justifyContent: "center" }}>
-        <LogoutButton onLogout={onLogout} />
+      <Divider sx={{ borderColor: dark ? "#23232a" : "#ffe6d3" }} />
+      <Box sx={{ px: 3, py: 2, flex: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center", // Center the switch
+            mb: 2,
+          }}
+        >
+          {/* Removed the "Dark Mode" text */}
+          <ThemeSwitchInDrawer dark={dark} setDark={setDark} />
+        </Box>
+        <Divider sx={{ borderColor: dark ? "#23232a" : "#ffe6d3", mb: 2 }} />
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <LogoutButton onLogout={onLogout} />
+        </Box>
       </Box>
-    </Box>
+      <Box
+        sx={{
+          px: 3,
+          py: 2,
+          borderTop: "1.5px solid",
+          borderColor: dark ? "#23232a" : "#ffe6d3",
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: dark ? "#bbb" : "#b45309",
+            fontWeight: 500,
+            letterSpacing: 0.2,
+          }}
+        >
+          BayClock &copy; {new Date().getFullYear()}
+        </Typography>
+      </Box>
+    </Paper>
   );
 }
 
@@ -424,7 +497,8 @@ export default function Sidebar() {
             sx: {
               borderTopLeftRadius: 18,
               borderBottomLeftRadius: 18,
-              bgcolor: "background.paper",
+              background: "none",
+              backgroundColor: "transparent",
               boxShadow: 6,
               minHeight: "100vh",
             },
