@@ -13,6 +13,10 @@ import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 
 const SIDEBAR_ORDER_KEY = "sidebarOrder";
 
@@ -261,6 +265,54 @@ function ThemeSwitchInDrawer({ dark, setDark }) {
 
 // --- Settings Drawer Content ---
 function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
+  // Get user info from Supabase
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    import("../supabaseClient").then(({ supabase }) => {
+      supabase.auth.getUser().then(({ data }) => setUser(data?.user || null));
+    });
+  }, []);
+
+  // Export as CSV
+  const handleExportCSV = async () => {
+    const { supabase } = await import("../supabaseClient");
+    const { data, error } = await supabase.from("entries").select("*");
+    if (error || !data) return;
+    const csvRows = [];
+    const headers = Object.keys(data[0] || {});
+    csvRows.push(headers.join(","));
+    for (const row of data) {
+      csvRows.push(headers.map(h => `"${(row[h] ?? "").toString().replace(/"/g, '""')}"`).join(","));
+    }
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+    saveAs(blob, "entries.csv");
+  };
+
+  // Export as Excel
+  const handleExportExcel = async () => {
+    const { supabase } = await import("../supabaseClient");
+    const { data, error } = await supabase.from("entries").select("*");
+    if (error || !data) return;
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Entries");
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([wbout], { type: "application/octet-stream" });
+    saveAs(blob, "entries.xlsx");
+  };
+
+  // Change password logic (same as forgot password)
+  const [changePwEmailSent, setChangePwEmailSent] = useState(false);
+  const handleChangePassword = async () => {
+    if (!user?.email) return;
+    const { supabase } = await import("../supabaseClient");
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: window.location.origin + "/reset-password"
+    });
+    setChangePwEmailSent(!error);
+    setTimeout(() => setChangePwEmailSent(false), 4000);
+  };
+
   return (
     <Paper
       elevation={8}
@@ -313,13 +365,63 @@ function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
           sx={{
             display: "flex",
             alignItems: "center",
-            justifyContent: "center", // Center the switch
+            justifyContent: "center",
             mb: 2,
           }}
         >
-          {/* Removed the "Dark Mode" text */}
           <ThemeSwitchInDrawer dark={dark} setDark={setDark} />
         </Box>
+        <Divider sx={{ borderColor: dark ? "#23232a" : "#ffe6d3", mb: 2 }} />
+
+        {/* User Info */}
+        {user && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ color: dark ? "#fff" : "#18181b", fontWeight: 600 }}>
+              Logged in as:
+            </Typography>
+            <Typography variant="body2" sx={{ color: dark ? "#fb923c" : "#b45309", fontWeight: 600 }}>
+              {user.email}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Export Buttons */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportCSV}
+            sx={{ color: "#fb923c", borderColor: "#fb923c" }}
+          >
+            Export as CSV
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportExcel}
+            sx={{ color: "#fb923c", borderColor: "#fb923c" }}
+          >
+            Export as Excel
+          </Button>
+        </Box>
+
+        {/* Change Password */}
+        <Box sx={{ mb: 2 }}>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleChangePassword}
+            sx={{ width: "100%", fontWeight: 600 }}
+          >
+            Change Password
+          </Button>
+          {changePwEmailSent && (
+            <Typography variant="caption" sx={{ color: "#fb923c", mt: 1, display: "block" }}>
+              Password reset link sent to your email.
+            </Typography>
+          )}
+        </Box>
+
         <Divider sx={{ borderColor: dark ? "#23232a" : "#ffe6d3", mb: 2 }} />
         <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
           <LogoutButton onLogout={onLogout} />
