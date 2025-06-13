@@ -57,17 +57,9 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
 // Helper to format date as "Wed, Jun 4"
 function formatEntryDate(dateStr) {
   if (!dateStr) return "";
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    });
-  }
-  const date = new Date(dateStr);
-  if (isNaN(date)) return dateStr;
+  // Split the string and construct a local date
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day); // JS months are 0-based
   return date.toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
@@ -152,7 +144,9 @@ export function EntryCardGroup({
   motionProps = {},
   onResume,
   isRunning,
-  projects = [], 
+  projects = [],
+  hideDate,
+  hideTotal,
 }) {
   const [expanded, setExpanded] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null); // For menu
@@ -169,6 +163,29 @@ export function EntryCardGroup({
   // Find project name for the group (use first entry)
   const projectName =
     projects.find((p) => p.id === entry.project_id)?.name || "Unknown Project";
+
+  // Calculate total time for this group
+  function sumDurations(durations) {
+    let totalSeconds = 0;
+    const regex = /(\d+)h|(\d+)m|(\d+)s/g;
+    durations.forEach((str) => {
+      let match;
+      while ((match = regex.exec(str))) {
+        if (match[1]) totalSeconds += parseInt(match[1]) * 3600;
+        if (match[2]) totalSeconds += parseInt(match[2]) * 60;
+        if (match[3]) totalSeconds += parseInt(match[3]);
+      }
+    });
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    let out = [];
+    if (h) out.push(`${h}h`);
+    if (m) out.push(`${m}m`);
+    out.push(`${s}s`);
+    return out.join(" ") || "0s";
+  }
+  const totalTime = sumDurations(entries.map(e => e.duration));
 
   return (
     <motion.li
@@ -195,34 +212,6 @@ export function EntryCardGroup({
           },
         }}
       >
-        {/* Date and total duration row on top */}
-        <Box
-          sx={{
-            px: { xs: 1.5, sm: 3 },
-            pt: 1.2,
-            pb: 0.5,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-          }}
-        >
-          <Typography
-            variant="caption"
-            color="text.disabled"
-            sx={{ fontSize: 13, fontWeight: 600 }}
-          >
-            {formatEntryDate(entry.date)}
-          </Typography>
-          <Typography
-            variant="caption"
-            color="warning.main"
-            sx={{ fontSize: 13, fontWeight: 700 }}
-          >
-            Total: {sumDurations(entries.map((e) => e.duration))}
-          </Typography>
-        </Box>
-        <Divider />
         <Box
           sx={{
             display: "flex",
@@ -406,19 +395,27 @@ export function EntryCardGroup({
         </Box>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
           <Box sx={{ pl: 6, pt: 1 }}>
-            {entries.map((e) => (
-              <EntryCard
+            {entries.map((e, idx) => (
+              <Box
                 key={e.id}
-                entry={e}
-                projects={projects}
-                mode={mode}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                showActions={showActions}
-                motionProps={{ initial: false, animate: true }}
-                hideDate
-                showTimeRange // prop to show time range on single cards
-              />
+                sx={{
+                  mb: idx === entries.length - 1 ? 1.5 : 0 // Add spacing below the last card
+                }}
+              >
+                <EntryCard
+                  entry={e}
+                  projects={projects}
+                  mode={mode}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  showActions={showActions}
+                  motionProps={{ initial: false, animate: true }}
+                  hideDate
+                  showTimeRange // prop to show time range on single cards
+                  onResume={onResume}
+                  isRunning={isRunning}
+                />
+              </Box>
             ))}
           </Box>
         </Collapse>

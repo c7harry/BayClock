@@ -32,6 +32,18 @@ function getLocalDateString() {
   return d.toISOString().slice(0, 10);
 }
 
+// Helper to format date as "Thu, Jun 12" (treats YYYY-MM-DD as local date)
+function formatDisplayDate(dateStr) {
+  if (!dateStr) return "";
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day); // JS months are 0-based
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function TimeTracker() {
   const navigate = useNavigate();
 
@@ -365,10 +377,11 @@ export default function TimeTracker() {
     window.dispatchEvent(new Event("entries-updated"));
   };
 
-  // Group entries by date
+  // Group entries by date and then by description
   const grouped = entries.reduce((acc, entry) => {
-    acc[entry.date] = acc[entry.date] || [];
-    acc[entry.date].push(entry);
+    if (!acc[entry.date]) acc[entry.date] = {};
+    if (!acc[entry.date][entry.description]) acc[entry.date][entry.description] = [];
+    acc[entry.date][entry.description].push(entry);
     return acc;
   }, {});
 
@@ -647,35 +660,107 @@ export default function TimeTracker() {
                     }}
                   >
                     {Object.entries(grouped)
-                      .sort((a, b) => b[0].localeCompare(a[0]))
-                      .slice(0, 5)
-                      .map(([date, group]) =>
-                        group.length > 1 ? (
-                          <EntryCardGroup
-                            key={date}
-                            entries={group}
-                            mode={mode}
-                            onEdit={handleEditOpen}
-                            onDelete={handleDeleteEntry}
-                            showActions
-                            onResume={handleResumeTask}
-                            isRunning={isRunning}
-                            projects={projects}
-                          />
-                        ) : (
-                          <EntryCard
-                            key={group[0].id}
-                            entry={group[0]}
-                            mode={mode}
-                            onEdit={handleEditOpen}
-                            onDelete={handleDeleteEntry}
-                            showActions
-                            onResume={handleResumeTask}
-                            isRunning={isRunning}
-                            projects={projects} // <-- ADD THIS LINE
-                          />
-                        )
-                      )}
+  .sort((a, b) => b[0].localeCompare(a[0]))
+  .slice(0, 5)
+  .map(([date, tasks]) => {
+    // Flatten all entries for this date to calculate total duration
+    const allEntries = Object.values(tasks).flat();
+    // Helper to sum durations like "1h 2m 3s"
+    function sumDurations(durations) {
+      let totalSeconds = 0;
+      const regex = /(\d+)h|(\d+)m|(\d+)s/g;
+      durations.forEach((str) => {
+        let match;
+        while ((match = regex.exec(str))) {
+          if (match[1]) totalSeconds += parseInt(match[1]) * 3600;
+          if (match[2]) totalSeconds += parseInt(match[2]) * 60;
+          if (match[3]) totalSeconds += parseInt(match[3]);
+        }
+      });
+      const h = Math.floor(totalSeconds / 3600);
+      const m = Math.floor((totalSeconds % 3600) / 60);
+      const s = totalSeconds % 60;
+      let out = [];
+      if (h) out.push(`${h}h`);
+      if (m) out.push(`${m}m`);
+      out.push(`${s}s`);
+      return out.join(" ") || "0s";
+    }
+    const totalTime = sumDurations(allEntries.map(e => e.duration));
+    return (
+      <Card
+        key={date}
+        elevation={2}
+        sx={{
+          borderRadius: 4,
+          bgcolor: "background.default",
+          mb: 2,
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 2, justifyContent: "space-between" }}>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            sx={{ fontWeight: 700 }}
+          >
+            {formatDisplayDate(date)}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontWeight: 600,
+              bgcolor: "warning.light",
+              color: "warning.dark",
+              borderRadius: 2,
+              px: 1.5,
+              py: 0.5,
+              fontSize: 14,
+              display: "inline-block"
+            }}
+          >
+            Total: {totalTime}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          {Object.values(tasks).map((group) =>
+            group.length > 1 ? (
+              <EntryCardGroup
+                key={group[0].id}
+                entries={group}
+                mode={mode}
+                onEdit={handleEditOpen}
+                onDelete={handleDeleteEntry}
+                showActions
+                onResume={handleResumeTask}
+                isRunning={isRunning}
+                projects={projects}
+                // Remove date and total time from EntryCardGroup display if present
+                hideDate
+                hideTotal
+              />
+            ) : (
+              <EntryCard
+                key={group[0].id}
+                entry={group[0]}
+                mode={mode}
+                onEdit={handleEditOpen}
+                onDelete={handleDeleteEntry}
+                showActions
+                onResume={handleResumeTask}
+                isRunning={isRunning}
+                projects={projects}
+                hideDate // Remove date from single entry card
+                hideTotal // Remove total from single entry card
+              />
+            )
+          )}
+        </Box>
+      </Card>
+    );
+  })}
                   </Box>
                 )}
               </CardContent>
