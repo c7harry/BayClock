@@ -5,7 +5,7 @@ import styled from "styled-components";
 import logo from "../assets/Logo.png";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import { SettingsDrawerContent } from "./Settings";
+import { SettingsDrawerContent, useThemeMode } from "./Settings";
 
 const SidebarSettingsWrapper = styled.div`
   display: flex;
@@ -31,12 +31,7 @@ function AdminSidebar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Theme state for switch
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark";
-    }
-    return false;
-  });
+  const [dark, setDark] = useThemeMode();
 
   useEffect(() => {
     if (dark) {

@@ -410,3 +410,32 @@ export function LogoutButton({ onLogout }) {
     </button>
   );
 }
+
+// --- Custom Hook: useThemeMode ---
+export function useThemeMode() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (dark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [dark]);
+
+  return [dark, setDark];
+}
+
+// --- Logout Function ---
+export async function handleLogout() {
+  const { supabase } = await import("../supabaseClient");
+  await supabase.auth.signOut();
+  window.location.href = "/login";
+}

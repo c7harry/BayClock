@@ -8,7 +8,8 @@ import { CSS } from "@dnd-kit/utilities";
 import logo from "../assets/Logo.png";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import { SettingsDrawerContent } from "./Settings";
+import { SettingsDrawerContent, useThemeMode } from "./Settings";
+import { handleLogout } from "./Settings";
 
 const SIDEBAR_ORDER_KEY = "sidebarOrder";
 
@@ -73,12 +74,7 @@ export default function Sidebar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Theme state for switch
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("theme") === "dark";
-    }
-    return false;
-  });
+  const [dark, setDark] = useThemeMode();
 
   useEffect(() => {
     if (dark) {
@@ -108,13 +104,6 @@ export default function Sidebar() {
       const newIndex = links.findIndex((l) => l.to === over.id);
       setLinks((links) => arrayMove(links, oldIndex, newIndex));
     }
-  };
-
-  // Logout handler
-  const handleLogout = async () => {
-    const { supabase } = await import("../supabaseClient");
-    await supabase.auth.signOut();
-    window.location.href = "/login";
   };
 
   return (
