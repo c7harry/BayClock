@@ -68,8 +68,7 @@ function SortableSidebarLink({ link, open, index }) {
   );
 }
 
-// --- Theme Switch Styled (copied from Navbar) ---
-// Make the switch bigger by increasing --toggle-size and related variables
+// --- Theme Switch Styled ---
 const SwitchWrapper = styled.div`
   margin-right: 0;
   display: flex;
@@ -480,8 +479,8 @@ export default function Sidebar() {
             sx={{
               bgcolor: "#fb923c",
               color: "#fff",
-              "&:hover": { bgcolor: "#f43f1a" },
-              boxShadow: "0 2px 8px 0 rgba(251,146,60,0.18)",
+              "&:hover": { bgcolor: "#3D7EAE" },
+              boxShadow: "0 2px 8px 0 rgba(61,126,174,0.18)",
               mb: 1,
               transition: "background 0.2s",
             }}
