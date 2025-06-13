@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Box, IconButton, Fade } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { FaRegClock } from "react-icons/fa";

@@ -5,7 +5,6 @@ import {
   TableContainer, Chip, Tooltip, Paper, Pagination, TextField, MenuItem, InputLabel, FormControl, Select} from "@mui/material";
 import { FaListAlt } from "react-icons/fa";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import dayjs from "dayjs";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);

@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, Box } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion } from "framer-motion";
 import { FaHome } from "react-icons/fa";
-import { Bar, Pie, Doughnut } from "react-chartjs-2";
+import { Bar, Doughnut } from "react-chartjs-2";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import {
