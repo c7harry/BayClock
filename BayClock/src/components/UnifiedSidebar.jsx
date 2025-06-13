@@ -1,81 +1,34 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaRegClock, FaFolderOpen, FaChevronLeft, FaChevronRight, FaCalendar, FaCog } from "react-icons/fa";
-import styled, { css } from "styled-components";
-import {DndContext,closestCenter,PointerSensor,useSensor,useSensors,} from "@dnd-kit/core";
-import {arrayMove,SortableContext,useSortable,verticalListSortingStrategy,} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import {
+  FaHome, FaRegClock, FaFolderOpen, FaCalendar,
+  FaUserShield, FaListAlt, FaChevronLeft, FaChevronRight, FaCog
+} from "react-icons/fa";
 import logo from "../assets/Logo.png";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import { SettingsDrawerContent, useThemeMode, } from "./Settings";
+import { SettingsDrawerContent, useThemeMode } from "./Settings";
 import { handleLogout } from "./Settings";
 import { SidebarSettingsWrapper } from "./Settings";
 import { StyledSidebar, StyledWrapper } from "./Settings";
 
-const SIDEBAR_ORDER_KEY = "sidebarOrder";
-
-const defaultLinks = [
+// Define links for each role
+const userLinks = [
   { to: "/dashboard", icon: FaHome, label: "Dashboard" },
   { to: "/tracker", icon: FaRegClock, label: "Time Tracker" },
   { to: "/projects", icon: FaFolderOpen, label: "Projects" },
   { to: "/calendar", icon: FaCalendar, label: "Calendar" },
 ];
+const adminLinks = [
+  { to: "/admin", icon: FaUserShield, label: "Admin Panel" },
+  { to: "/projects", icon: FaFolderOpen, label: "Projects" },
+  { to: "/all-entries", icon: FaListAlt, label: "All Entries" },
+];
 
-// Helper to get links in saved order
-function getInitialLinks() {
-  const saved = localStorage.getItem(SIDEBAR_ORDER_KEY);
-  if (!saved) return defaultLinks;
-  try {
-    const order = JSON.parse(saved);
-    // Map saved order to link objects
-    return order
-      .map((to) => defaultLinks.find((l) => l.to === to))
-      .filter(Boolean)
-      // Add any new links not in saved order
-      .concat(defaultLinks.filter(l => !order.includes(l.to)));
-  } catch {
-    return defaultLinks;
-  }
-}
-
-// Sortable item for sidebar links
-function SortableSidebarLink({ link, open, index }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: link.to });
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-        cursor: "grab",
-      }}
-      {...attributes}
-      {...listeners}
-    >
-      <NavLink
-        to={link.to}
-        className={({ isActive }) =>
-          `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
-        }
-      >
-        <link.icon size={open ? 24 : 34} />
-        {open && <span>{link.label}</span>}
-      </NavLink>
-    </div>
-  );
-}
-
-// --- Main Sidebar ---
-export default function Sidebar() {
+export default function UnifiedSidebar({ role = "user" }) {
+  const links = role === "admin" ? adminLinks : userLinks;
   const [open, setOpen] = useState(false);
-  const [links, setLinks] = useState(getInitialLinks);
-
-  // Settings Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Theme state for switch
   const [dark, setDark] = useThemeMode();
 
   useEffect(() => {
@@ -87,26 +40,6 @@ export default function Sidebar() {
       localStorage.setItem("theme", "light");
     }
   }, [dark]);
-
-  // Save order to localStorage when links change
-  useEffect(() => {
-    localStorage.setItem(SIDEBAR_ORDER_KEY, JSON.stringify(links.map(l => l.to)));
-  }, [links]);
-
-  // dnd-kit sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  );
-
-  // dnd-kit drag end handler
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (active.id !== over?.id) {
-      const oldIndex = links.findIndex((l) => l.to === active.id);
-      const newIndex = links.findIndex((l) => l.to === over.id);
-      setLinks((links) => arrayMove(links, oldIndex, newIndex));
-    }
-  };
 
   return (
     <StyledSidebar open={open}>
@@ -135,23 +68,20 @@ export default function Sidebar() {
         <div className="logo-area">
           <img src={logo} alt="BayClock Logo" className="sidebar-logo" />
         </div>
-        {/* DndContext for draggable nav links */}
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={links.map((l) => l.to)}
-            strategy={verticalListSortingStrategy}
-          >
-            <nav className="nav-links">
-              {links.map((link, idx) => (
-                <SortableSidebarLink key={link.to} link={link} open={open} index={idx} />
-              ))}
-            </nav>
-          </SortableContext>
-        </DndContext>
+        <nav className="nav-links">
+          {links.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `nav-link ${isActive ? "active" : ""} ${open ? "open" : ""}`
+              }
+            >
+              <link.icon size={open ? 24 : 34} />
+              {open && <span>{link.label}</span>}
+            </NavLink>
+          ))}
+        </nav>
         {/* Settings Button at the bottom */}
         <SidebarSettingsWrapper open={open}>
           <IconButton
@@ -159,7 +89,7 @@ export default function Sidebar() {
             size="large"
             onClick={() => setDrawerOpen(true)}
             sx={{
-              bgcolor: "#fb923c",
+              bgcolor: role === "admin" ? "#3D7EAE" : "#fb923c",
               color: "#fff",
               "&:hover": { bgcolor: "#265b7a" },
               boxShadow: "0 2px 8px 0 rgba(61,126,174,0.18)",

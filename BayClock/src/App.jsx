@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import TimeTracker from "./pages/TimeTracker";
 import Projects from "./pages/Projects";
@@ -8,11 +7,11 @@ import LandingPage from "./pages/LandingPage";
 import CalendarPage from "./pages/Calendar";
 import LoginPage from "./pages/LoginPage";
 import AdminPanel from "./pages/AdminPanel";
-import AdminSidebar from "./components/AdminSidebar";
 import { supabase } from "./supabaseClient";
 import { useEffect, useState } from "react";
 import AllEntries from "./pages/AdminEntries";
 import ResetPassword from "./pages/ResetPassword";
+import UnifiedSidebar from "./components/UnifiedSidebar";
 
 // Helper: Protect routes by role
 function ProtectedRoute({ children, allowedRoles }) {
@@ -124,23 +123,10 @@ function Layout({ children }) {
     return <div />; // or a spinner if you want
   }
 
-  // Admin layout: show AdminSidebar AND Navbar, no user sidebar
-  if (role === "admin" && (isAdminPage || isProjectsPage)) {
-    return (
-      <div className="flex h-screen w-screen max-w-full overflow-x-hidden">
-        <AdminSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <Navbar />
-          <main className="p-6 overflow-y-auto min-w-0">{children}</main>
-        </div>
-      </div>
-    );
-  }
-
-  // User layout (including /projects for non-admins)
+  // Use UnifiedSidebar for both admin and user, passing the role
   return (
     <div className="flex h-screen w-screen max-w-full overflow-x-hidden">
-      <Sidebar />
+      <UnifiedSidebar role={role} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar />
         <main className="p-6 overflow-y-auto min-w-0">{children}</main>
