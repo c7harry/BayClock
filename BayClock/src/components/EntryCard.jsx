@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Typography, Box, Stack, IconButton, Tooltip, Collapse, Avatar, Divider } from "@mui/material";
+import { Card, Typography, Box, Stack, IconButton, Collapse, Avatar, Divider } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import styled from "@emotion/styled";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 
 // Styled Menu (adapts to dark/light mode)
 const StyledMenu = styled(Menu)(({ theme }) => ({
@@ -51,6 +52,25 @@ const StyledIconButton = styled(IconButton)(({ theme }) => ({
     color: theme.palette.mode === "dark"
       ? theme.palette.primary.light
       : theme.palette.primary.dark,
+  },
+}));
+
+// Custom styled tooltip for entry cards
+const EntryTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} arrow />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.mode === "dark" ? "#23232a" : "#fff",
+    color: theme.palette.mode === "dark" ? "#fff" : "#23232a",
+    fontSize: 14,
+    fontWeight: 500,
+    borderRadius: 8,
+    boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+    border: `1px solid ${theme.palette.divider}`,
+    padding: "8px 12px",
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.mode === "dark" ? "#23232a" : "#fff",
   },
 }));
 
@@ -241,7 +261,7 @@ export function EntryCardGroup({
               >
                 {entries.length}
               </Avatar>
-              <Tooltip title={`Show ${entries.length} entries`} arrow>
+              <EntryTooltip title={`Show ${entries.length} entries`} arrow>
                 <Box
                   sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
                   onClick={() => setExpanded((v) => !v)}
@@ -256,12 +276,12 @@ export function EntryCardGroup({
                     }}
                   />
                 </Box>
-              </Tooltip>
+              </EntryTooltip>
             </Box>
             <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               {/* Task description and project on the same row */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
-                <Tooltip title={entry.description} arrow>
+                <EntryTooltip title={entry.description} arrow>
                   <Typography
                     variant="subtitle1"
                     fontWeight={600}
@@ -282,7 +302,7 @@ export function EntryCardGroup({
                   >
                     {entry.description}
                   </Typography>
-                </Tooltip>
+                </EntryTooltip>
                 <Box
                   sx={{
                     minWidth: 100,
@@ -330,7 +350,7 @@ export function EntryCardGroup({
                   </Typography>
                 </Box>
                 {/* Resume Task Button */}
-                <Tooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
+                <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
                   <span>
                     <IconButton
                       aria-label="resume"
@@ -348,20 +368,28 @@ export function EntryCardGroup({
                       <PlayArrowIcon fontSize="small" />
                     </IconButton>
                   </span>
-                </Tooltip>
+                </EntryTooltip>
                 {/* Vertical button stays at the right */}
                 {showActions && onDelete && (
                   <>
-                    <StyledIconButton
-                      aria-label="more"
-                      aria-controls={menuOpen ? "entry-group-menu" : undefined}
-                      aria-haspopup="true"
-                      aria-expanded={menuOpen ? "true" : undefined}
-                      onClick={handleMenuOpen}
-                      size="small"
-                    >
-                      <MoreVertIcon />
-                    </StyledIconButton>
+                    <EntryTooltip title="More actions" arrow>
+                      <span>
+                        <StyledIconButton
+                          aria-label="more"
+                          aria-controls={menuOpen ? "entry-group-menu" : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={menuOpen ? "true" : undefined}
+                          onClick={handleMenuOpen}
+                          size="small"
+                          sx={{
+                            overflow: "visible", 
+                            zIndex: 2,         
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </StyledIconButton>
+                      </span>
+                    </EntryTooltip>
                     <StyledMenu
                       id="entry-group-menu"
                       anchorEl={anchorEl}
@@ -521,7 +549,7 @@ export default function EntryCard({
             <Box sx={{ flex: 1, minWidth: 0 }}>
               {/* Task description and project on the same row */}
               <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
-                <Tooltip title={entry.description} arrow>
+                <EntryTooltip title={entry.description} arrow>
                   <Typography
                     variant="subtitle1"
                     fontWeight={600}
@@ -542,7 +570,7 @@ export default function EntryCard({
                   >
                     {entry.description}
                   </Typography>
-                </Tooltip>
+                </EntryTooltip>
                 <Box
                   sx={{
                     minWidth: 100,
@@ -585,7 +613,7 @@ export default function EntryCard({
                   </Box>
                 )}
                 {/* Resume Task Button */}
-                <Tooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
+                <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
                   <span>
                     <IconButton
                       aria-label="resume"
@@ -603,28 +631,40 @@ export default function EntryCard({
                       <PlayArrowIcon fontSize="small" />
                     </IconButton>
                   </span>
-                </Tooltip>
+                </EntryTooltip>
                 {/* 3 vertical dots menu for actions */}
                 {showActions && (
                   <>
-                    <IconButton
-                      aria-label="more"
-                      aria-controls={menuOpen ? "entry-menu" : undefined}
-                      aria-haspopup="true"
-                      aria-expanded={menuOpen ? "true" : undefined}
-                      onClick={handleMenuOpen}
-                      sx={{
-                        ml: 1,
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                        boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
-                        "&:hover": { bgcolor: "grey.100" },
-                        p: 0.7,
-                      }}
-                      size="small"
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
+                    <EntryTooltip title="More actions" arrow>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          position: "relative",
+                          zIndex: 2, // Ensure tooltip and hover effect are above parent overflow
+                        }}
+                      >
+                        <IconButton
+                          aria-label="more"
+                          aria-controls={menuOpen ? "entry-menu" : undefined}
+                          aria-haspopup="true"
+                          aria-expanded={menuOpen ? "true" : undefined}
+                          onClick={handleMenuOpen}
+                          sx={{
+                            ml: 1,
+                            bgcolor: "background.paper",
+                            borderRadius: 2,
+                            boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
+                            "&:hover": { bgcolor: "grey.100" },
+                            p: 0.7,
+                            overflow: "visible",
+                            zIndex: 2,         
+                          }}
+                          size="small"
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </span>
+                    </EntryTooltip>
                     <StyledMenu
                       id="entry-menu"
                       anchorEl={anchorEl}
