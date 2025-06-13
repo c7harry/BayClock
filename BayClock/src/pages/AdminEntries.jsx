@@ -1,13 +1,54 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
   Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Card, CardContent,
   TableContainer, Chip, Tooltip, Paper
 } from "@mui/material";
 import { FaListAlt } from "react-icons/fa";
+import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);
+
+  // Detect system or document theme
+  const [mode, setMode] = useState(
+    document.documentElement.classList.contains("dark") ? "dark" : "light"
+  );
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+          ...(mode === "light"
+            ? {
+                background: {
+                  default: "#f3f4f6",
+                  paper: "#fff",
+                },
+              }
+            : {
+                background: {
+                  default: "#18181b",
+                  paper: "#23232a",
+                },
+              }),
+          warning: {
+            main: "#fb923c",
+            light: "#ffe6d3",
+            dark: "#b45309",
+          },
+        },
+      }),
+    [mode]
+  );
 
   useEffect(() => {
     async function fetchEntries() {
@@ -64,185 +105,196 @@ export default function AllEntries() {
   }, []);
 
   return (
-    <Box
-      sx={{
-        p: { xs: 1, md: 5 },
-        width: "100%",
-        maxWidth: "1550px",
-        mx: "auto",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {/* Title Card */}
-      <Card
-        elevation={6}
+    <ThemeProvider theme={theme}>
+      <Box
         sx={{
-          borderRadius: 5,
-          bgcolor: "background.paper",
-          mb: 3,
+          p: { xs: 1, md: 5 },
           width: "100%",
-          maxWidth: "100%",
+          maxWidth: "1550px",
+          mx: "auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          minHeight: "100vh",
         }}
       >
-        <CardContent
+        {/* Title Card */}
+        <Card
+          elevation={6}
           sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 2,
-            py: 3,
+            borderRadius: 5,
             bgcolor: "background.paper",
-            transition: "background-color 0.3s",
+            mb: 3,
+            width: "100%",
+            maxWidth: "100%",
+            color: "text.primary",
           }}
         >
-          <FaListAlt size={32} color="#fb923c" />
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            color="text.primary"
-            sx={{ textAlign: "center" }}
-          >
-            All User Entries
-          </Typography>
-        </CardContent>
-      </Card>
-      {/* Entries Table Card */}
-      <Card
-        elevation={4}
-        sx={{
-          borderRadius: 5,
-          bgcolor: "background.paper",
-          width: "100%",
-          maxWidth: "100%",
-        }}
-      >
-        <CardContent sx={{ p: 0 }}>
-          <TableContainer
-            component={Paper}
+          <CardContent
             sx={{
-              maxHeight: "70vh",
-              borderRadius: 3,
-              boxShadow: "none",
-              overflowX: "auto", // Only TableContainer should scroll horizontally
-              overflowY: "auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 2,
+              py: 3,
+              bgcolor: "background.paper",
+              transition: "background-color 0.3s",
+              color: "text.primary",
             }}
           >
-            <Table
-              stickyHeader
-              size="small"
-              aria-label="entries table"
+            <FaListAlt size={32} color={theme.palette.warning.main} />
+            <Typography
+              variant="h4"
+              fontWeight={700}
+              color="text.primary"
+              sx={{ textAlign: "center" }}
+            >
+              All User Entries
+            </Typography>
+          </CardContent>
+        </Card>
+        {/* Entries Table Card */}
+        <Card
+          elevation={4}
+          sx={{
+            borderRadius: 5,
+            bgcolor: "background.paper",
+            width: "100%",
+            maxWidth: "100%",
+            color: "text.primary",
+          }}
+        >
+          <CardContent sx={{ p: 0, bgcolor: "background.paper", color: "text.primary" }}>
+            <TableContainer
+              component={Paper}
               sx={{
-                mx: "auto",
-                tableLayout: "fixed",
-                minWidth: 900,
+                maxHeight: "70vh",
+                borderRadius: 3,
+                boxShadow: "none",
+                overflowX: "auto",
+                overflowY: "auto",
+                bgcolor: "background.paper",
+                color: "text.primary",
               }}
             >
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>User</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Start</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>End</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Duration</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200, textAlign: "center" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center" }}>Project</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {entries.map((entry, idx) => (
-                  <TableRow
-                    key={entry.id}
-                    hover
-                    sx={{
-                      bgcolor: idx % 2 === 0 ? "background.paper" : "grey.50",
-                      transition: "background 0.2s",
-                    }}
-                  >
-                    <TableCell align="center">{entry.profile?.full_name || entry.user_id}</TableCell>
-                    <TableCell align="center" sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      <Tooltip title={entry.profile?.email || ""} arrow>
-                        <span>{entry.profile?.email || ""}</span>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="center">
-                      {entry.date
-                        ? (() => {
-                            const [year, month, day] = entry.date.split("-");
-                            return `${month}/${day}/${year}`;
-                          })()
-                        : ""}
-                    </TableCell>
-                    <TableCell align="center">
-                      {entry.start
-                        ? (() => {
-                            // Handles "HH:mm" or "HH:mm:ss" format
-                            const [h, m, s] = entry.start.split(":").map(Number);
-                            const date = new Date();
-                            date.setHours(h, m, s || 0, 0);
-                            return date.toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
-                          })()
-                        : ""}
-                    </TableCell>
-                    <TableCell align="center">
-                      {entry.end
-                        ? (() => {
-                            const [h, m, s] = entry.end.split(":").map(Number);
-                            const date = new Date();
-                            date.setHours(h, m, s || 0, 0);
-                            return date.toLocaleTimeString("en-US", {
-                              hour: "numeric",
-                              minute: "2-digit",
-                              hour12: true,
-                            });
-                          })()
-                        : ""}
-                    </TableCell>
-                    <TableCell align="center">{entry.duration}</TableCell>
-                    <TableCell align="center" sx={{ maxWidth: 200, p: 0.5 }}>
-                      <Tooltip title={entry.description || ""} arrow>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "normal",
-                            maxWidth: 200,
-                          }}
-                        >
-                          {entry.description}
-                        </Typography>
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell align="center">
-                      <Chip
-                        label={entry.projectName}
-                        color="warning"
-                        size="small"
-                        sx={{
-                          bgcolor: "warning.light",
-                          color: "warning.dark",
-                          fontWeight: 600,
-                          fontSize: 13,
-                        }}
-                      />
-                    </TableCell>
+              <Table
+                stickyHeader
+                size="small"
+                aria-label="entries table"
+                sx={{
+                  mx: "auto",
+                  tableLayout: "fixed",
+                  minWidth: 900,
+                  bgcolor: "background.paper",
+                  color: "text.primary",
+                }}
+              >
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Email</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Date</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Start</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>End</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Duration</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200, textAlign: "center", color: "text.primary" }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Project</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
-    </Box>
+                </TableHead>
+                <TableBody>
+                  {entries.map((entry, idx) => (
+                    <TableRow
+                      key={entry.id}
+                      hover
+                      sx={{
+                        bgcolor: idx % 2 === 0 ? "background.paper" : (mode === "dark" ? "#23232a" : "grey.50"),
+                        transition: "background 0.2s",
+                        color: "text.primary",
+                      }}
+                    >
+                      <TableCell align="center" sx={{ color: "text.primary" }}>{entry.profile?.full_name || entry.user_id}</TableCell>
+                      <TableCell align="center" sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "text.primary" }}>
+                        <Tooltip title={entry.profile?.email || ""} arrow>
+                          <span>{entry.profile?.email || ""}</span>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "text.primary" }}>
+                        {entry.date
+                          ? (() => {
+                              const [year, month, day] = entry.date.split("-");
+                              return `${month}/${day}/${year}`;
+                            })()
+                          : ""}
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "text.primary" }}>
+                        {entry.start
+                          ? (() => {
+                              const [h, m, s] = entry.start.split(":").map(Number);
+                              const date = new Date();
+                              date.setHours(h, m, s || 0, 0);
+                              return date.toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              });
+                            })()
+                          : ""}
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "text.primary" }}>
+                        {entry.end
+                          ? (() => {
+                              const [h, m, s] = entry.end.split(":").map(Number);
+                              const date = new Date();
+                              date.setHours(h, m, s || 0, 0);
+                              return date.toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              });
+                            })()
+                          : ""}
+                      </TableCell>
+                      <TableCell align="center" sx={{ color: "text.primary" }}>{entry.duration}</TableCell>
+                      <TableCell align="center" sx={{ maxWidth: 200, p: 0.5, color: "text.primary" }}>
+                        <Tooltip title={entry.description || ""} arrow>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "normal",
+                              maxWidth: 200,
+                              color: "text.primary",
+                            }}
+                          >
+                            {entry.description}
+                          </Typography>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Chip
+                          label={entry.projectName}
+                          color="warning"
+                          size="small"
+                          sx={{
+                            bgcolor: "warning.light",
+                            color: "warning.dark",
+                            fontWeight: 600,
+                            fontSize: 13,
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
+      </Box>
+    </ThemeProvider>
   );
 }
