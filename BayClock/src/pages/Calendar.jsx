@@ -167,6 +167,8 @@ export default function CalendarPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogEntries, setDialogEntries] = useState([]);
   const [weekStart, setWeekStart] = useState(getWeekStart(new Date()));
+  const [projects, setProjects] = useState([]);
+  const [projectMap, setProjectMap] = useState({});
 
   // Load entries from Supabase
   useEffect(() => {
@@ -177,6 +179,23 @@ export default function CalendarPage() {
     fetchEntries();
     window.addEventListener("entries-updated", fetchEntries);
     return () => window.removeEventListener("entries-updated", fetchEntries);
+  }, []);
+
+  // Fetch projects
+  useEffect(() => {
+    async function fetchProjects() {
+      const { data, error } = await supabase.from("projects").select("id, name");
+      if (!error && data) {
+        setProjects(data);
+        // Build a map for quick lookup
+        const map = {};
+        data.forEach((proj) => {
+          map[proj.id] = proj.name;
+        });
+        setProjectMap(map);
+      }
+    }
+    fetchProjects();
   }, []);
 
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
@@ -517,7 +536,35 @@ export default function CalendarPage() {
                           }}
                         >
                           <Tooltip
-                            title={`${entry.description} (${entry.start ? format(setHours(setMinutes(new Date(), Number(entry.start.split(":")[1])), Number(entry.start.split(":")[0])), "h:mm a") : ""} - ${entry.end ? format(setHours(setMinutes(new Date(), Number(entry.end.split(":")[1])), Number(entry.end.split(":")[0])), "h:mm a") : ""})`}
+                            title={
+                              <Box>
+                                <Typography fontWeight={700}>{entry.description}</Typography>
+                                <Typography color="warning.main" fontWeight={700}>
+                                  {projectMap[entry.project_id] || "No Project"}
+                                </Typography>
+                                <Typography variant="caption">
+                                  {entry.start
+                                    ? format(
+                                        setHours(
+                                          setMinutes(new Date(), Number(entry.start.split(":")[1])),
+                                          Number(entry.start.split(":")[0])
+                                        ),
+                                        "h:mm a"
+                                      )
+                                    : ""}
+                                  {" - "}
+                                  {entry.end
+                                    ? format(
+                                        setHours(
+                                          setMinutes(new Date(), Number(entry.end.split(":")[1])),
+                                          Number(entry.end.split(":")[0])
+                                        ),
+                                        "h:mm a"
+                                      )
+                                    : ""}
+                                </Typography>
+                              </Box>
+                            }
                             arrow
                           >
                             <Box
@@ -554,11 +601,19 @@ export default function CalendarPage() {
                                 <Typography variant="subtitle2" fontWeight={700} sx={{ color: "inherit" }}>
                                   {entry.description}
                                 </Typography>
-                                <Typography variant="caption" sx={{ color: "inherit", fontWeight: 700 }}>
-                                  {entry.project}
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: "warning.main",
+                                    fontWeight: 700,
+                                    display: "block",
+                                    mt: 0.5,
+                                    wordBreak: "break-word",
+                                  }}
+                                >
+                                  {projectMap[entry.project_id] || <span style={{ color: "#aaa" }}>No Project</span>}
                                 </Typography>
                               </Box>
-                              {/* Only show total duration in HH:MM:SS at the bottom */}
                               <Box sx={{ mt: 1, textAlign: "right" }}>
                                 <Typography variant="caption" sx={{ color: "inherit", fontWeight: 700 }}>
                                   {(() => {
@@ -639,7 +694,7 @@ export default function CalendarPage() {
                     {entry.description}
                   </Typography>
                   <Typography variant="body2" color="warning.main" fontWeight={600}>
-                    {entry.project}
+                    {projectMap[entry.project_id] || "No Project"}
                   </Typography>
                   {/* Time range on its own row */}
                   {entry.start && entry.end && (
