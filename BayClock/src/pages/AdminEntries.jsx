@@ -2,15 +2,21 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
   Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Card, CardContent,
-  TableContainer, Chip, Tooltip, Paper, Pagination
-} from "@mui/material";
+  TableContainer, Chip, Tooltip, Paper, Pagination, TextField, MenuItem, InputLabel, FormControl, Select} from "@mui/material";
 import { FaListAlt } from "react-icons/fa";
-import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import dayjs from "dayjs";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [page, setPage] = useState(1);
   const entriesPerPage = 20;
+
+  // Filter state
+  const [filterProject, setFilterProject] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
 
   // Detect system or document theme
   const [mode, setMode] = useState(
@@ -85,6 +91,7 @@ export default function AllEntries() {
         setEntries(entries || []);
         return;
       }
+      setProjects(projects || []);
 
       // Map profiles and projects
       const profileMap = Object.fromEntries(
@@ -106,12 +113,33 @@ export default function AllEntries() {
     fetchEntries();
   }, []);
 
+  // Filtering logic
+  const filteredEntries = useMemo(() => {
+    return entries.filter((entry) => {
+      const matchesProject =
+        !filterProject || entry.project_id === filterProject;
+      const matchesDate =
+        !filterDate || entry.date === filterDate;
+      const matchesEmail =
+        !searchEmail ||
+        (entry.profile?.email || "")
+          .toLowerCase()
+          .includes(searchEmail.toLowerCase());
+      return matchesProject && matchesDate && matchesEmail;
+    });
+  }, [entries, filterProject, filterDate, searchEmail]);
+
   // Pagination logic
-  const pageCount = Math.ceil(entries.length / entriesPerPage);
-  const pagedEntries = entries.slice(
+  const pageCount = Math.ceil(filteredEntries.length / entriesPerPage);
+  const pagedEntries = filteredEntries.slice(
     (page - 1) * entriesPerPage,
     page * entriesPerPage
   );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filterProject, filterDate, searchEmail]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -174,17 +202,72 @@ export default function AllEntries() {
           }}
         >
           <CardContent sx={{ p: 0, bgcolor: "background.paper", color: "text.primary" }}>
-            {/* Add All Entries Title */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, px: 2, pt: 2 }}>
+            {/* All Entries Title and Filters in the same row */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: { xs: "flex-start", sm: "center" },
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                mb: 2,
+                px: 2,
+                pt: 2,
+              }}
+            >
               <Typography
                 variant="h6"
                 fontWeight={600}
                 mb={1}
                 color="text.primary"
-                sx={{ fontSize: "1.25rem" }}
+                sx={{ fontSize: "1.25rem", minWidth: 120 }}
               >
                 All Entries
               </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 2,
+                  alignItems: "center",
+                  width: "100%",
+                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                }}
+              >
+                <TextField
+                  label="Search by Email"
+                  size="small"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  sx={{ minWidth: 220 }}
+                />
+                <FormControl sx={{ minWidth: 180 }}>
+                  <InputLabel id="filter-project-label">Project</InputLabel>
+                  <Select
+                    labelId="filter-project-label"
+                    value={filterProject}
+                    label="Project"
+                    onChange={(e) => setFilterProject(e.target.value)}
+                    size="small"
+                  >
+                    <MenuItem value="">All Projects</MenuItem>
+                    {projects.map((proj) => (
+                      <MenuItem key={proj.id} value={proj.id}>
+                        {proj.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Date"
+                  type="date"
+                  size="small"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{ minWidth: 150 }}
+                />
+              </Box>
             </Box>
             <TableContainer
               component={Paper}
