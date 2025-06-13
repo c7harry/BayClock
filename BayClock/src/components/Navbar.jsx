@@ -52,22 +52,28 @@ function TimerNavDisplay() {
     };
   }, []);
 
+  const handleStopTask = () => {
+    localStorage.removeItem(TIMER_STATE_KEY);
+    setIsRunning(false);
+    setTimer(0);
+    window.dispatchEvent(new Event("storage"));
+  };
+
   if (!isRunning) return null;
 
   return (
-    <div style={{
-      marginRight: 24,
-      fontWeight: 700,
-      color: "#fb923c",
-      fontSize: "1.1rem",
-      letterSpacing: 1,
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-    }}>
+    <StyledTimerNav>
       <FaRegClock style={{ marginRight: 4 }} />
       {timerToDuration(timer)}
-    </div>
+      <StopTaskButton onClick={handleStopTask} title="Stop Task">
+        <span className="stop-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="6" y="6" width="16" height="16" rx="3" fill="#fff"/>
+            <rect x="6" y="6" width="16" height="16" rx="3" stroke="#fb923c" strokeWidth="3"/>
+          </svg>
+        </span>
+      </StopTaskButton>
+    </StyledTimerNav>
   );
 }
 
@@ -538,5 +544,61 @@ const StyledNavbar = styled(motion.header)`
     .navbar-right {
       margin-right: 0;
     }
+  }
+`;
+
+const StyledTimerNav = styled.div`
+  margin-right: 24px;
+  font-weight: 700;
+  color: #fb923c;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #fff7ed 0%, #ffe6d3 100%);
+  border-radius: 18px;
+  padding: 4px 10px 4px 10px;
+  box-shadow: 0 2px 8px 0 rgba(251, 146, 60, 0.08);
+  border: 1.5px solid #fb923c;
+  transition: background 0.2s, border 0.2s;
+
+  html.dark & {
+    background: linear-gradient(90deg, #23232a 0%, #18181b 100%);
+    color: #fb923c;
+    border: 1.5px solid #fb923c;
+  }
+`;
+
+const StopTaskButton = styled.button`
+  margin-left: 8px;
+  background: linear-gradient(90deg, #fb923c 0%, #f43f1a 100%);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px 0 rgba(251, 146, 60, 0.18);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+
+  &:hover, &:focus {
+    background: linear-gradient(90deg, #f43f1a 0%, #fb923c 100%);
+    box-shadow: 0 4px 16px 0 rgba(251, 146, 60, 0.28);
+    transform: scale(1.08);
+  }
+
+  .stop-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  svg {
+    display: block;
   }
 `;
