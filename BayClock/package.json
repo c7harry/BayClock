@@ -32,6 +32,7 @@
     "react-parallax-tilt": "^1.7.297",
     "react-router-dom": "^7.6.2",
     "react-spring": "^10.0.1",
+    "react-tooltip": "^5.29.0",
     "react-type-animation": "^3.2.0",
     "simplebar": "^6.3.1",
     "simplebar-react": "^3.3.1",

@@ -4,6 +4,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { FaRegClock } from "react-icons/fa";
+import { Tooltip as MuiTooltip, tooltipClasses } from "@mui/material";
 
 const TIMER_STATE_KEY = "timerState";
 
@@ -20,6 +21,33 @@ function timerToDuration(sec) {
     .filter(Boolean)
     .join(" ");
 }
+
+// --- Custom Tooltip for Stop Button ---
+const StyledTooltip = styled(({ className, ...props }) => (
+  <MuiTooltip
+    {...props}
+    classes={{ popper: className }}
+    arrow
+    placement="bottom"
+  />
+))`
+  & .${tooltipClasses.tooltip} {
+    background: linear-gradient(90deg, #fb923c 0%, #f43f1a 100%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px 0 rgba(251, 146, 60, 0.18);
+    padding: 10px 18px;
+    letter-spacing: 0.5px;
+    border: 2px solid #fff7ed;
+    text-shadow: 0 1px 4px #f43f1a44;
+  }
+  & .${tooltipClasses.arrow} {
+    color: #fb923c;
+    filter: drop-shadow(0 2px 4px #f43f1a44);
+  }
+`;
 
 function TimerNavDisplay() {
   const [timer, setTimer] = useState(0);
@@ -65,14 +93,16 @@ function TimerNavDisplay() {
     <StyledTimerNav>
       <FaRegClock style={{ marginRight: 4 }} />
       {timerToDuration(timer)}
-      <StopTaskButton onClick={handleStopTask} title="Stop Task">
-        <span className="stop-icon" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <rect x="6" y="6" width="16" height="16" rx="3" fill="#fff"/>
-            <rect x="6" y="6" width="16" height="16" rx="3" stroke="#fb923c" strokeWidth="3"/>
-          </svg>
-        </span>
-      </StopTaskButton>
+      <StyledTooltip title="Stop Task" arrow>
+        <StopTaskButton onClick={handleStopTask} aria-label="Stop Task">
+          <span className="stop-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <rect x="6" y="6" width="16" height="16" rx="3" fill="#fff"/>
+              <rect x="6" y="6" width="16" height="16" rx="3" stroke="#fb923c" strokeWidth="3"/>
+            </svg>
+          </span>
+        </StopTaskButton>
+      </StyledTooltip>
     </StyledTimerNav>
   );
 }
@@ -559,7 +589,7 @@ const StyledTimerNav = styled.div`
   border-radius: 18px;
   padding: 4px 10px 4px 10px;
   box-shadow: 0 2px 8px 0 rgba(251, 146, 60, 0.08);
-  border: 1.5px solid #fb923c;
+  border: 1.5px solidrgb(251, 60, 60);
   transition: background 0.2s, border 0.2s;
 
   html.dark & {
