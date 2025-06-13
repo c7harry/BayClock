@@ -394,7 +394,7 @@ export function EntryCardGroup({
           </Stack>
         </Box>
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box sx={{ pl: 6, pt: 1 }}>
+          <Box sx={{ pl: 1, pt: 0 }}>
             {entries.map((e, idx) => (
               <Box
                 key={e.id}
