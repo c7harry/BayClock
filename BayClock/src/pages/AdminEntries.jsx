@@ -2,13 +2,15 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
   Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Card, CardContent,
-  TableContainer, Chip, Tooltip, Paper
+  TableContainer, Chip, Tooltip, Paper, Pagination
 } from "@mui/material";
 import { FaListAlt } from "react-icons/fa";
 import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);
+  const [page, setPage] = useState(1);
+  const entriesPerPage = 20;
 
   // Detect system or document theme
   const [mode, setMode] = useState(
@@ -104,6 +106,13 @@ export default function AllEntries() {
     fetchEntries();
   }, []);
 
+  // Pagination logic
+  const pageCount = Math.ceil(entries.length / entriesPerPage);
+  const pagedEntries = entries.slice(
+    (page - 1) * entriesPerPage,
+    page * entriesPerPage
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <Box
@@ -165,6 +174,18 @@ export default function AllEntries() {
           }}
         >
           <CardContent sx={{ p: 0, bgcolor: "background.paper", color: "text.primary" }}>
+            {/* Add All Entries Title */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2, px: 2, pt: 2 }}>
+              <Typography
+                variant="h6"
+                fontWeight={600}
+                mb={1}
+                color="text.primary"
+                sx={{ fontSize: "1.25rem" }}
+              >
+                All Entries
+              </Typography>
+            </Box>
             <TableContainer
               component={Paper}
               sx={{
@@ -175,6 +196,7 @@ export default function AllEntries() {
                 overflowY: "auto",
                 bgcolor: "background.paper",
                 color: "text.primary",
+                minWidth: 900,
               }}
             >
               <Table
@@ -183,7 +205,7 @@ export default function AllEntries() {
                 aria-label="entries table"
                 sx={{
                   mx: "auto",
-                  tableLayout: "fixed",
+                  tableLayout: "auto",
                   minWidth: 900,
                   bgcolor: "background.paper",
                   color: "text.primary",
@@ -202,7 +224,7 @@ export default function AllEntries() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {entries.map((entry, idx) => (
+                  {pagedEntries.map((entry, idx) => (
                     <TableRow
                       key={entry.id}
                       hover
@@ -292,6 +314,17 @@ export default function AllEntries() {
                 </TableBody>
               </Table>
             </TableContainer>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+              <Pagination
+                count={pageCount}
+                page={page}
+                onChange={(_, value) => setPage(value)}
+                color="primary"
+                shape="rounded"
+                showFirstButton
+                showLastButton
+              />
+            </Box>
           </CardContent>
         </Card>
       </Box>
