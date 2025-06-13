@@ -479,13 +479,34 @@ export default function Sidebar() {
             sx={{
               bgcolor: "#fb923c",
               color: "#fff",
-              "&:hover": { bgcolor: "#3D7EAE" },
+              "&:hover": { bgcolor: "#265b7a" },
               boxShadow: "0 2px 8px 0 rgba(61,126,174,0.18)",
               mb: 1,
               transition: "background 0.2s",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: open ? "center" : "center",
+              width: open ? "90%" : "48px",
+              borderRadius: "8px",
+              pl: open ? 2 : 0,
+              pr: open ? 2 : 0,
             }}
           >
-            <FaCog size={open ? 22 : 26} />
+            <FaCog size={open ? 22 : 26} style={{ marginRight: open ? 16 : 0, transition: "margin 0.18s" }} />
+            {open && (
+              <span
+                style={{
+                  color: "#fff",
+                  fontWeight: 500,
+                  fontSize: "1rem",
+                  letterSpacing: 0.2,
+                  whiteSpace: "nowrap",
+                  transition: "opacity 0.18s",
+                }}
+              >
+                Settings
+              </span>
+            )}
           </IconButton>
         </SidebarSettingsWrapper>
         <Drawer
