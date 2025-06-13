@@ -112,14 +112,12 @@ export default function Projects() {
   // Workspaces state
   const [workspaces, setWorkspaces] = useState([]);
 
-  // Fetch all workspaces for admin
+  // Fetch all workspaces for all users (not just admins)
   useEffect(() => {
-    if (role === "admin") {
-      supabase.from("workspaces").select("*").then(({ data }) => {
-        setWorkspaces(data || []);
-      });
-    }
-  }, [role]);
+    supabase.from("workspaces").select("*").then(({ data }) => {
+      setWorkspaces(data || []);
+    });
+  }, []);
 
   // Open dialog for add/edit
   const handleOpenDialog = (project = null) => {
@@ -340,15 +338,17 @@ export default function Projects() {
                         <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Workspace</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }} align="right">
-                          Actions
-                        </TableCell>
+                        {role === "admin" && (
+                          <TableCell sx={{ fontWeight: 700 }} align="right">
+                            Actions
+                          </TableCell>
+                        )}
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {(role === "admin" ? projects : filteredProjects).length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={5} align="center" sx={{ color: "text.disabled" }}>
+                          <TableCell colSpan={role === "admin" ? 5 : 4} align="center" sx={{ color: "text.disabled" }}>
                             No projects yet.
                           </TableCell>
                         </TableRow>
@@ -380,13 +380,10 @@ export default function Projects() {
                               </Box>
                             </TableCell>
                             <TableCell>
-                              {
-                                // Show workspace name if available
-                                workspaces.find(ws => ws.id === project.workspace_id)?.name || "—"
-                              }
+                              {workspaces.find(ws => ws.id === project.workspace_id)?.name || "—"}
                             </TableCell>
-                            <TableCell align="right">
-                              {role === "admin" && (
+                            {role === "admin" && (
+                              <TableCell align="right">
                                 <>
                                   <Tooltip title="Edit" arrow>
                                     <IconButton
@@ -406,8 +403,8 @@ export default function Projects() {
                                     </IconButton>
                                   </Tooltip>
                                 </>
-                              )}
-                            </TableCell>
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))
                       )}
