@@ -495,58 +495,80 @@ export default function AdminPanel() {
               }}
             >
               <CardContent>
-                <Typography
+                {/* User Profiles Title and Filters in the same row */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Typography
                   variant="h6"
                   fontWeight={600}
-                  mb={2}
                   color="text.primary"
-                  sx={{ fontSize: "1.25rem" }}
+                  sx={{
+                    fontSize: "1.25rem",
+                    minWidth: 150,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
                 >
-                  User Profiles
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-
-                {/* Search and Filter Controls */}
-                <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap" }}>
-                  <TextField
-                    label="Search by Email"
-                    value={searchEmail}
-                    onChange={e => setSearchEmail(e.target.value)}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Select
-                    value={sortField}
-                    onChange={e => setSortField(e.target.value)}
-                    size="small"
-                    displayEmpty
-                    sx={{ minWidth: 160 }}
+                    User Profiles
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      alignItems: "center",
+                      width: "100%",
+                      justifyContent: { xs: "flex-start", sm: "flex-end" },
+                    }}
                   >
-                    <MenuItem value="">Sort By...</MenuItem>
-                    <MenuItem value="totalTime">Total Time</MenuItem>
-                    <MenuItem value="created">Created Date</MenuItem>
-                  </Select>
-                  {sortField && (
-                    <Button
+                    <TextField
+                      label="Search by Email"
+                      value={searchEmail}
+                      onChange={e => setSearchEmail(e.target.value)}
+                      size="small"
                       variant="outlined"
+                    />
+                    <Select
+                      value={sortField}
+                      onChange={e => setSortField(e.target.value)}
                       size="small"
-                      onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                      displayEmpty
+                      sx={{ minWidth: 160 }}
                     >
-                      {sortOrder === "asc" ? "Ascending" : "Descending"}
-                    </Button>
-                  )}
-                  {sortField && (
-                    <Button
-                      variant="text"
-                      size="small"
-                      color="inherit"
-                      onClick={() => { setSortField(""); setSortOrder("desc"); }}
-                    >
-                      Clear Sort
-                    </Button>
-                  )}
+                      <MenuItem value="">Sort By...</MenuItem>
+                      <MenuItem value="totalTime">Total Time</MenuItem>
+                      <MenuItem value="created">Created Date</MenuItem>
+                    </Select>
+                    {sortField && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                      >
+                        {sortOrder === "asc" ? "Ascending" : "Descending"}
+                      </Button>
+                    )}
+                    {sortField && (
+                      <Button
+                        variant="text"
+                        size="small"
+                        color="inherit"
+                        onClick={() => { setSortField(""); setSortOrder("desc"); }}
+                      >
+                        Clear Sort
+                      </Button>
+                    )}
+                  </Box>
                 </Box>
-
+                <Divider sx={{ mb: 2 }} />
                 <Table size="small" aria-label="user profiles table">
                   <TableHead>
                     <TableRow sx={{ bgcolor: "background.default" }}>
