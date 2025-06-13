@@ -125,7 +125,8 @@ export default function AllEntries() {
               maxHeight: "70vh",
               borderRadius: 3,
               boxShadow: "none",
-              overflowX: "auto",
+              overflowX: "auto", // Only TableContainer should scroll horizontally
+              overflowY: "auto",
             }}
           >
             <Table
@@ -134,7 +135,8 @@ export default function AllEntries() {
               aria-label="entries table"
               sx={{
                 mx: "auto",
-                tableLayout: "fixed", 
+                tableLayout: "fixed",
+                minWidth: 900,
               }}
             >
               <TableHead>
@@ -165,9 +167,43 @@ export default function AllEntries() {
                         <span>{entry.profile?.email || ""}</span>
                       </Tooltip>
                     </TableCell>
-                    <TableCell align="center">{entry.date}</TableCell>
-                    <TableCell align="center">{entry.start}</TableCell>
-                    <TableCell align="center">{entry.end}</TableCell>
+                    <TableCell align="center">
+                      {entry.date
+                        ? (() => {
+                            const [year, month, day] = entry.date.split("-");
+                            return `${month}/${day}/${year}`;
+                          })()
+                        : ""}
+                    </TableCell>
+                    <TableCell align="center">
+                      {entry.start
+                        ? (() => {
+                            // Handles "HH:mm" or "HH:mm:ss" format
+                            const [h, m, s] = entry.start.split(":").map(Number);
+                            const date = new Date();
+                            date.setHours(h, m, s || 0, 0);
+                            return date.toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
+                          })()
+                        : ""}
+                    </TableCell>
+                    <TableCell align="center">
+                      {entry.end
+                        ? (() => {
+                            const [h, m, s] = entry.end.split(":").map(Number);
+                            const date = new Date();
+                            date.setHours(h, m, s || 0, 0);
+                            return date.toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                              hour12: true,
+                            });
+                          })()
+                        : ""}
+                    </TableCell>
                     <TableCell align="center">{entry.duration}</TableCell>
                     <TableCell align="center" sx={{ maxWidth: 200, p: 0.5 }}>
                       <Tooltip title={entry.description || ""} arrow>
