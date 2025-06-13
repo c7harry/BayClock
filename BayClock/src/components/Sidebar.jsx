@@ -8,8 +8,9 @@ import { CSS } from "@dnd-kit/utilities";
 import logo from "../assets/Logo.png";
 import Drawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import { SettingsDrawerContent, useThemeMode } from "./Settings";
+import { SettingsDrawerContent, useThemeMode, } from "./Settings";
 import { handleLogout } from "./Settings";
+import { SidebarSettingsWrapper } from "./Settings";
 
 const SIDEBAR_ORDER_KEY = "sidebarOrder";
 
@@ -418,15 +419,4 @@ const StyledWrapper = styled.div`
     align-items: center;
     justify-content: center;
   }
-`;
-
-const SidebarSettingsWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: auto;
-  margin-bottom: 10px;
-  width: 100%;
-  transition: width 0.25s;
-  ${({ open }) => open ? "padding-left: 0;" : ""}
 `;

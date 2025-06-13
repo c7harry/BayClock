@@ -439,3 +439,15 @@ export async function handleLogout() {
   await supabase.auth.signOut();
   window.location.href = "/login";
 }
+
+// --- SidebarSettingsWrapper styled component ---
+export const SidebarSettingsWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+  margin-bottom: 10px;
+  width: 100%;
+  transition: width 0.25s;
+  ${({ open }) => open ? "padding-left: 0;" : ""}
+`;
