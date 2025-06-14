@@ -86,9 +86,11 @@ const StyledWrapper = styled.div`
 
 // Glassmorphism containers
 const GlassHero = styled(animated.div)`
-  background: rgba(255,255,255,0.13);
+  background: 
+    linear-gradient(120deg, rgba(15, 45, 82, 0.55) 60%, rgba(60, 120, 200, 0.35) 100%),
+    rgba(15, 45, 82, 0.42);
   border-radius: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  box-shadow: 0 8px 32px 0 rgba(15, 45, 82, 0.45);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 5px solid rgba(255,255,255,0.18);
