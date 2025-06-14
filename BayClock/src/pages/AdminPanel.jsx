@@ -461,15 +461,31 @@ export default function AdminPanel() {
                                   >
                                     <MdEdit />
                                   </Button>
-                                  <Button
-                                    size="small"
-                                    color="error"
-                                    onClick={() => handleDeleteWorkspace(ws)}
-                                    sx={{ minWidth: 36 }}
-                                    variant="outlined"
-                                  >
-                                    <MdDelete />
-                                  </Button>
+                                  {ws.id === "9ef07a06-d8cf-458a-80c0-a68eeafd62b2" ? (
+                                    <Tooltip title="Can't delete Main.">
+                                      <span>
+                                        <Button
+                                          size="small"
+                                          color="error"
+                                          sx={{ minWidth: 36 }}
+                                          variant="outlined"
+                                          disabled
+                                        >
+                                          <MdDelete />
+                                        </Button>
+                                      </span>
+                                    </Tooltip>
+                                  ) : (
+                                    <Button
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleDeleteWorkspace(ws)}
+                                      sx={{ minWidth: 36 }}
+                                      variant="outlined"
+                                    >
+                                      <MdDelete />
+                                    </Button>
+                                  )}
                                 </>
                               )}
                             </TableCell>
