@@ -17,6 +17,7 @@ const userLinks = [
   { to: "/tracker", icon: FaRegClock, label: "Time Tracker" },
   { to: "/projects", icon: FaFolderOpen, label: "Projects" },
   { to: "/calendar", icon: FaCalendar, label: "Calendar" },
+  { to: "/timesheet", icon: FaListAlt, label: "Timesheet" },
 ];
 const adminLinks = [
   { to: "/admin", icon: FaUserShield, label: "Admin Panel" },

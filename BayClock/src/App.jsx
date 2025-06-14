@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import AllEntries from "./pages/AdminEntries";
 import ResetPassword from "./pages/ResetPassword";
 import UnifiedSidebar from "./components/UnifiedSidebar";
+import Timesheet from "./pages/Timesheet";
 
 // Helper: Protect routes by role
 function ProtectedRoute({ children, allowedRoles }) {
@@ -190,6 +191,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["user"]}>
                   <CalendarPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/timesheet"
+              element={
+                <ProtectedRoute allowedRoles={["user"]}>
+                  <Timesheet />
                 </ProtectedRoute>
               }
             />
