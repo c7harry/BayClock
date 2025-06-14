@@ -16,6 +16,7 @@ import {
   Legend,
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import MilestonesAchievements from "../components/MilestonesAchievements";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, ChartTooltip, Legend, ChartDataLabels);
 
@@ -852,6 +853,7 @@ export default function Dashboard() {
               </Card>
             </Box>
           </motion.div>
+          <MilestonesAchievements entries={entries} />
         </Box>
       </Box>
     </ThemeProvider>
