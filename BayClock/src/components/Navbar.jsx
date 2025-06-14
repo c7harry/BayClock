@@ -108,7 +108,7 @@ function TimerNavDisplay() {
 
 // Global styles for glitch effect
 const GlitchStyles = createGlobalStyle`
-.glitch-wrapper {
+.navbar-glitch.glitch-wrapper {
    height: 56px;
    display: flex;
    align-items: center;
@@ -116,7 +116,7 @@ const GlitchStyles = createGlobalStyle`
    background: transparent;
    margin-left: 8px;
 }
-.glitch {
+.navbar-glitch .glitch {
    position: relative;
    font-size: 2rem;
    font-weight: 700;
@@ -125,7 +125,7 @@ const GlitchStyles = createGlobalStyle`
    letter-spacing: 0px;
    z-index: 1;
 }
-.glitch:before {
+.navbar-glitch .glitch:before {
    content: attr(data-glitch);
    position: absolute;
    top: 0;
@@ -137,7 +137,7 @@ const GlitchStyles = createGlobalStyle`
    clip: rect(0, 900px, 0, 0);
    animation: noise-before 3s infinite linear alternate-reverse;
 }
-.glitch:after {
+.navbar-glitch .glitch:after {
    content: attr(data-glitch);
    position: absolute;
    top: 0;
@@ -151,13 +151,13 @@ const GlitchStyles = createGlobalStyle`
 }
 
 /* Dark mode styles for glitch */
-html.dark & .glitch {
+html.dark .navbar-glitch .glitch {
    color: #d1d5db;
 }
-html.dark & .glitch:before {
+html.dark .navbar-glitch .glitch:before {
    color: #d1d5db;
 }
-html.dark & .glitch:after {
+html.dark .navbar-glitch .glitch:after {
    color: #d1d5db;
 }
 @keyframes noise-before {
@@ -295,7 +295,7 @@ export default function Navbar() {
         transition={{ type: "spring", stiffness: 80, damping: 12 }}
       >
         <div className="navbar-left">
-          <div className="glitch-wrapper">
+          <div className="navbar-glitch glitch-wrapper">
             <div className="glitch" data-glitch="BayClock">BayClock</div>
           </div>
         </div>

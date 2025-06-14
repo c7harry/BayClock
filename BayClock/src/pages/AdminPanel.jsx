@@ -607,7 +607,7 @@ export default function AdminPanel() {
                       paginatedProfiles.map((profile) => (
                         <TableRow key={profile.id} hover>
                           <TableCell align="center">
-                            <Tooltip title="Click to view this user's entries" arrow>
+                            <Tooltip title="View user's entries" arrow>
                               <Button
                                 variant="text"
                                 onClick={() => handleShowEntries(profile)}
