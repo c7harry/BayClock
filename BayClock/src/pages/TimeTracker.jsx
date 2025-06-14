@@ -22,6 +22,8 @@ import Tooltip from "@mui/material/Tooltip";
 import EntryCard, { EntryCardGroup } from "../components/EntryCard";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 const TIMER_STATE_KEY = "timerState";
 const MAX_TIMER = 3600;
@@ -410,6 +412,13 @@ export default function TimeTracker() {
     );
   };
 
+  const [showProjectPrompt, setShowProjectPrompt] = useState(false);
+
+  const handleClosePrompt = (event, reason) => {
+    if (reason === "clickaway") return;
+    setShowProjectPrompt(false);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -487,7 +496,14 @@ export default function TimeTracker() {
                     variant="outlined"
                     fullWidth
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      if (e.target.value && !project) {
+                        setShowProjectPrompt(true);
+                      } else {
+                        setShowProjectPrompt(false);
+                      }
+                    }}
                     sx={{ bgcolor: "background.default", borderRadius: 2 }}
                     placeholder="What are you working on?"
                   />
@@ -495,7 +511,10 @@ export default function TimeTracker() {
                     select
                     label="Project"
                     value={project}
-                    onChange={(e) => setProject(e.target.value)}
+                    onChange={(e) => {
+                      setProject(e.target.value);
+                      setShowProjectPrompt(false);
+                    }}
                     sx={{ minWidth: 160, bgcolor: "background.default", borderRadius: 2 }}
                   >
                     <MenuItem value="">Select</MenuItem>
@@ -625,6 +644,29 @@ export default function TimeTracker() {
                     </Button>
                   </Box>
                 </Box>
+                <Snackbar
+                  open={showProjectPrompt}
+                  autoHideDuration={4000}
+                  onClose={handleClosePrompt}
+                  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+                >
+                  <MuiAlert
+                    onClose={handleClosePrompt}
+                    severity="info" // Changed from "warning" to "info" for blue color
+                    elevation={6}
+                    variant="filled"
+                    sx={{
+                      width: "100%",
+                      bgcolor: "#1976d2", // Strong blue background
+                      color: "#fff",      // White text for contrast
+                      fontWeight: 700,
+                      fontSize: 17,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Please select a project to start the timer.
+                  </MuiAlert>
+                </Snackbar>
               </CardContent>
             </Card>
           </motion.div>
