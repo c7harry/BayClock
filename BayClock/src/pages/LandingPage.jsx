@@ -11,14 +11,14 @@ const StyledWrapper = styled.div`
   gap: 1.5rem;
   .btn {
     position: relative;
-    background: linear-gradient(90deg,rgb(229, 122, 60) 20%,rgb(246, 191, 132) 80%);
+    background: linear-gradient(90deg, rgba(15, 45, 82, 0.95) 20%, rgba(60, 120, 200, 0.85) 80%);
     color: #fff;
-    border: 3px solid #ffffff;
+    border: 3px solid #0f2d52;
     border-radius: 1rem;
     padding: 1rem 2.5rem;
     font-size: 1.25rem;
     font-weight: bold;
-    box-shadow: 0 4px 24px 0 #ff691055;
+    box-shadow: 0 4px 24px 0 #0f2d52aa;
     cursor: pointer;
     overflow: hidden;
     transition: transform 0.2s;
@@ -63,15 +63,15 @@ const StyledWrapper = styled.div`
     width: 120%;
     height: 120%;
     border-radius: 50%;
-    background: radial-gradient(circle, #ff6910 0%, transparent 70%);
-    opacity: 0.25;
+    background: radial-gradient(circle, #0f2d52 0%, transparent 70%);
+    opacity: 0.22;
     position: absolute;
     animation: pulse 2s infinite alternate;
   }
   .circle:last-child {
     width: 140%;
     height: 140%;
-    opacity: 0.15;
+    opacity: 0.13;
     animation-delay: 1s;
   }
   @keyframes pulse {
@@ -80,7 +80,7 @@ const StyledWrapper = styled.div`
   }
   .btn:hover {
     transform: scale(1.07);
-    box-shadow: 0 0 32px 0 #ff6910cc;
+    box-shadow: 0 0 32px 0 #0f2d52cc;
   }
 `;
 
@@ -91,7 +91,7 @@ const GlassHero = styled(animated.div)`
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1.5px solid rgba(255,255,255,0.18);
+  border: 5px solid rgba(255,255,255,0.18);
   padding: 3rem 2.5rem 2.5rem 2.5rem;
   max-width: 520px;
   width: 100%;
@@ -128,10 +128,10 @@ const GlassFeature = styled(animated.div)`
   padding: 2.5rem 1.5rem 2rem 1.5rem;
   color: #fff;
   text-align: center;
-  transition: box-shadow 0.3s;
+  transition: box-shadow 0.3s, border 0.3s;
   &:hover {
-    box-shadow: 0 8px 32px 0 #ff691055, 0 1.5px 8px 0 #fff2;
-    border: 1.5px solid #ff6910;
+    box-shadow: 0 8px 32px 0 #0f2d52bb, 0 1.5px 8px 0 #fff2;
+    border: 1.5px solid #0f2d52;
   }
 `;
 
@@ -286,17 +286,22 @@ export default function LandingPage() {
           background: "none",
         }}
       >
-        <h2 style={{
-          fontSize: "2.5rem",
-          fontWeight: 800,
-          color: "#fff",
-          textAlign: "center",
-          marginBottom: "2.5rem",
-          letterSpacing: "0.02em",
-          textShadow: "0 2px 12px #0F2D52"
-        }}>
-          Core Features
-        </h2>
+        <div style={{ width: "100%", textAlign: "center", marginBottom: "2.5rem" }}>
+          <h2 style={{
+            fontSize: "2.5rem",
+            fontWeight: 800,
+            color: "#fff",
+            textAlign: "center",
+            letterSpacing: "0.02em",
+            textShadow: "0 2px 12px #0F2D52",
+            borderBottom: "4px solid #0f2d52",
+            display: "inline-block",
+            paddingBottom: "0.3rem",
+            margin: 0
+          }}>
+            Core Features
+          </h2>
+        </div>
         <FeaturesGrid>
           {featuresTrail.map((style, idx) => (
             <GlassFeature key={features[idx].title} style={style}>
