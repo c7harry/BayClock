@@ -213,13 +213,39 @@ export function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
   // Export as CSV
   const handleExportCSV = async () => {
     const { supabase } = await import("../supabaseClient");
-    const { data, error } = await supabase.from("entries").select("*");
+    const { data, error } = await supabase
+      .from("entries")
+      .select("*, project:projects(name)");
     if (error || !data) return;
-    const csvRows = [];
-    const headers = Object.keys(data[0] || {});
-    csvRows.push(headers.join(","));
-    for (const row of data) {
-      csvRows.push(headers.map(h => `"${(row[h] ?? "").toString().replace(/"/g, '""')}"`).join(","));
+
+    const rows = data.map(row => ({
+      project_name: row.project?.name || "",
+      description: row.description || "",
+      date: "'" + formatDate(row.date), // Prefix with single quote for Excel
+      start_time: formatTime(row.start),
+      end_time: formatTime(row.end),
+      duration: row.duration || "",
+    }));
+
+    const headers = EXPORT_COLUMNS.map(col => col.label);
+    // Add extra empty columns for spacing
+    const SPACING = 1; // Number of empty columns between each column
+    const spacedHeaders = headers.flatMap((h, i) =>
+      i < headers.length - 1
+        ? [h, ...Array(SPACING).fill("")]
+        : [h]
+    );
+    const csvRows = [spacedHeaders.join(",")];
+
+    for (const row of rows) {
+      const values = EXPORT_COLUMNS.map(col => row[col.key] ?? "");
+      // Add empty columns for spacing between each value
+      const spacedValues = values.flatMap((v, i) =>
+        i < values.length - 1
+          ? [v, ...Array(SPACING).fill("")]
+          : [v]
+      );
+      csvRows.push(spacedValues.join(","));
     }
     const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
     saveAs(blob, "entries.csv");
@@ -228,12 +254,39 @@ export function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
   // Export as Excel
   const handleExportExcel = async () => {
     const { supabase } = await import("../supabaseClient");
-    const { data, error } = await supabase.from("entries").select("*");
+    const { data, error } = await supabase
+      .from("entries")
+      .select("*, project:projects(name)");
     if (error || !data) return;
-    const ws = XLSX.utils.json_to_sheet(data);
+
+    const rows = data.map(row => ({
+      Project: row.project?.name || "",
+      Description: row.description || "",
+      Date: formatDate(row.date),
+      "Start Time": formatTime(row.start),
+      "End Time": formatTime(row.end),
+      Duration: row.duration || "",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows, { header: EXPORT_COLUMNS.map(c => c.label) });
+
+    // Style header row
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })];
+      if (cell) {
+        cell.s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "1976D2" } },
+          alignment: { horizontal: "center" }
+        };
+      }
+    }
+    ws['!cols'] = EXPORT_COLUMNS.map(() => ({ wch: 20 }));
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Entries");
-    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array", cellStyles: true });
     const blob = new Blob([wbout], { type: "application/octet-stream" });
     saveAs(blob, "entries.xlsx");
   };
@@ -249,6 +302,44 @@ export function SettingsDrawerContent({ onClose, dark, setDark, onLogout }) {
     setChangePwEmailSent(!error);
     setTimeout(() => setChangePwEmailSent(false), 4000);
   };
+
+  const EXPORT_COLUMNS = [
+    { key: "project_name", label: "Project" },
+    { key: "description", label: "Description" },
+    { key: "date", label: "Date" },
+    { key: "start_time", label: "Start Time" },
+    { key: "end_time", label: "End Time" },
+    { key: "duration", label: "Duration" }, // Changed here
+  ];
+
+  function formatDate(dt) {
+    if (!dt) return "";
+    // Output as MM/DD/YYYY
+    const d = new Date(dt);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  }
+
+  // Update formatTime to output in h:mm AM/PM format
+  function formatTime(timeStr) {
+    if (!timeStr) return "";
+    // If already in HH:mm or HH:mm:ss, parse as today
+    const [h, m, s] = timeStr.split(":").map(Number);
+    if (isNaN(h) || isNaN(m)) return timeStr;
+    const d = new Date();
+    d.setHours(h, m, s || 0, 0);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function formatDuration(seconds) {
+    if (typeof seconds !== "number" || isNaN(seconds)) return "";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return [h, m, s].map(v => String(v).padStart(2, "0")).join(":");
+  }
 
   return (
     <Paper
