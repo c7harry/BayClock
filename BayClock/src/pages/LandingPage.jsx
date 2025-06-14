@@ -9,6 +9,7 @@ const StyledWrapper = styled.div`
   display: flex;
   justify-content: center;
   gap: 1.5rem;
+  flex-wrap: wrap;
   .btn {
     position: relative;
     background: linear-gradient(90deg, rgba(15, 45, 82, 0.95) 20%, rgba(60, 120, 200, 0.85) 80%);
@@ -24,6 +25,8 @@ const StyledWrapper = styled.div`
     transition: transform 0.2s;
     z-index: 1;
     margin-right: 1rem;
+    margin-bottom: 1rem;
+    min-width: 140px;
   }
   .btn:last-child {
     margin-right: 0;
@@ -82,6 +85,17 @@ const StyledWrapper = styled.div`
     transform: scale(1.07);
     box-shadow: 0 0 32px 0 #0f2d52cc;
   }
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    .btn {
+      width: 100%;
+      margin-right: 0;
+      font-size: 1.05rem;
+      padding: 0.85rem 1rem;
+    }
+  }
 `;
 
 // Glassmorphism containers
@@ -101,6 +115,12 @@ const GlassHero = styled(animated.div)`
   color: #fff;
   text-align: center;
   transition: box-shadow 0.3s;
+  @media (max-width: 600px) {
+    padding: 0.7rem 0.3rem 0.7rem 0.3rem;
+    margin: 0.8rem 0 1rem 0;
+    max-width: 80vw;
+    border-radius: 0.8rem;
+  }
 `;
 
 const FeaturesGrid = styled.div`
@@ -108,7 +128,7 @@ const FeaturesGrid = styled.div`
   grid-template-columns: 1fr;
   gap: 1.5rem;
   margin-top: 1rem;
-  width: 90%;
+  width: 95%;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -135,6 +155,11 @@ const GlassFeature = styled(animated.div)`
     box-shadow: 0 8px 32px 0 #0f2d52bb, 0 1.5px 8px 0 #fff2;
     border: 1.5px solid #0f2d52;
   }
+  @media (max-width: 600px) {
+    padding: 0.9rem 0.5rem 0.9rem 0.5rem;
+    border-radius: 0.8rem;
+    font-size: 0.92rem;
+  }
 `;
 
 // TopBar with glassmorphism
@@ -153,6 +178,14 @@ const TopBar = styled.header`
   -webkit-backdrop-filter: blur(8px);
   img {
     height: 75px;
+    max-width: 90vw;
+    object-fit: contain;
+  }
+  @media (max-width: 600px) {
+    min-height: 54px;
+    img {
+      height: 44px;
+    }
   }
 `;
 
@@ -230,7 +263,14 @@ export default function LandingPage() {
       </TopBar>
 
       {/* Hero Section */}
-      <div style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh" }}>
+      <div style={{
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "60vh",
+        padding: "0 0.5rem"
+      }}>
         <GlassHero ref={heroRef} style={heroSpring}>
           <div style={{
             fontSize: "2.5rem",
@@ -238,7 +278,10 @@ export default function LandingPage() {
             letterSpacing: "0.04em",
             marginBottom: "1.2rem",
             color: "#fff",
-            textShadow: "0 2px 16px #0F2D52"
+            textShadow: "0 2px 16px #0F2D52",
+            lineHeight: 1.1,
+            // Responsive font size
+            ...(window.innerWidth <= 600 ? { fontSize: "1.1rem", marginBottom: "0.5rem" } : {})
           }}>
             Welcome
           </div>
@@ -268,7 +311,7 @@ export default function LandingPage() {
                 display: "inline-block",
                 whiteSpace: "pre-line",
                 fontWeight: 500,
-                fontSize: "1.5rem",
+                fontSize: window.innerWidth <= 600 ? "0.92rem" : "1.5rem",
                 color: "#fff",
                 textShadow: "0 2px 8px #0F2D52"
               }}
@@ -290,7 +333,7 @@ export default function LandingPage() {
       >
         <div style={{ width: "100%", textAlign: "center", marginBottom: "2.5rem" }}>
           <h2 style={{
-            fontSize: "2.5rem",
+            fontSize: window.innerWidth <= 600 ? "1.3rem" : "2.5rem",
             fontWeight: 800,
             color: "#fff",
             textAlign: "center",
@@ -299,7 +342,9 @@ export default function LandingPage() {
             borderBottom: "4px solid #0f2d52",
             display: "inline-block",
             paddingBottom: "0.3rem",
-            margin: 0
+            margin: 0,
+            lineHeight: 1.1,
+            maxWidth: "95vw"
           }}>
             Core Features
           </h2>
@@ -310,7 +355,7 @@ export default function LandingPage() {
               <div>{features[idx].icon}</div>
               <div style={{
                 fontWeight: 700,
-                fontSize: "1.25rem",
+                fontSize: window.innerWidth <= 600 ? "1.05rem" : "1.25rem",
                 marginBottom: 10,
                 color: "#fff"
               }}>
@@ -318,7 +363,7 @@ export default function LandingPage() {
               </div>
               <div style={{
                 color: "#fff",
-                fontSize: "1.15rem",
+                fontSize: window.innerWidth <= 600 ? "0.98rem" : "1.15rem",
                 opacity: 0.92
               }}>
                 {features[idx].desc}
@@ -338,7 +383,9 @@ export default function LandingPage() {
         letterSpacing: "0.04em",
         fontSize: "1.1rem",
         borderTop: "1px solid #fff2",
-        marginTop: "2rem"
+        marginTop: "2rem",
+        width: "100vw",
+        boxSizing: "border-box"
       }}>
         &copy; {new Date().getFullYear()} BayClock. All rights reserved.
       </footer>
