@@ -613,7 +613,7 @@ export default function AdminPanel() {
                                 onClick={() => handleShowEntries(profile)}
                                 sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
                               >
-                                {profile.full_name || profile.id}
+                                {profile.full_name || profile.email || profile.id}
                               </Button>
                             </Tooltip>
                           </TableCell>
@@ -713,15 +713,23 @@ export default function AdminPanel() {
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center" }}>
-            Entries for {selectedUserName}
-            <IconButton
-              aria-label="close"
-              onClick={() => setEntriesDialogOpen(false)}
-              sx={{ position: "absolute", right: 8, top: 8 }}
-            >
-              <CloseIcon />
-            </IconButton>
+          <DialogTitle sx={{ fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center", flexDirection: "column", alignItems: "flex-start" }}>
+            <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
+              Entries for {selectedUserName}
+              <IconButton
+                aria-label="close"
+                onClick={() => setEntriesDialogOpen(false)}
+                sx={{ position: "absolute", right: 8, top: 8 }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            {/* Show user ID under the title */}
+            {selectedUserEntries.length > 0 && (
+              <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5 }}>
+                User ID: {selectedUserEntries[0].user_id}
+              </Typography>
+            )}
           </DialogTitle>
           <DialogContent dividers sx={{ p: 0 }}>
             {selectedUserEntries.length === 0 ? (
