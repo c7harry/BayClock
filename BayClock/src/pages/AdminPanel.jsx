@@ -462,7 +462,7 @@ export default function AdminPanel() {
                                     <MdEdit />
                                   </Button>
                                   {ws.id === "9ef07a06-d8cf-458a-80c0-a68eeafd62b2" ? (
-                                    <Tooltip title="Can't delete Main.">
+                                    <Tooltip title="Can't delete Main">
                                       <span>
                                         <Button
                                           size="small"
@@ -607,13 +607,15 @@ export default function AdminPanel() {
                       paginatedProfiles.map((profile) => (
                         <TableRow key={profile.id} hover>
                           <TableCell align="center">
-                            <Button
-                              variant="text"
-                              onClick={() => handleShowEntries(profile)}
-                              sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
-                            >
-                              {profile.full_name || profile.id}
-                            </Button>
+                            <Tooltip title="Click to view this user's entries" arrow>
+                              <Button
+                                variant="text"
+                                onClick={() => handleShowEntries(profile)}
+                                sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
+                              >
+                                {profile.full_name || profile.id}
+                              </Button>
+                            </Tooltip>
                           </TableCell>
                           <TableCell align="center">
                             <Typography variant="body2">{profile.email || ""}</Typography>
