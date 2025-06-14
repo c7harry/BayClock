@@ -528,8 +528,8 @@ export default function CalendarPage() {
                           transition={{ duration: 0.3 }}
                           style={{
                             position: "absolute",
-                            left: `calc(80px + ${dayIdx} * (100% - 80px) / 7)`,
-                            width: "calc((100% - 80px) / 7)",
+                            left: `calc(80px + ${dayIdx} * (100% - 80px) / 7 + 8px)`, 
+                            width: "calc((100% - 80px) / 7 - 14px)",
                             top: `${blockTop}px`,
                             height: `${blockHeight}px`,
                             zIndex: 3,
