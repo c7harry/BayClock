@@ -745,12 +745,17 @@ export default function TimeTracker() {
           py: 1.5,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 2, justifyContent: "space-between" }}>
-          <Typography
-            variant="subtitle2"
-            color="text.secondary"
-            sx={{ fontWeight: 700 }}
-          >
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography variant="subtitle2"
+                              color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                              mb={1}
+                              sx={{
+                                fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                                fontWeight: 800,
+                                fontSize: 16,
+                                textAlign: "center",
+                              }}
+                            >
             {formatDisplayDate(date)}
           </Typography>
           <Typography
