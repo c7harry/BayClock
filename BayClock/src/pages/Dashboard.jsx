@@ -362,7 +362,6 @@ export default function Dashboard() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 19,
                     }}
                   >
@@ -427,7 +426,6 @@ export default function Dashboard() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 19,
                       textAlign: "center",
                     }}
@@ -475,7 +473,6 @@ export default function Dashboard() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 20,
                     }}
                   >
@@ -590,7 +587,6 @@ export default function Dashboard() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 20,
                       textAlign: "center",
                     }}
@@ -746,7 +742,6 @@ export default function Dashboard() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 20,
                       textAlign: "center",
                     }}
