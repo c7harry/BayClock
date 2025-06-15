@@ -306,7 +306,6 @@ export default function Projects() {
                     sx={{
                       fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
                       fontWeight: 800,
-                      letterSpacing: 1,
                       fontSize: 20,
                       textAlign: "center",
                     }}
@@ -317,20 +316,32 @@ export default function Projects() {
                       color="warning"
                       startIcon={<AddIcon />}
                       sx={{ borderRadius: 2, fontWeight: 600 }}
-                      onClick={() => handleOpenDialog()}
+                      onClick={() => handleOpenDialog()
+                      }
                     >
                       Add Project
                     </Button>
                   ) : (
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      startIcon={<SearchIcon />}
-                      sx={{ borderRadius: 2, fontWeight: 600 }}
-                      onClick={() => setSearchOpen(true)}
-                    >
-                      Search
-                    </Button>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <TextField
+                        placeholder="Search projects..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          bgcolor: "background.default",
+                          borderRadius: 2,
+                          minWidth: 180,
+                          "& .MuiInputBase-input": { fontSize: "0.97rem", py: 0.7 },
+                        }}
+                        InputProps={{
+                          startAdornment: (
+                            <SearchIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#222", mr: 1 }} />
+                          ),
+                        }}
+                      />
+                    </Box>
                   )}
                 </Box>
                 <Divider sx={{ mb: 2 }} />
@@ -596,28 +607,6 @@ export default function Projects() {
               disabled={!form.name.trim()}
             >
               Save
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Search Dialog for non-admins */}
-        <Dialog open={searchOpen} onClose={() => setSearchOpen(false)} maxWidth="xs" fullWidth>
-          <DialogTitle>Search Projects</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Search by name or client"
-              type="text"
-              fullWidth
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              variant="outlined"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setSearchOpen(false)} color="inherit">
-              Close
             </Button>
           </DialogActions>
         </Dialog>

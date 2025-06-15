@@ -370,7 +370,17 @@ export default function AdminPanel() {
               }}
             >
               <CardContent>
-                <Typography variant="h6" fontWeight={600} mb={2}>
+                <Typography
+                  variant="subtitle2"
+                  color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                  mb={1}
+                  sx={{
+                    fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 20,
+                    textAlign: "left",
+                  }}
+                >
                   Workspace
                 </Typography>
                 <Stack direction="row" spacing={2} mb={2}>
@@ -523,16 +533,17 @@ export default function AdminPanel() {
                   }}
                 >
                   <Typography
-                  variant="h6"
-                  fontWeight={600}
-                  color="text.primary"
-                  sx={{
-                    fontSize: "1.25rem",
-                    minWidth: 150,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
+                    variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      fontSize: 20,
+                      textAlign: "left",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     User Profiles
                   </Typography>
                   <Box

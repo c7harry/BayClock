@@ -215,11 +215,16 @@ export default function AllEntries() {
               }}
             >
               <Typography
-                variant="h6"
-                fontWeight={600}
+                variant="subtitle2"
+                color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
                 mb={1}
-                color="text.primary"
-                sx={{ fontSize: "1.25rem", minWidth: 120 }}
+                sx={{
+                  fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 20,
+                  textAlign: "left",
+                  whiteSpace: "nowrap",
+                }}
               >
                 All Entries
               </Typography>
