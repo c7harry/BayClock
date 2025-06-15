@@ -300,13 +300,17 @@ export default function Projects() {
             >
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography
-                      variant="h6"
-                      fontWeight={600}
-                      mb={1}
-                      color="text.primary"
-                      sx={{ fontSize: "1.25rem" }}
-                      >Project List</Typography>
+                    <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 20,
+                      textAlign: "center",
+                    }}
+                  >Project List</Typography>
                   {role === "admin" ? (
                     <Button
                       variant="contained"

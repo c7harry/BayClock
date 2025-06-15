@@ -101,12 +101,13 @@ export default function MilestonesAchievements({ entries }) {
             fontWeight={900}
             color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
             sx={{
-              letterSpacing: 2,
+              letterSpacing: 1,
               textShadow: theme.palette.mode === "dark"
                 ? "0 1px 8px #18181b"
                 : "0 1px 8px #ffe6d3",
               fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
               textAlign: "center",
+              fontSize: 26,
             }}
           >
             Achievement Showcase

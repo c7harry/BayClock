@@ -675,13 +675,17 @@ export default function TimeTracker() {
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent>
-                <Typography
-                  variant="h6"
-                  fontWeight={700}
-                  color="text.secondary"
-                  mb={2}
-                  sx={{ textAlign: "center" }}
-                >
+                <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 20,
+                      textAlign: "center",
+                      }}
+                  >
                   Recent Entries
                 </Typography>
                 {entries.length === 0 ? (

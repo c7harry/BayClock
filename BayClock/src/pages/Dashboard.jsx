@@ -356,7 +356,16 @@ export default function Dashboard() {
                     height: "100%",
                   }}
                 >
-                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                  <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 19,
+                    }}
+                  >
                     Hours Today
                   </Typography>
                   <Typography
@@ -412,7 +421,17 @@ export default function Dashboard() {
                     height: "100%",
                   }}
                 >
-                  <Typography variant="subtitle2" color="text.secondary" mb={1}>
+                  <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 19,
+                      textAlign: "center",
+                    }}
+                  >
                     Hours Last 7 Days
                   </Typography>
                   <Typography
@@ -450,7 +469,16 @@ export default function Dashboard() {
               <Card elevation={4} sx={{ flex: 2, borderRadius: 5, bgcolor: "background.paper", minWidth: 320 }}>
                 <CardContent>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="h6" fontWeight={700} color="text.secondary">
+                    <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 20,
+                    }}
+                  >
                       Most Tracked Activities
                     </Typography>
                     <Box>
@@ -556,7 +584,17 @@ export default function Dashboard() {
                 }}
               >
                 <CardContent>
-                  <Typography variant="h6" fontWeight={700} color="text.secondary" mb={0} sx={{ textAlign: "center" }}>
+                  <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 20,
+                      textAlign: "center",
+                    }}
+                  >
                     Hours Worked (Last 7 Days)
                   </Typography>
                   <Box sx={{ height: 260 }}>
@@ -702,7 +740,17 @@ export default function Dashboard() {
                 }}
               >
                 <CardContent sx={{ flex: 2, display: "flex", flexDirection: "column", justifyContent: "center", py: 1 }}>
-                  <Typography variant="h6" fontWeight={700} color="text.secondary" mb={1} sx={{ textAlign: "center" }}>
+                  <Typography variant="subtitle2"
+                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
+                    mb={1}
+                    sx={{
+                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                      fontWeight: 800,
+                      letterSpacing: 1,
+                      fontSize: 20,
+                      textAlign: "center",
+                    }}
+                  >
                     Hours by Project (Last 7 Days)
                   </Typography>
                   <Box
