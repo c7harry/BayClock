@@ -4,8 +4,7 @@ import styled, { createGlobalStyle } from "styled-components";
 import { supabase } from "../supabaseClient";
 import { FaRegClock } from "react-icons/fa";
 import { Tooltip as MuiTooltip, tooltipClasses } from "@mui/material";
-
-const TIMER_STATE_KEY = "timerState";
+import { useRef } from "react";
 
 // Utility: seconds to "1h 23m 45s"
 function timerToDuration(sec) {
@@ -51,39 +50,128 @@ const StyledTooltip = styled(({ className, ...props }) => (
 function TimerNavDisplay() {
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [timerId, setTimerId] = useState(null);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    function updateTimer() {
-      const saved = localStorage.getItem(TIMER_STATE_KEY);
-      if (saved) {
-        const { isRunning, timer, startedAt } = JSON.parse(saved);
-        if (isRunning && startedAt) {
-          const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-          setTimer(elapsed);
-          setIsRunning(true);
-        } else {
-          setTimer(timer || 0);
-          setIsRunning(false);
-        }
-      } else {
-        setTimer(0);
+    let unsubscribed = false;
+
+    async function loadActiveTimer() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         setIsRunning(false);
+        setTimer(0);
+        setTimerId(null);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        return;
       }
+      // Get active timer for this user
+      const { data: timers, error } = await supabase
+        .from("timers")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_running", true)
+        .order("started_at", { ascending: false })
+        .limit(1);
+
+      if (error || !timers || timers.length === 0) {
+        setIsRunning(false);
+        setTimer(0);
+        setTimerId(null);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        return;
+      }
+      const t = timers[0];
+      setTimerId(t.id);
+      setIsRunning(true);
+
+      // Calculate elapsed seconds
+      const startedAt = new Date(t.started_at);
+      const elapsed = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+      setTimer(elapsed);
+
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
+        if (!unsubscribed) {
+          setTimer(Math.floor((Date.now() - startedAt.getTime()) / 1000));
+        }
+      }, 1000);
     }
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    window.addEventListener("storage", updateTimer);
+
+    loadActiveTimer();
+
+    // Listen for timer updates from TimeTracker
+    const reload = () => loadActiveTimer();
+    window.addEventListener("entries-updated", reload);
+    window.addEventListener("timer-updated", reload);
+
     return () => {
-      clearInterval(interval);
-      window.removeEventListener("storage", updateTimer);
+      unsubscribed = true;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      window.removeEventListener("entries-updated", reload);
+      window.removeEventListener("timer-updated", reload);
     };
   }, []);
 
-  const handleStopTask = () => {
-    localStorage.removeItem(TIMER_STATE_KEY);
+  // Stop timer logic: delete timer row from Supabase and trigger reload
+  const handleStopTask = async () => {
+    if (!timerId) return;
+
+    // 1. Fetch the timer row
+    const { data: timerRow, error: fetchError } = await supabase
+      .from("timers")
+      .select("*")
+      .eq("id", timerId)
+      .single();
+
+    if (fetchError || !timerRow) {
+      // Fallback: just delete timer if fetch fails
+      await supabase.from("timers").delete().eq("id", timerId);
+      setIsRunning(false);
+      setTimer(0);
+      setTimerId(null);
+      window.dispatchEvent(new Event("entries-updated"));
+      window.dispatchEvent(new Event("timer-updated")); //
+      return;
+    }
+
+    // 2. Calculate duration and times
+    const startedAt = new Date(timerRow.started_at);
+    const endedAt = new Date();
+    const durationSec = Math.floor((endedAt - startedAt) / 1000);
+
+    // Format start/end as "HH:mm"
+    const pad = (n) => n.toString().padStart(2, "0");
+    const start = `${pad(startedAt.getHours())}:${pad(startedAt.getMinutes())}`;
+    const end = `${pad(endedAt.getHours())}:${pad(endedAt.getMinutes())}`;
+
+    // Duration as "1h 23m 45s"
+    const durationStr = timerToDuration(durationSec);
+
+    // 3. Insert entry
+    await supabase.from("entries").insert([{
+      description: timerRow.description,
+      project_id: timerRow.project_id,
+      date: timerRow.date,
+      duration: durationStr,
+      start,
+      end,
+      user_id: timerRow.user_id,
+      workspace_id: timerRow.workspace_id,
+    }]);
+
+    // 4. Delete timer row
+    await supabase.from("timers").delete().eq("id", timerId);
+
+    // 5. Update UI
     setIsRunning(false);
     setTimer(0);
-    window.dispatchEvent(new Event("storage"));
+    setTimerId(null);
+    window.dispatchEvent(new Event("entries-updated"));
+    window.dispatchEvent(new Event("timer-updated")); // <-- Add this
   };
 
   if (!isRunning) return null;

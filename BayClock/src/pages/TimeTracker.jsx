@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { FaPlay, FaStop, FaRegClock } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { supabase } from "../supabaseClient";
@@ -147,10 +147,11 @@ export default function TimeTracker() {
     fetchProjects();
   }, []);
 
-  // --- Load timer state from Supabase on mount ---
+  const intervalRef = useRef(null);
+
+  // --- Load timer state from Supabase on mount and on timer-updated event ---
   useEffect(() => {
     let unsubscribed = false;
-    let interval = null;
 
     async function loadActiveTimer() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -168,6 +169,8 @@ export default function TimeTracker() {
         setIsRunning(false);
         setTimer(0);
         setTimerId(null);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
         return;
       }
       const t = timers[0];
@@ -182,19 +185,25 @@ export default function TimeTracker() {
       const elapsed = Math.floor((Date.now() - startedAt.getTime()) / 1000);
       setTimer(elapsed);
 
-      interval = setInterval(() => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(() => {
         if (!unsubscribed) {
           setTimer(Math.floor((Date.now() - startedAt.getTime()) / 1000));
         }
       }, 1000);
-      setIntervalId(interval);
     }
 
     loadActiveTimer();
 
+    // Listen for timer-updated event
+    const reload = () => loadActiveTimer();
+    window.addEventListener("timer-updated", reload);
+
     return () => {
       unsubscribed = true;
-      if (interval) clearInterval(interval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      window.removeEventListener("timer-updated", reload);
     };
   }, []);
 
@@ -247,14 +256,16 @@ export default function TimeTracker() {
     setTimer(0);
     setTimerId(data.id);
 
-    if (intervalId) clearInterval(intervalId);
-    const id = setInterval(() => setTimer((t) => t + 1), 1000);
-    setIntervalId(id);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => setTimer((t) => t + 1), 1000);
+
+    window.dispatchEvent(new Event("timer-updated")); 
   };
 
   const handleStop = async () => {
     setIsRunning(false);
-    clearInterval(intervalId);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
 
     if (timer > 0 && timerId) {
       // Save entry and delete timer row
@@ -263,6 +274,8 @@ export default function TimeTracker() {
     }
     setTimer(0);
     setTimerId(null);
+
+    window.dispatchEvent(new Event("timer-updated")); // <-- Add this
   };
 
   // Add entry (timer or manual)
@@ -436,7 +449,7 @@ export default function TimeTracker() {
     // Stop any existing timer for this user
     if (timerId) {
       await supabase.from("timers").delete().eq("id", timerId);
-      clearInterval(intervalId);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       setIsRunning(false);
       setTimer(0);
       setTimerId(null);
@@ -479,8 +492,10 @@ export default function TimeTracker() {
     setTimer(0);
     setTimerId(data.id);
 
-    const id = setInterval(() => setTimer((t) => t + 1), 1000);
-    setIntervalId(id);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => setTimer((t) => t + 1), 1000);
+
+    window.dispatchEvent(new Event("timer-updated"));
   };
 
   const [showProjectPrompt, setShowProjectPrompt] = useState(false);
