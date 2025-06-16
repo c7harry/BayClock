@@ -267,8 +267,22 @@ export default function CalendarPage() {
                   : "0 4px 24px 0 rgba(251,146,60,0.06)",
                 transition: "background 0.3s",
                 color: mode === "light" ? "#18181b" : "inherit",
+                overflow: 'hidden'
               }}
             >
+              {/* Compact Header Section */}
+              <Box sx={{ 
+                bgcolor: 'warning.main', 
+                color: 'white', 
+                py: 1, 
+                px: 2,
+                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Calendar
+                </Typography>
+              </Box>
+
               <CardContent
                 sx={{
                   color: mode === "light" ? "#18181b" : "inherit",
