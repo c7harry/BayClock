@@ -116,15 +116,18 @@ const GlitchStyles = createGlobalStyle`
    background: transparent;
    margin-left: 8px;
 }
+
 .navbar-glitch .glitch {
    position: relative;
    font-size: 2rem;
-   font-weight: 700;
+   font-family: "Montserrat", 'Segoe UI', Arial, sans-serif;
+   font-weight: 800;
    line-height: 1.2;
    color: white;
-   letter-spacing: 0px;
+   letter-spacing: 1.5px;
    z-index: 1;
 }
+   
 .navbar-glitch .glitch:before {
    content: attr(data-glitch);
    position: absolute;
@@ -137,6 +140,7 @@ const GlitchStyles = createGlobalStyle`
    clip: rect(0, 900px, 0, 0);
    animation: noise-before 3s infinite linear alternate-reverse;
 }
+
 .navbar-glitch .glitch:after {
    content: attr(data-glitch);
    position: absolute;
@@ -206,82 +210,6 @@ html.dark .navbar-glitch .glitch:after {
    95% { clip: rect(156px, 9999px, 44px, 0); }
    100% { clip: rect(67px, 9999px, 122px, 0); }
 }
-`;
-
-// --- Logout Button Component ---
-function LogoutButton() {
-  const navigate = useNavigate();
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
-  return (
-    <StyledWrapper>
-      <button className="button" onClick={handleLogout}>
-        <span>Logout</span>
-      </button>
-    </StyledWrapper>
-  );
-}
-
-const StyledWrapper = styled.div`
-  .button {
-    position: relative;
-    text-decoration: none;
-    color: #fff;
-    background: linear-gradient(90deg, #0F2D52 0%, #fb923c 100%);
-    padding: 6px 18px;
-    border-radius: 10px;
-    font-size: 1.05em;
-    cursor: pointer;
-    border: none;
-    outline: none;
-    overflow: hidden;
-    font-weight: 600;
-    box-shadow: 0 2px 8px 0 rgba(15,45,82,0.08);
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .button span {
-    position: relative;
-    z-index: 1;
-  }
-
-  .button::before {
-    content: "";
-    position: absolute;
-    inset: 1px;
-    background: #1e293b;
-    border-radius: 9px;
-    transition: 0.3s;
-    opacity: 0.7;
-    z-index: 0;
-  }
-
-  .button:hover {
-    background: linear-gradient(90deg, #0F2D52 0%, #fb923c 100%);
-    color: #fff;
-  }
-
-  .button:hover::before {
-    opacity: 0.5;
-  }
-
-  .button::after {
-    content: "";
-    position: absolute;
-    inset: 0px;
-    background: linear-gradient(90deg, #0F2D52 0%, #fb923c 100%);
-    border-radius: 9px;
-    transition: 0.3s;
-    opacity: 0;
-    filter: blur(14px);
-    z-index: 0;
-  }
-
-  .button:hover:after {
-    opacity: 0.5;
-  }
 `;
 
 // --- Main Navbar ---
