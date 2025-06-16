@@ -587,232 +587,260 @@ export default function TimeTracker() {
           }}
         >
           {/* =====================
-              Header Tile
-              ===================== */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
-              <CardContent
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  py: 3,
-                  bgcolor: "background.paper",
-                  transition: "background-color 0.3s",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <FaRegClock size={32} color="#fb923c" />
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    color="text.primary"
-                    sx={{ textAlign: "center" }}
-                  >
-                    Time Tracker
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* =====================
               Entry Form Tile
               ===================== */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
-              <CardContent>
-                {/* --------- Entry Form --------- */}
-                <Box
-                  component="form"
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    gap: 2,
-                    mb: 3,
-                    width: "100%", // Full width for form
-                  }}
-                  noValidate
-                  autoComplete="off"
-                >
+            <Card 
+              elevation={0} 
+              sx={{ 
+                borderRadius: 4, 
+                bgcolor: "background.paper", 
+                border: 1,
+                borderColor: "divider",
+                background: theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(135deg, #23232a 0%, #2a2a32 100%)'
+                  : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                overflow: 'hidden'
+              }}
+            >
+              {/* Compact Header Section */}
+              <Box sx={{ 
+                bgcolor: 'warning.main', 
+                color: 'white', 
+                py: 1, 
+                px: 2,
+                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Track Your Time
+                </Typography>
+              </Box>
+
+              <CardContent sx={{ p: 2 }}>
+                {/* Compact Primary Input Row */}
+                <Box sx={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' }, 
+                  gap: 2, 
+                  mb: 2 
+                }}>
                   <TextField
-                    label="Task Description"
+                    label="What are you working on?"
                     variant="outlined"
                     fullWidth
+                    size="small"
                     value={description}
-                    onChange={(e) => {
-                      setDescription(e.target.value);
-                      if (e.target.value && !project) {
-                        setShowProjectPrompt(true);
-                      } else {
-                        setShowProjectPrompt(false);
+                    onChange={(e) => setDescription(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
                       }
                     }}
-                    sx={{ bgcolor: "background.default", borderRadius: 2 }}
-                    placeholder="What are you working on?"
                   />
+
                   <TextField
                     select
                     label="Project"
+                    fullWidth
+                    size="small"
                     value={project}
-                    onChange={(e) => {
-                      setProject(e.target.value);
-                      setShowProjectPrompt(false);
+                    onChange={(e) => setProject(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                      }
                     }}
-                    sx={{ minWidth: 160, bgcolor: "background.default", borderRadius: 2 }}
                   >
-                    <MenuItem value="">Select</MenuItem>
+                    <MenuItem value="">Select Project</MenuItem>
                     {projects.map((p) => (
                       <MenuItem key={p.id} value={p.id}>
-                        {p.name}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ 
+                            width: 6, 
+                            height: 6, 
+                            borderRadius: '50%', 
+                            bgcolor: 'warning.main' 
+                          }} />
+                          {p.name}
+                        </Box>
                       </MenuItem>
                     ))}
                   </TextField>
+
                   <TextField
                     label="Date"
                     type="date"
+                    fullWidth
+                    size="small"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    sx={{ minWidth: 140, bgcolor: "background.default", borderRadius: 2 }}
                     InputLabelProps={{ shrink: true }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                        bgcolor: 'background.default',
+                      }
+                    }}
                   />
                 </Box>
-                <Divider sx={{ my: 2 }} />
-                {/* --------- Timer Controls --------- */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    alignItems: { md: "center" },
-                    gap: 2,
-                    width: "100%", // Full width for controls
-                  }}
-                >
-                  {/* Timer display */}
-                  <Box
-                    sx={{
-                      width: 70,
-                      height: 55,
-                      mr: { xs: 0, md: 0 },
-                      ml: 0,
-                      p: 0,
-                      m: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}>
-                    <CircularProgressbar
-                      value={timer % MAX_TIMER}
-                      maxValue={MAX_TIMER}
-                      text={timerToDuration(timer) || "0s"}
-                      styles={buildStyles({
-                        pathColor: isRunning ? "#fb923c" : "#bdbdbd",
-                        textColor: "#fb923c",
-                        trailColor: "#ffe6d3",
-                        textSize: "16px",
-                        pathTransitionDuration: 0.5,
-                      })}
-                    />
+
+                {/* Compact Timer and Controls Section */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: { xs: 'column', md: 'row' },
+                  gap: 2,
+                  alignItems: 'center',
+                  p: 2,
+                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                  borderRadius: 3,
+                  border: 1,
+                  borderColor: 'divider'
+                }}>
+                  {/* Compact Timer Display */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: 2
+                  }}>
+                    <Box sx={{ position: 'relative', width: 80, height: 80 }}>
+                      <CircularProgressbar
+                        value={timer % MAX_TIMER}
+                        maxValue={MAX_TIMER}
+                        text={timerToDuration(timer) || "0s"}
+                        styles={buildStyles({
+                          pathColor: isRunning ? "#fb923c" : "#bdbdbd",
+                          textColor: theme.palette.text.primary,
+                          trailColor: theme.palette.mode === 'dark' ? "#2a2a32" : "#f1f5f9",
+                          textSize: "12px",
+                          pathTransitionDuration: 0.5,
+                        })}
+                      />
+                      {isRunning && (
+                        <Box sx={{
+                          position: 'absolute',
+                          top: -3,
+                          right: -3,
+                          width: 12,
+                          height: 12,
+                          bgcolor: 'success.main',
+                          borderRadius: '50%',
+                          animation: 'pulse 2s infinite',
+                          '@keyframes pulse': {
+                            '0%': { transform: 'scale(1)', opacity: 1 },
+                            '50%': { transform: 'scale(1.2)', opacity: 0.7 },
+                            '100%': { transform: 'scale(1)', opacity: 1 },
+                          }
+                        }} />
+                      )}
+                    </Box>
+                    
+                    {/* Compact Timer Control Buttons */}
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        variant={isRunning ? "outlined" : "contained"}
+                        color="warning"
+                        size="small"
+                        startIcon={<FaPlay size={12} />}
+                        onClick={handleStart}
+                        disabled={isRunning}
+                        sx={{
+                          borderRadius: 2,
+                          px: 2,
+                          py: 1,
+                          fontWeight: 600,
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        Start
+                      </Button>
+                      
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        startIcon={<FaStop size={12} />}
+                        onClick={handleStop}
+                        disabled={!timer}
+                        sx={{
+                          borderRadius: 2,
+                          px: 2,
+                          py: 1,
+                          fontWeight: 600,
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        Stop
+                      </Button>
+                    </Box>
                   </Box>
-                  {/* Start/Stop buttons moved outside timer box */}
-                  <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", mb: { xs: 2, md: 0 } }}>
-                    <Tooltip title="Start" arrow>
-                      <span>
-                        <Button
-                          variant="contained"
-                          color="warning"
-                          startIcon={<FaPlay />}
-                          onClick={handleStart}
-                          disabled={isRunning || !description || !project}
-                        >
-                          Start
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title="Stop & Save" arrow>
-                      <span>
-                        <Button
-                          variant="contained"
-                          color={isRunning ? "error" : "inherit"}
-                          startIcon={<FaStop />}
-                          onClick={handleStop}
-                          disabled={!timer}
-                          sx={{ ml: 1 }}
-                        >
-                          Stop & Save
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </Box>
-                  {/* Manual Duration Entry: Separate Hours and Minutes */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1,
-                      flex: 1,
-                      justifyContent: "flex-end",
-                    }}
-                  >
+
+                  {/* Compact Manual Entry Section */}
+                  <Box sx={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    gap: 1,
+                    flex: 1,
+                    minWidth: 0
+                  }}>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
+                      Manual:
+                    </Typography>
+                    
                     <TextField
-                      label="Start Time"
+                      label="Start"
                       type="time"
+                      size="small"
                       value={manualStart}
                       onChange={(e) => setManualStart(e.target.value)}
-                      sx={{ width: 130, bgcolor: "background.default", borderRadius: 2 }}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ step: 60 }}
+                      sx={{
+                        minWidth: 100,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                          bgcolor: 'background.default',
+                        }
+                      }}
                     />
+                    
                     <TextField
-                      label="End Time"
+                      label="End"
                       type="time"
+                      size="small"
                       value={manualEnd}
                       onChange={(e) => setManualEnd(e.target.value)}
-                      sx={{ width: 130, bgcolor: "background.default", borderRadius: 2 }}
                       InputLabelProps={{ shrink: true }}
                       inputProps={{ step: 60 }}
+                      sx={{
+                        minWidth: 100,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 1,
+                          bgcolor: 'background.default',
+                        }
+                      }}
                     />
+                    
                     <Button
-                      variant="contained"
+                      variant="outlined"
                       color="warning"
-                      sx={{ borderRadius: 2, fontWeight: 600, px: 3, py: 1.5 }}
+                      size="small"
                       onClick={handleManualAdd}
-                      disabled={
-                        !manualStart ||
-                        !manualEnd ||
-                        !description ||
-                        !project
-                      }
+                      disabled={!manualStart || !manualEnd}
+                      sx={{
+                        borderRadius: 1,
+                        px: 2,
+                        py: 1,
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.75rem'
+                      }}
                     >
-                      Add Manual Entry
+                      Add
                     </Button>
                   </Box>
                 </Box>
-                {/* --------- Project Prompt Snackbar --------- */}
-                <Snackbar
-                  open={showProjectPrompt}
-                  autoHideDuration={4000}
-                  onClose={handleClosePrompt}
-                  anchorOrigin={{ vertical: "top", horizontal: "center" }}
-                >
-                  <MuiAlert
-                    onClose={handleClosePrompt}
-                    severity="info" // Changed from "warning" to "info" for blue color
-                    elevation={6}
-                    variant="filled"
-                    sx={{
-                      width: "100%",
-                      bgcolor: "#1976d2", // Strong blue background
-                      color: "#fff",      // White text for contrast
-                      fontWeight: 700,
-                      fontSize: 17,
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    Please select a project to start the timer.
-                  </MuiAlert>
-                </Snackbar>
               </CardContent>
             </Card>
           </motion.div>
@@ -821,21 +849,33 @@ export default function TimeTracker() {
               Entries List Tile
               ===================== */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
-              <CardContent>
-                <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      letterSpacing: 1,
-                      fontSize: 20,
-                      textAlign: "center",
-                      }}
-                  >
+            <Card 
+              elevation={0} 
+              sx={{ 
+                borderRadius: 4, 
+                bgcolor: "background.paper", 
+                border: 1,
+                borderColor: "divider",
+                background: theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(135deg, #23232a 0%, #2a2a32 100%)'
+                  : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                overflow: 'hidden'
+              }}
+            >
+              {/* Header Section for Recent Entries */}
+              <Box sx={{ 
+                bgcolor: 'warning.main', 
+                color: 'white', 
+                py: 1, 
+                px: 2,
+                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   Recent Entries
                 </Typography>
+              </Box>
+
+              <CardContent sx={{ p: 2 }}>
                 {entries.length === 0 ? (
                   <Typography color="text.disabled" sx={{ textAlign: "center" }}>
                     No entries yet.
