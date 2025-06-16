@@ -122,6 +122,27 @@ function formatEntryTime(timeStr) {
   return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 }
 
+// Helper to format duration as "HH:mm:ss"
+function formatDurationHMS(str) {
+  if (!str) return "00:00:00";
+  let totalSeconds = 0;
+  const regex = /(\d+)\s*h|(\d+)\s*m|(\d+)\s*s/gi;
+  let match;
+  while ((match = regex.exec(str))) {
+    if (match[1]) totalSeconds += parseInt(match[1]) * 3600;
+    if (match[2]) totalSeconds += parseInt(match[2]) * 60;
+    if (match[3]) totalSeconds += parseInt(match[3]);
+  }
+  const h = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const m = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const s = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
 // Get first start and last end from entries
 function getTimeRange(entries) {
   // Only consider entries with both start and end
@@ -612,6 +633,35 @@ export default function EntryCard({
                     </Typography>
                   </Box>
                 )}
+                {/* === Individual Entry Duration === */}
+                <Box
+                  sx={{
+                    minWidth: 60,
+                    mr: 2,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    sx={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      bgcolor: "warning.light",
+                      color: "warning.dark",
+                      borderRadius: 2,
+                      px: 1.5,
+                      py: 0.5,
+                      letterSpacing: 0.2,
+                      textAlign: "center",
+                      display: "inline-block",
+                      width: "100%",
+                    }}
+                  >
+                    {formatDurationHMS(entry.duration)}
+                  </Typography>
+                </Box>
                 {/* Resume Task Button */}
                 <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
                   <span>
