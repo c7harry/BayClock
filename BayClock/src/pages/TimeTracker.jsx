@@ -25,8 +25,7 @@ import "react-circular-progressbar/dist/styles.css";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
-const TIMER_STATE_KEY = "timerState";
-const MAX_TIMER = 3600;
+const MAX_TIMER = 3600 * 12; 
 
 function getLocalDateString() {
   const d = new Date();
@@ -100,10 +99,11 @@ export default function TimeTracker() {
     [mode]
   );
   
-  // Timer state
+  // --- Timer state ---
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
+  const [timerId, setTimerId] = useState(null); // Supabase timer row id
 
   // Entry form state
   const [description, setDescription] = useState("");
@@ -147,78 +147,122 @@ export default function TimeTracker() {
     fetchProjects();
   }, []);
 
-  // --- Load timer state from localStorage on mount ---
+  // --- Load timer state from Supabase on mount ---
   useEffect(() => {
-    const saved = localStorage.getItem(TIMER_STATE_KEY);
-    if (saved) {
-      const { isRunning, timer, startedAt, description, project, date } = JSON.parse(saved);
-      setDescription(description || "");
-      setProject(project || "");
-      setDate(date || new Date().toISOString().slice(0, 10));
-      if (isRunning && startedAt) {
-        // Always calculate timer as (Date.now() - startedAt) / 1000
-        const elapsed = Math.floor((Date.now() - startedAt) / 1000);
-        setTimer(elapsed);
-        setIsRunning(true);
-        const id = setInterval(() => setTimer(Math.floor((Date.now() - startedAt) / 1000)), 1000);
-        setIntervalId(id);
-      } else {
-        setTimer(timer || 0);
+    let unsubscribed = false;
+    let interval = null;
+
+    async function loadActiveTimer() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Get active timer for this user
+      const { data: timers, error } = await supabase
+        .from("timers")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_running", true)
+        .order("started_at", { ascending: false })
+        .limit(1);
+
+      if (error || !timers || timers.length === 0) {
         setIsRunning(false);
+        setTimer(0);
+        setTimerId(null);
+        return;
       }
+      const t = timers[0];
+      setDescription(t.description || "");
+      setProject(t.project_id || "");
+      setDate(t.date || getLocalDateString());
+      setTimerId(t.id);
+      setIsRunning(true);
+
+      // Calculate elapsed seconds
+      const startedAt = new Date(t.started_at);
+      const elapsed = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+      setTimer(elapsed);
+
+      interval = setInterval(() => {
+        if (!unsubscribed) {
+          setTimer(Math.floor((Date.now() - startedAt.getTime()) / 1000));
+        }
+      }, 1000);
+      setIntervalId(interval);
     }
-    // eslint-disable-next-line
+
+    loadActiveTimer();
+
+    return () => {
+      unsubscribed = true;
+      if (interval) clearInterval(interval);
+    };
   }, []);
 
-  // --- Save timer state to localStorage whenever timer or running state changes ---
+  // --- Save timer state to Supabase whenever timer or running state changes ---
   useEffect(() => {
-    // Only save if timer is running or has a value
-    if (isRunning || timer > 0) {
-      localStorage.setItem(
-        TIMER_STATE_KEY,
-        JSON.stringify({
-          isRunning,
-          timer,
-          startedAt: isRunning ? Date.now() - timer * 1000 : null,
-          description,
-          project,
-          date,
-        })
-      );
-    } else {
-      localStorage.removeItem(TIMER_STATE_KEY);
+    // Only update if timer is running and timerId exists
+    if (isRunning && timerId) {
+      // Update updated_at for heartbeat
+      supabase
+        .from("timers")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", timerId);
     }
-    // eslint-disable-next-line
-  }, [isRunning, timer, description, project, date]);
+    // No-op if not running
+  }, [isRunning, timer, timerId]);
 
-  // Timer handlers
-  const handleStart = () => {
+  // --- Timer handlers ---
+  const handleStart = async () => {
     if (isRunning) return;
-    setIsRunning(true);
-    // Save the start time to localStorage
-    localStorage.setItem(
-      TIMER_STATE_KEY,
-      JSON.stringify({
-        isRunning: true,
-        timer,
-        startedAt: Date.now() - timer * 1000,
+    // Get user and workspace_id
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("workspace_id")
+      .eq("id", user.id)
+      .single();
+
+    // Insert timer row in Supabase
+    const { data, error } = await supabase
+      .from("timers")
+      .insert([{
+        user_id: user.id,
+        workspace_id: profile?.workspace_id,
+        project_id: project,
         description,
-        project,
+        started_at: new Date().toISOString(),
         date,
-      })
-    );
+        is_running: true,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      alert("Failed to start timer: " + error.message);
+      return;
+    }
+
+    setIsRunning(true);
+    setTimer(0);
+    setTimerId(data.id);
+
+    if (intervalId) clearInterval(intervalId);
     const id = setInterval(() => setTimer((t) => t + 1), 1000);
     setIntervalId(id);
   };
 
-  const handleStop = () => {
+  const handleStop = async () => {
     setIsRunning(false);
     clearInterval(intervalId);
-    if (timer > 0) {
-      addEntry(timerToDuration(timer));
+
+    if (timer > 0 && timerId) {
+      // Save entry and delete timer row
+      await addEntry(timerToDuration(timer));
+      await supabase.from("timers").delete().eq("id", timerId);
     }
     setTimer(0);
-    localStorage.removeItem(TIMER_STATE_KEY);
+    setTimerId(null);
   };
 
   // Add entry (timer or manual)
@@ -264,7 +308,7 @@ export default function TimeTracker() {
     window.dispatchEvent(new Event("entries-updated"));
     setDescription("");
     setProject("");
-    setDate(new Date().toISOString().slice(0, 10));
+    setDate(getLocalDateString());
     setManualDuration("");
     setManualStart("");
     setManualEnd("");
@@ -388,28 +432,55 @@ export default function TimeTracker() {
   }, {});
 
   // Resume task handler
-  const handleResumeTask = (entry) => {
-    const today = getLocalDateString(); // Use local date, not UTC
+  const handleResumeTask = async (entry) => {
+    // Stop any existing timer for this user
+    if (timerId) {
+      await supabase.from("timers").delete().eq("id", timerId);
+      clearInterval(intervalId);
+      setIsRunning(false);
+      setTimer(0);
+      setTimerId(null);
+    }
+    const today = getLocalDateString();
     setDescription(entry.description);
-    setProject(entry.project_id); // Use project_id, not project
+    setProject(entry.project_id);
     setDate(today);
-    setTimer(0);
+
+    // Get user and workspace_id
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("workspace_id")
+      .eq("id", user.id)
+      .single();
+
+    // Insert new timer row
+    const { data, error } = await supabase
+      .from("timers")
+      .insert([{
+        user_id: user.id,
+        workspace_id: profile?.workspace_id,
+        project_id: entry.project_id,
+        description: entry.description,
+        started_at: new Date().toISOString(),
+        date: today,
+        is_running: true,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      alert("Failed to resume timer: " + error.message);
+      return;
+    }
+
     setIsRunning(true);
-    if (intervalId) clearInterval(intervalId);
+    setTimer(0);
+    setTimerId(data.id);
+
     const id = setInterval(() => setTimer((t) => t + 1), 1000);
     setIntervalId(id);
-    // Save timer state for persistence
-    localStorage.setItem(
-      TIMER_STATE_KEY,
-      JSON.stringify({
-        isRunning: true,
-        timer: 0,
-        startedAt: Date.now(),
-        description: entry.description,
-        project: entry.project_id, // Use project_id
-        date: today,
-      })
-    );
   };
 
   const [showProjectPrompt, setShowProjectPrompt] = useState(false);
