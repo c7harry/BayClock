@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion } from "framer-motion";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaClock, FaCalendar, FaChartBar, FaTrophy, FaEye } from "react-icons/fa";
 import { Bar, Doughnut } from "react-chartjs-2";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +17,51 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import MilestonesAchievements from "../components/MilestonesAchievements";
+import { 
+  GlassCard, 
+  ChartCard, 
+  getTextColor, 
+  getSecondaryTextColor, 
+  getGridColor 
+} from "../components/Theme";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, ChartTooltip, Legend, ChartDataLabels);
+
+// Animated stat card with glass morphism (smaller for overview card)
+const StatCard = ({ title, value, icon, color, delay, isTime = false, compact = false, mode, ...props }) => (
+  <Box sx={{ textAlign: "center", position: "relative", overflow: "hidden", p: compact ? 2 : 3 }}>
+    {/* Animated background gradient */}
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      style={{
+        position: "absolute",
+        top: "-50%",
+        left: "-50%",
+        width: "200%",
+        height: "200%",
+        background: `conic-gradient(from 0deg, ${color}15, transparent, ${color}15)`,
+        zIndex: -1,
+      }}
+    />
+    
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ delay: delay + 0.3, type: "spring", stiffness: 200 }}
+    >
+      {icon}
+    </motion.div>
+    
+    <Typography variant={compact ? "subtitle2" : "subtitle1"} sx={{ mt: 1.5, fontWeight: 600, color, fontSize: compact ? "0.8rem" : "0.95rem" }}>
+      {title}
+    </Typography>
+    
+    <Typography variant={compact ? "h5" : "h4"} sx={{ mt: 0.5, fontWeight: 700, color, fontSize: compact ? "1.4rem" : "1.8rem" }}>
+      {value}
+    </Typography>
+  </Box>
+);
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -56,13 +99,13 @@ export default function Dashboard() {
             ? {
                 background: {
                   default: "#f3f4f6",
-                  paper: "#fff",
+                  paper: "rgba(255, 255, 255, 0.1)",
                 },
               }
             : {
                 background: {
                   default: "#18181b",
-                  paper: "#23232a",
+                  paper: "rgba(35, 35, 42, 0.1)",
                 },
               }),
           warning: {
@@ -211,7 +254,7 @@ export default function Dashboard() {
     ),
     backgroundColor: projectColors[i],
     stack: "stack1",
-    borderRadius: 8,
+    borderRadius: 4,
   }));
 
   const barChartData = {
@@ -272,8 +315,8 @@ export default function Dashboard() {
       <Box
         sx={{
           minHeight: "100vh",
-          py: { xs: 2, md: 4 },
-          px: { xs: 0, sm: 1, md: 2 },
+          py: { xs: 1.5, md: 2 },
+          px: { xs: 1, sm: 2, md: 3 },
           width: "100%",
           boxSizing: "border-box",
           overflowX: "auto",
@@ -287,232 +330,135 @@ export default function Dashboard() {
             mx: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: { xs: 2, md: 3 },
-            px: { xs: 0.5, sm: 2, md: 4 },
+            gap: { xs: 1.5, md: 2 },
             boxSizing: "border-box",
           }}
         >
-          {/* Header */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper" }}>
-              <CardContent
+          {/* Combined Overview Card */}
+          <GlassCard 
+            title="Overview" 
+            icon={<FaEye size={16} />} 
+            delay={0.1}
+          >
+            <Box sx={{ p: 2 }}>
+              <Box
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  display: "grid",
+                  gridTemplateColumns: { 
+                    xs: "1fr", 
+                    sm: "1fr 1fr", 
+                    md: "1fr 1fr 2fr",
+                    lg: "200px 200px 1fr"
+                  },
                   gap: 2,
-                  py: 3,
-                  bgcolor: "background.paper",
-                  transition: "background-color 0.3s",
+                  alignItems: "start",
                 }}
               >
-                <FaHome size={32} color="#fb923c" />
-                <Typography
-                  variant="h4"
-                  fontWeight={700}
-                  color="text.primary"
-                  sx={{ textAlign: "center" }}
-                >
-                  Dashboard
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
+                {/* Hours Today */}
+                <StatCard
+                  title="Hours Today"
+                  value={(() => {
+                    const h = Math.floor(hoursToday / 3600);
+                    const m = Math.floor((hoursToday % 3600) / 60);
+                    const s = Math.floor(hoursToday % 60);
+                    if (h > 0 || m > 0) {
+                      return `${h ? h + "h " : ""}${m ? m + "m " : ""}${s}s`.trim();
+                    }
+                    return `${s}s`;
+                  })()}
+                  icon={<FaClock size={20} color="#fb923c" />}
+                  color="#fb923c"
+                  delay={0.2}
+                  compact={true}
+                  mode={mode}
+                />
 
-          {/* Stats and Most Tracked Activities */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Box
-              sx={{
-                display: "flex",
-                gap: 3,
-                flexDirection: { xs: "column", md: "row" },
-                width: "100%",
-                overflowX: "auto",
-                alignItems: "stretch",
-                overflow: "visible",
-              }}
-            >
-              {/*Hours Today*/}
-              <Card
-                elevation={4}
-                sx={{
-                  flex: 1,
-                  borderRadius: 5,
-                  bgcolor: "background.paper",
-                  minWidth: { xs: 220, md: 0 },
-                  maxWidth: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                }}
-              >
-                <CardContent
-                  sx={{
-                    textAlign: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",     
-                    height: "100%",
-                  }}
-                >
-                  <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 19,
-                    }}
-                  >
-                    Hours Today
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    color="warning.main"
-                    sx={{
-                      display: "block",
-                      width: "100%",
-                      minHeight: 48,
-                      whiteSpace: "nowrap",
-                      overflow: "visible",
-                      textOverflow: "unset",
-                      textAlign: "center",
-                      mx: "auto",
-                      fontVariantNumeric: "tabular-nums",
-                      px: 1,
-                    }}
-                  >
-                    {(() => {
-                      const h = Math.floor(hoursToday / 3600);
-                      const m = Math.floor((hoursToday % 3600) / 60);
-                      const s = Math.floor(hoursToday % 60);
-                      const pad = (n) => n.toString().padStart(2, "0");
-                      if (h > 0 || m > 0) {
-                        return `${h ? h + "h " : ""}${m ? m + "m " : ""}${pad(s)}s`.trim();
-                      }
-                      return `${s}s`;
-                    })()}
-                  </Typography>
-                </CardContent>
-              </Card>
-              {/* Hours Last 7 Days */}
-              <Card
-                elevation={4}
-                sx={{
-                  flex: 1,
-                  borderRadius: 5,
-                  bgcolor: "background.paper",
-                  minWidth: 220,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center", // Vertically center
-                }}
-              >
-                <CardContent
-                  sx={{
-                    textAlign: "center",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center", // Vertically center
-                    alignItems: "center",     // Horizontally center
-                    height: "100%",
-                  }}
-                >
-                  <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 19,
-                      textAlign: "center",
-                    }}
-                  >
-                    Hours Last 7 Days
-                  </Typography>
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    color="warning.main"
-                    sx={{
-                      display: "flex",               
-                      justifyContent: "center",       
-                      alignItems: "center",          
-                      width: "100%",                
-                      minHeight: 48,                
-                      whiteSpace: "nowrap",          
-                      overflow: "visible",
-                      textOverflow: "clip",
-                      textAlign: "center",
-                      mx: "auto",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {(() => {
-                      const h = Math.floor(hoursLast7Days / 3600);
-                      const m = Math.floor((hoursLast7Days % 3600) / 60);
-                      const s = Math.floor(hoursLast7Days % 60);
-                      const pad = (n) => n.toString().padStart(2, "0");
-                      if (h > 0 || m > 0) {
-                        return `${h ? h + "h " : ""}${m ? m + "m " : ""}${s ? pad(s) + "s" : ""}`.trim();
-                      }
-                      return `${s}s`;
-                    })()}
-                  </Typography>
-                </CardContent>
-              </Card>
-              {/* Most Tracked Activities */}
-              <Card elevation={4} sx={{ flex: 2, borderRadius: 5, bgcolor: "background.paper", minWidth: 320 }}>
-                <CardContent>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 20,
-                    }}
-                  >
+                {/* Hours Last 7 Days */}
+                <StatCard
+                  title="Last 7 Days"
+                  value={(() => {
+                    const h = Math.floor(hoursLast7Days / 3600);
+                    const m = Math.floor((hoursLast7Days % 3600) / 60);
+                    const s = Math.floor(hoursLast7Days % 60);
+                    if (h > 0 || m > 0) {
+                      return `${h ? h + "h " : ""}${m ? m + "m " : ""}${s ? s + "s" : ""}`.trim();
+                    }
+                    return `${s}s`;
+                  })()}
+                  icon={<FaCalendar size={20} color="#60a5fa" />}
+                  color="#60a5fa"
+                  delay={0.3}
+                  compact={true}
+                  mode={mode}
+                />
+
+                {/* Most Tracked Activities */}
+                <Box sx={{ p: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        color: "#fb923c",
+                        fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
+                        fontSize: "0.9rem"
+                      }}
+                    >
+                      <FaChartBar style={{ marginRight: 6, verticalAlign: "middle" }} />
                       Most Tracked Activities
                     </Typography>
                     <Box>
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setShowTop10(true)}
                         style={{
-                          marginRight: 8,
-                          padding: "4px 12px",
+                          marginRight: 6,
+                          padding: "3px 6px",
                           borderRadius: 6,
                           border: "none",
-                          background: showTop10 ? "#fb923c" : "#e5e7eb",
-                          color: showTop10 ? "#fff" : "#18181b",
+                          background: showTop10 
+                            ? "linear-gradient(45deg, #fb923c, #fbbf24)" 
+                            : "rgba(128, 128, 128, 0.2)",
+                          color: mode === 'dark' ? "#fff" : "#000",
                           fontWeight: 600,
-                          cursor: "pointer"
+                          cursor: "pointer",
+                          backdropFilter: "blur(10px)",
+                          fontSize: "0.7rem"
                         }}
                       >
-                        Top 10
-                      </button>
-                      <button
+                        Top 5
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setShowTop10(false)}
                         style={{
-                          padding: "4px 12px",
+                          padding: "3px 6px",
                           borderRadius: 6,
                           border: "none",
-                          background: !showTop10 ? "#fb923c" : "#e5e7eb",
-                          color: !showTop10 ? "#fff" : "#18181b",
+                          background: !showTop10 
+                            ? "linear-gradient(45deg, #fb923c, #fbbf24)" 
+                            : "rgba(128, 128, 128, 0.2)",
+                          color: mode === 'dark' ? "#fff" : "#000",
                           fontWeight: 600,
-                          cursor: "pointer"
+                          cursor: "pointer",
+                          backdropFilter: "blur(10px)",
+                          fontSize: "0.7rem"
                         }}
                       >
                         All
-                      </button>
+                      </motion.button>
                     </Box>
                   </Box>
-                  <Box>
+                  <Box sx={{ 
+                    maxHeight: "160px", 
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    width: "100%"
+                  }}>
                     {mostTracked
-                      .slice(0, showTop10 ? 10 : mostTracked.length)
+                      .slice(0, showTop10 ? 5 : mostTracked.length)
                       .map((item, idx) => {
                         const totalSeconds = Math.round(item.hours * 3600);
                         const h = Math.floor(totalSeconds / 3600);
@@ -520,383 +466,379 @@ export default function Dashboard() {
                         const s = totalSeconds % 60;
                         const pad = (n) => n.toString().padStart(2, "0");
                         return (
-                          <Box key={item.project} sx={{ display: "flex", alignItems: "center", mb: 1.2 }}>
-                            <Box
-                              sx={{
-                                width: 14,
-                                height: 14,
-                                borderRadius: "50%",
-                                bgcolor: pieColors[idx % pieColors.length],
-                                mr: 1.2,
-                                border: "1.5px solid #e5e7eb",
-                              }}
-                            />
-                            <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
-                              {item.project}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-                              {`${pad(h)}:${pad(m)}:${pad(s)}`}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              ({item.percent.toFixed(1)}%)
-                            </Typography>
-                          </Box>
+                          <motion.div
+                            key={item.project}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            whileHover={{ x: 3, backgroundColor: "rgba(251, 146, 60, 0.1)" }}
+                          >
+                            <Box sx={{ 
+                              display: "flex", 
+                              alignItems: "center", 
+                              mb: 0.6, 
+                              p: 0.3, 
+                              borderRadius: 1,
+                              width: "100%",
+                              minWidth: 0
+                            }}>
+                              <motion.div
+                                whileHover={{ scale: 1.2, rotate: 360 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 8,
+                                    height: 8,
+                                    borderRadius: "50%",
+                                    background: `linear-gradient(45deg, ${pieColors[idx % pieColors.length]}, ${pieColors[idx % pieColors.length]}80)`,
+                                    mr: 0.8,
+                                    boxShadow: `0 0 4px ${pieColors[idx % pieColors.length]}40`,
+                                    flexShrink: 0
+                                  }}
+                                />
+                              </motion.div>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  fontWeight: 600, 
+                                  mr: 0.8, 
+                                  color: getTextColor(mode), 
+                                  fontSize: "0.7rem", 
+                                  flex: 1,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  minWidth: 0
+                                }}
+                              >
+                                {item.project}
+                              </Typography>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  mr: 0.8, 
+                                  color: getSecondaryTextColor(mode), 
+                                  fontSize: "0.65rem",
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                {`${pad(h)}:${pad(m)}:${pad(s)}`}
+                              </Typography>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: "#fb923c", 
+                                  fontWeight: 600, 
+                                  fontSize: "0.65rem",
+                                  flexShrink: 0,
+                                  whiteSpace: "nowrap"
+                                }}
+                              >
+                                ({item.percent.toFixed(1)}%)
+                              </Typography>
+                            </Box>
+                          </motion.div>
                         );
                       })}
                     {mostTracked.length === 0 && (
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" sx={{ color: getSecondaryTextColor(mode), fontSize: "0.75rem" }}>
                         No activities tracked yet.
                       </Typography>
                     )}
                   </Box>
-                </CardContent>
-              </Card>
+                </Box>
+              </Box>
             </Box>
-          </motion.div>
+          </GlassCard>
 
           {/* Charts */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", md: "row" },
-                gap: 4,
-                justifyContent: "center",
-                alignItems: "stretch",
-                width: "100%",
-                flexWrap: { xs: "nowrap", md: "wrap" },
-                overflow: "visible",
-              }}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+              gap: 2,
+              width: "100%",
+            }}
+          >
+            {/* Bar Chart */}
+            <ChartCard 
+              title="Hours Worked (Last 7 Days)" 
+              icon={<FaChartBar size={16} />} 
+              delay={0.4}
             >
-              <Card
-                elevation={4}
+              <Box sx={{ height: 250 }}>
+                <Bar
+                  data={barChartData}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: { 
+                        display: false,
+                        labels: {
+                          color: getTextColor(mode)
+                        }
+                      },
+                      tooltip: {
+                        enabled: true,
+                        mode: "index",
+                        intersect: false,
+                        backgroundColor: mode === 'dark' ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)",
+                        titleColor: "#fb923c",
+                        bodyColor: getTextColor(mode),
+                        borderColor: "#fb923c",
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        callbacks: {
+                          title: function(context) {
+                            const idx = context[0].dataIndex;
+                            const dateStr = last7Days[idx];
+                            const date = parseLocalDateString(dateStr);
+                            const values = context[0].chart.data.datasets.map(ds => ds.data[idx]);
+                            const total = values.reduce((a, b) => a + b, 0);
+                            const totalSeconds = Math.round(total * 3600);
+                            const h = Math.floor(totalSeconds / 3600);
+                            const m = Math.floor((totalSeconds % 3600) / 60);
+                            const s = totalSeconds % 60;
+                            const pad = (n) => n.toString().padStart(2, "0");
+                            return `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} — Total: ${pad(h)}:${pad(m)}:${pad(s)}`;
+                          },
+                          label: function(context) {
+                            const value = context.raw || 0;
+                            if (!value) return null;
+                            const totalSeconds = Math.round(value * 3600);
+                            const h = Math.floor(totalSeconds / 3600);
+                            const m = Math.floor((totalSeconds % 3600) / 60);
+                            const s = totalSeconds % 60;
+                            const pad = (n) => n.toString().padStart(2, "0");
+                            const idx = context.dataIndex;
+                            const values = context.chart.data.datasets.map(ds => ds.data[idx]);
+                            const total = values.reduce((a, b) => a + b, 0);
+                            const percent = total > 0 ? (value / total) * 100 : 0;
+                            return `${context.dataset.label}: ${pad(h)}:${pad(m)}:${pad(s)} (${percent.toFixed(1)}%)`;
+                          },
+                        }
+                      },
+                      datalabels: {
+                        anchor: "end",
+                        align: "top",
+                        color: "#fb923c",
+                        font: { weight: "bold", size: 10 },
+                        formatter: (value, context) => {
+                          const idx = context.dataIndex;
+                          const datasets = context.chart.data.datasets;
+                          let lastDatasetWithValue = -1;
+                          for (let i = datasets.length - 1; i >= 0; i--) {
+                            if (datasets[i].data[idx] > 0) {
+                              lastDatasetWithValue = i;
+                              break;
+                            }
+                          }
+                          if (context.datasetIndex !== lastDatasetWithValue) return "";
+                          const values = datasets.map(ds => ds.data[idx]);
+                          const total = values.reduce((a, b) => a + b, 0);
+                          if (!total) return "";
+                          const totalSeconds = Math.round(total * 3600);
+                          const h = Math.floor(totalSeconds / 3600);
+                          const m = Math.floor((totalSeconds % 3600) / 60);
+                          const s = totalSeconds % 60;
+                          const pad = (n) => n.toString().padStart(2, "0");
+                          return `${pad(h)}:${pad(m)}:${pad(s)}`;
+                        },
+                        display: true,
+                      },
+                    },
+                    layout: {
+                      padding: {
+                        top: 24,
+                        right: 8,
+                      },
+                    },
+                    scales: {
+                      x: { 
+                        stacked: true,
+                        ticks: {
+                          color: getTextColor(mode),
+                          font: { size: 10 }
+                        },
+                        grid: {
+                          color: getGridColor(mode)
+                        }
+                      },
+                      y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: { 
+                          stepSize: 1,
+                          color: getTextColor(mode),
+                          font: { size: 10 }
+                        },
+                        title: { 
+                          display: true, 
+                          text: "Hours",
+                          color: getTextColor(mode),
+                          font: { size: 11 }
+                        },
+                        grid: {
+                          color: getGridColor(mode)
+                        }
+                      },
+                    },
+                    maintainAspectRatio: false,
+                  }}
+                  plugins={[ChartDataLabels]}
+                />
+              </Box>
+            </ChartCard>
+
+            {/* Doughnut Chart */}
+            <ChartCard 
+              title="Hours by Project (Last 7 Days)" 
+              icon={<FaChartBar size={16} />} 
+              delay={0.5}
+            >
+              <Box
                 sx={{
-                  flex: 1,
-                  borderRadius: 5,
-                  bgcolor: "background.paper",
-                  minWidth: { xs: 320, md: 400 }, 
-                  maxWidth: { xs: "100%", md: "50%" }, 
                   display: "flex",
-                  flexDirection: "column",
+                  flexDirection: { xs: "column", md: "row" },
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 1.5,
                 }}
               >
-                <CardContent>
-                  <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 20,
-                      textAlign: "center",
-                    }}
-                  >
-                    Hours Worked (Last 7 Days)
-                  </Typography>
-                  <Box sx={{ height: 260 }}>
-                    <Bar
-                      data={barChartData}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: { display: false },
-                          tooltip: {
-                            enabled: true,
-                            mode: "index",
-                            intersect: false,
-                            callbacks: {
-                              title: function(context) {
-                                const idx = context[0].dataIndex;
-                                const dateStr = last7Days[idx];
-                                const date = parseLocalDateString(dateStr);
-                                // Calculate total for this day
-                                const values = context[0].chart.data.datasets.map(ds => ds.data[idx]);
-                                const total = values.reduce((a, b) => a + b, 0);
-                                const totalSeconds = Math.round(total * 3600);
-                                const h = Math.floor(totalSeconds / 3600);
-                                const m = Math.floor((totalSeconds % 3600) / 60);
-                                const s = totalSeconds % 60;
-                                const pad = (n) => n.toString().padStart(2, "0");
-                                // Show date and total on the same row
-                                return `${date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} — Total: ${pad(h)}:${pad(m)}:${pad(s)}`;
-                              },
-                              label: function(context) {
-                                const value = context.raw || 0;
-                                if (!value) return null;
-                                const totalSeconds = Math.round(value * 3600);
-                                const h = Math.floor(totalSeconds / 3600);
-                                const m = Math.floor((totalSeconds % 3600) / 60);
-                                const s = totalSeconds % 60;
-                                const pad = (n) => n.toString().padStart(2, "0");
-                                const idx = context.dataIndex;
-                                const values = context.chart.data.datasets.map(ds => ds.data[idx]);
-                                const total = values.reduce((a, b) => a + b, 0);
-                                const percent = total > 0 ? (value / total) * 100 : 0;
-                                return `${context.dataset.label}: ${pad(h)}:${pad(m)}:${pad(s)} (${percent.toFixed(1)}%)`;
-                              },
-                              afterBody: function() {
-                                return [];
-                              }
-                            }
-                          },
-                          datalabels: {
-                            anchor: "end",
-                            align: "top",
-                            color: "#fb923c",
-                            font: { weight: "bold", size: 14 },
-                            formatter: (value, context) => {
-                              // Only show the total for the day at the top of the bar (once per bar)
-                              const idx = context.dataIndex;
-                              const datasets = context.chart.data.datasets;
-                              // Find the last dataset index with a value for this bar
-                              let lastDatasetWithValue = -1;
-                              for (let i = datasets.length - 1; i >= 0; i--) {
-                                if (datasets[i].data[idx] > 0) {
-                                  lastDatasetWithValue = i;
-                                  break;
-                                }
-                              }
-                              // Only show label on the top segment
-                              if (context.datasetIndex !== lastDatasetWithValue) return "";
-                              // Sum all project values for this day
-                              const values = datasets.map(ds => ds.data[idx]);
-                              const total = values.reduce((a, b) => a + b, 0);
-                              if (!total) return "";
-                              const totalSeconds = Math.round(total * 3600);
+                <Box
+                  sx={{
+                    width: { xs: "100%", md: 150 },
+                    height: 150,
+                    position: "relative",
+                  }}
+                >
+                  <Doughnut
+                    data={pieChartData}
+                    options={{
+                      responsive: true,
+                      cutout: "70%",
+                      plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                          enabled: true,
+                          backgroundColor: mode === 'dark' ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.9)",
+                          titleColor: "#fb923c",
+                          bodyColor: getTextColor(mode),
+                          borderColor: "#fb923c",
+                          borderWidth: 1,
+                          cornerRadius: 8,
+                          callbacks: {
+                            label: function(context) {
+                              const value = context.raw || 0;
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percent = total > 0 ? (value / total) * 100 : 0;
+                              const totalSeconds = Math.round(value * 3600);
                               const h = Math.floor(totalSeconds / 3600);
                               const m = Math.floor((totalSeconds % 3600) / 60);
                               const s = totalSeconds % 60;
                               const pad = (n) => n.toString().padStart(2, "0");
-                              return `${pad(h)}:${pad(m)}:${pad(s)}`;
-                            },
-                            display: true,
-                            clamp: true,
-                            clip: false,
-                            // Dynamically offset overlapping labels on small screens
-                            offset: (context) => {
-                              const chart = context.chart;
-                              const width = chart.width;
-                              // Only apply on small screens
-                              if (width > 600) return 8;
-                              // Get all visible bar tops for this dataIndex
-                              const idx = context.dataIndex;
-                              const datasets = chart.data.datasets;
-                              // Find which bars have a label at this index
-                              const totals = datasets.map(ds => ds.data[idx])
-                                .map(v => Math.round((v || 0) * 3600));
-                              // Find the indexes of bars with nonzero total
-                              const nonZeroIndexes = totals
-                                .map((v, i) => ({ v, i }))
-                                .filter(obj => v => v > 0)
-                                .map(obj => obj.i);
-                              // If only one, no need to offset
-                              if (nonZeroIndexes.length <= 1) return 8;
-                              // Alternate offset for adjacent bars
-                              // Find the bar index for this label
-                              const barIndex = context.dataIndex;
-                              // Even bars go higher, odd bars go lower
-                              return barIndex % 2 === 0 ? 18 : 2;
-                            },
-                          },
+                              return [
+                                `${context.label}`,
+                                `${pad(h)}:${pad(m)}:${pad(s)}`,
+                                `(${percent.toFixed(1)}%)`
+                              ];
+                            }
+                          }
                         },
-                        layout: {
-                          padding: {
-                            top: 32,
-                            right: 12,
-                          },
-                        },
-                        scales: {
-                          x: { stacked: true },
-                          y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 },
-                            title: { display: true, text: "Hours" },
-                          },
-                        },
-                        maintainAspectRatio: false,
-                      }}
-                      plugins={[ChartDataLabels]}
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-              <Card
-                elevation={4}
-                sx={{
-                  flex: 1,
-                  borderRadius: 5,
-                  bgcolor: "background.paper",
-                  minWidth: { xs: 320, md: 400 },
-                  maxWidth: { xs: "100%", md: "50%" },
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                  
-                }}
-              >
-                <CardContent sx={{ flex: 2, display: "flex", flexDirection: "column", justifyContent: "center", py: 1 }}>
-                  <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 20,
-                      textAlign: "center",
+                        datalabels: { display: false },
+                      },
+                      maintainAspectRatio: false,
                     }}
-                  >
-                    Hours by Project (Last 7 Days)
+                    plugins={[
+                      {
+                        id: "centerText",
+                        afterDraw: (chart) => {
+                          const { ctx, chartArea } = chart;
+                          if (!chartArea) return;
+                          ctx.save();
+                          ctx.font = "bold 1rem Arial";
+                          ctx.fillStyle = "#fb923c";
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          const totalSeconds = Math.round(hoursLast7Days);
+                          const h = Math.floor(totalSeconds / 3600);
+                          const m = Math.floor((totalSeconds % 3600) / 60);
+                          const s = totalSeconds % 60;
+                          const pad = (n) => n.toString().padStart(2, "0");
+                          ctx.fillText(
+                            `${pad(h)}:${pad(m)}:${pad(s)}`,
+                            (chartArea.left + chartArea.right) / 2,
+                            (chartArea.top + chartArea.bottom) / 2
+                          );
+                          ctx.restore();
+                        },
+                      },
+                    ]}
+                  />
+                </Box>
+                
+                {/* Legend */}
+                <Box sx={{ flex: 1, minWidth: 150 }}>
+                  <Typography variant="subtitle2" sx={{ mb: 1.5, color: getSecondaryTextColor(mode), fontSize: "0.85rem" }}>
+                    Project Breakdown
                   </Typography>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: { xs: "column", sm: "column", md: "row" }, 
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mb: 1,
-                      width: "100%",
-                      gap: { xs: 1, md: 2 },
-                    }}
-                  >
-                    {/* Pie Chart */}
-                    <Box
-                      sx={{
-                        width: { xs: "100%", sm: "100%", md: 260 },
-                        height: { xs: 180, sm: 220, md: 260 },
-                        minWidth: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        mx: "auto",
-                        position: "relative",
-                      }}
-                    >
-                      <Doughnut
-                        data={pieChartData}
-                        options={{
-                          responsive: true,
-                          cutout: "70%",
-                          plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                              enabled: true,
-                              callbacks: {
-                                label: function(context) {
-                                  const value = context.raw || 0;
-                                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                  const percent = total > 0 ? (value / total) * 100 : 0;
-                                  const totalSeconds = Math.round(value * 3600);
-                                  const h = Math.floor(totalSeconds / 3600);
-                                  const m = Math.floor((totalSeconds % 3600) / 60);
-                                  const s = totalSeconds % 60;
-                                  const pad = (n) => n.toString().padStart(2, "0");
-                                  return [
-                                    `${context.label}`,
-                                    `${pad(h)}:${pad(m)}:${pad(s)}`,
-                                    `(${percent.toFixed(1)}%)`
-                                  ];
-                                }
-                              }
-                            },
-                            datalabels: { display: false },
-                            centerText: {
-                              display: true,
-                              text: (() => {
-                                // Show total hours for the last 7 days (not just this week)
-                                const totalSeconds = Math.round(hoursLast7Days);
-                                const h = Math.floor(totalSeconds / 3600);
-                                const m = Math.floor((totalSeconds % 3600) / 60);
-                                const s = totalSeconds % 60;
-                                const pad = (n) => n.toString().padStart(2, "0");
-                                return `${pad(h)}:${pad(m)}:${pad(s)}`;
-                              })(),
-                            },
-                          },
-                          maintainAspectRatio: false,
-                        }}
-                        plugins={[
-                          {
-                            id: "centerText",
-                            afterDraw: (chart) => {
-                              const { ctx, chartArea } = chart;
-                              if (!chartArea) return;
-                              const centerConfig = chart.options.plugins.centerText;
-                              if (centerConfig && centerConfig.display) {
-                                ctx.save();
-                                ctx.font = "bold 1.6rem Arial";
-                                ctx.fillStyle = "#fb923c";
-                                ctx.textAlign = "center";
-                                ctx.textBaseline = "middle";
-                                ctx.fillText(
-                                  centerConfig.text,
-                                  (chartArea.left + chartArea.right) / 2,
-                                  (chartArea.top + chartArea.bottom) / 2
-                                );
-                                ctx.restore();
-                              }
-                            },
-                          },
-                        ]}
-                      />
-                    </Box>
-                    {/* Legend */}
-                    <Box
-                      sx={{
-                        width: { xs: "100%", sm: "100%", md: 220 },
-                        minWidth: { xs: 0, md: 160 },
-                        maxWidth: { xs: "100%", md: 250 },
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: { xs: "center", md: "flex-start" },
-                        mt: { xs: 1, md: 0 },
-                        ml: { xs: 0, md: 2 },
-                      }}
-                    >
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1, textAlign: { xs: "center", md: "left" } }}>
-                        Project Breakdown
-                      </Typography>
-                      {projects.map((project, idx) => {
-                        const hours = projectTotals[project] || 0;
-                        const percent = pieData.reduce((a, b) => a + b, 0) > 0
-                          ? (hours / pieData.reduce((a, b) => a + b, 0)) * 100
-                          : 0;
-                        const totalSeconds = Math.round(hours * 3600);
-                        const h = Math.floor(totalSeconds / 3600);
-                        const m = Math.floor((totalSeconds % 3600) / 60);
-                        const s = totalSeconds % 60;
-                        const pad = (n) => n.toString().padStart(2, "0");
-                        return (
-                          <Box key={project} sx={{ display: "flex", alignItems: "center", mb: 1, flexWrap: "wrap" }}>
-                            <Box
-                              sx={{
-                                width: 16,
-                                height: 16,
-                                borderRadius: "50%",
-                                bgcolor: pieColors[idx % pieColors.length],
-                                mr: 1.2,
-                                border: "1.5px solid #e5e7eb",
-                              }}
-                            />
-                            <Typography variant="body2" sx={{ fontWeight: 600, mr: 1 }}>
-                              {project}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mr: 1 }}>
-                              {`${pad(h)}:${pad(m)}:${pad(s)}`}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              ({percent.toFixed(1)}%)
-                            </Typography>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Box>
+                  {projects.map((project, idx) => {
+                    const hours = projectTotals[project] || 0;
+                    const percent = pieData.reduce((a, b) => a + b, 0) > 0
+                      ? (hours / pieData.reduce((a, b) => a + b, 0)) * 100
+                      : 0;
+                    const totalSeconds = Math.round(hours * 3600);
+                    const h = Math.floor(totalSeconds / 3600);
+                    const m = Math.floor((totalSeconds % 3600) / 60);
+                    const s = totalSeconds % 60;
+                    const pad = (n) => n.toString().padStart(2, "0");
+                    return (
+                      <motion.div
+                        key={project}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        whileHover={{ x: 3 }}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 0.8, p: 0.5, borderRadius: 1 }}>
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: "50%",
+                              background: `linear-gradient(45deg, ${pieColors[idx % pieColors.length]}, ${pieColors[idx % pieColors.length]}80)`,
+                              mr: 1,
+                              boxShadow: `0 0 6px ${pieColors[idx % pieColors.length]}40`,
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: 600, mr: 1, color: getTextColor(mode), fontSize: "0.75rem" }}>
+                            {project}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mr: 1, color: getSecondaryTextColor(mode), fontSize: "0.7rem" }}>
+                            {`${pad(h)}:${pad(m)}:${pad(s)}`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#fb923c", fontWeight: 600, fontSize: "0.7rem" }}>
+                            ({percent.toFixed(1)}%)
+                          </Typography>
+                        </Box>
+                      </motion.div>
+                    );
+                  })}
+                </Box>
+              </Box>
+            </ChartCard>
+          </Box>
+
+          {/* Achievements */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <MilestonesAchievements entries={entries} />
           </motion.div>
-          <MilestonesAchievements entries={entries} />
         </Box>
       </Box>
     </ThemeProvider>

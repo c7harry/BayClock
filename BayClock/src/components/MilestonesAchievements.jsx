@@ -1,301 +1,328 @@
-import { Box, Card, CardContent, Typography, useTheme, Fade } from "@mui/material";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import { useMemo } from "react";
-import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-
-// Define levels for each achievement
-const HOURS_LEVELS = [1, 5, 10, 25, 50, 100, 200, 400, 800, 1000]; // in hours
-const STREAK_LEVELS = [1, 2, 3, 5, 7, 10, 14, 21, 30, 60]; // in days
-
-const ACHIEVEMENTS = [
-  {
-    key: "hours_logged",
-    label: "Hours Logged",
-    description: (level) => `Log a total of ${HOURS_LEVELS[level]} hours.`,
-    icon: (theme) => <EmojiEventsIcon sx={{ color: theme.palette.warning.main, fontSize: 40 }} />,
-    levels: HOURS_LEVELS,
-    getCurrent: (stats) => stats.totalHours,
-    unit: "hours",
-    color: (theme) => theme.palette.warning.main,
-    bg: (theme) => theme.palette.mode === "dark" ? "#3b3b1f" : "#fff7ed",
-  },
-  {
-    key: "streak",
-    label: "Days in a Row",
-    description: (level) => `Log time ${STREAK_LEVELS[level]} days in a row.`,
-    icon: (theme) => <TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 40 }} />,
-    levels: STREAK_LEVELS,
-    getCurrent: (stats) => stats.longestStreak,
-    unit: "days",
-    color: (theme) => theme.palette.success.main,
-    bg: (theme) => theme.palette.mode === "dark" ? "#1e293b" : "#e0f2fe",
-  },
-];
-
-// Helper to calculate stats from entries
-function getStats(entries) {
-  // Total hours
-  const totalHours = entries.reduce((sum, e) => sum + (e.durationSeconds || 0) / 3600, 0);
-
-  // Calculate streaks
-  const dates = Array.from(new Set(entries.map(e => e.date))).sort();
-  let longestStreak = 0, streak = 0, prevDate = null;
-  for (let i = 0; i < dates.length; i++) {
-    const date = new Date(dates[i]);
-    if (
-      prevDate &&
-      (date - prevDate) / (1000 * 60 * 60 * 24) === 1
-    ) {
-      streak += 1;
-    } else {
-      streak = 1;
-    }
-    if (streak > longestStreak) longestStreak = streak;
-    prevDate = date;
-  }
-
-  return { totalHours, longestStreak };
-}
+import { useState, useEffect } from "react";
+import { Box, Typography, LinearProgress } from "@mui/material";
+import { motion } from "framer-motion";
+import { FaTrophy, FaFire, FaStar, FaCrown, FaGem, FaMedal, FaClock } from "react-icons/fa";
+import { GlassCard, getTextColor, getSecondaryTextColor } from "./Theme";
 
 export default function MilestonesAchievements({ entries }) {
-  const theme = useTheme();
-
-  // Precompute seconds for each entry if not already present
-  const entriesWithSeconds = useMemo(
-    () =>
-      entries.map(e => ({
-        ...e,
-        durationSeconds: e.durationSeconds ?? durationToSeconds(e.duration),
-      })),
-    [entries]
+  // Dark/Light mode detection
+  const [mode, setMode] = useState(
+    document.documentElement.classList.contains("dark") ? "dark" : "light"
   );
 
-  const stats = getStats(entriesWithSeconds);
+  useEffect(() => {
+    const getMode = () =>
+      document.documentElement.classList.contains("dark") ? "dark" : "light";
+    setMode(getMode());
+
+    const observer = new MutationObserver(() => {
+      setMode(getMode());
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  // Calculate total hours worked
+  const totalHours = entries.reduce((sum, entry) => {
+    const duration = entry.duration || "0s";
+    let seconds = 0;
+    const regex = /(\d+)h|(\d+)m|(\d+)s/g;
+    let match;
+    while ((match = regex.exec(duration))) {
+      if (match[1]) seconds += parseInt(match[1]) * 3600;
+      if (match[2]) seconds += parseInt(match[2]) * 60;
+      if (match[3]) seconds += parseInt(match[3]);
+    }
+    return sum + seconds / 3600;
+  }, 0);
+
+  // Calculate consecutive days
+  const dates = [...new Set(entries.map(e => e.date))].sort();
+  let currentStreak = 0;
+  let maxStreak = 0;
+  let tempStreak = 1;
+
+  for (let i = 1; i < dates.length; i++) {
+    const prevDate = new Date(dates[i - 1]);
+    const currDate = new Date(dates[i]);
+    const diffTime = currDate - prevDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+    if (diffDays === 1) {
+      tempStreak++;
+    } else {
+      maxStreak = Math.max(maxStreak, tempStreak);
+      tempStreak = 1;
+    }
+  }
+  maxStreak = Math.max(maxStreak, tempStreak);
+
+  // Check if today continues the streak
+  const today = new Date().toISOString().slice(0, 10);
+  const lastDate = dates[dates.length - 1];
+  if (lastDate === today) {
+    currentStreak = tempStreak;
+  }
+
+  // Define milestones
+  const milestones = [
+    {
+      id: "first-hour",
+      title: "First Hour",
+      description: "Track your first hour",
+      target: 1,
+      current: totalHours,
+      icon: <FaClock size={20} color="#34d399" />,
+      color: "#34d399",
+      unlocked: totalHours >= 1,
+    },
+    {
+      id: "ten-hours",
+      title: "Getting Started",
+      description: "Track 10 total hours",
+      target: 10,
+      current: totalHours,
+      icon: <FaFire size={20} color="#fbbf24" />,
+      color: "#fbbf24",
+      unlocked: totalHours >= 10,
+    },
+    {
+      id: "fifty-hours",
+      title: "Dedicated Tracker",
+      description: "Track 50 total hours",
+      target: 50,
+      current: totalHours,
+      icon: <FaStar size={20} color="#60a5fa" />,
+      color: "#60a5fa",
+      unlocked: totalHours >= 50,
+    },
+    {
+      id: "hundred-hours",
+      title: "Time Master",
+      description: "Track 100 total hours",
+      target: 100,
+      current: totalHours,
+      icon: <FaCrown size={20} color="#a78bfa" />,
+      color: "#a78bfa",
+      unlocked: totalHours >= 100,
+    },
+    {
+      id: "week-streak",
+      title: "Week Warrior",
+      description: "Track time for 7 consecutive days",
+      target: 7,
+      current: maxStreak,
+      icon: <FaGem size={20} color="#f472b6" />,
+      color: "#f472b6",
+      unlocked: maxStreak >= 7,
+    },
+    {
+      id: "legend",
+      title: "Time Tracking Legend",
+      description: "Track 500 total hours",
+      target: 500,
+      current: totalHours,
+      icon: <FaMedal size={20} color="#fb923c" />,
+      color: "#fb923c",
+      unlocked: totalHours >= 500,
+    },
+  ];
+
+  const unlockedCount = milestones.filter(m => m.unlocked).length;
 
   return (
-    <Card
-      elevation={8}
-      sx={{
-        borderRadius: 5,
-        bgcolor: theme.palette.mode === "dark"
-          ? "linear-gradient(135deg, #23232a 60%, #18181b 100%)"
-          : "linear-gradient(135deg, #fff7ed 60%, #f3f4f6 100%)",
-        mt: 2,
-        boxShadow: theme.palette.mode === "dark"
-          ? "0 4px 32px 0 rgba(0,0,0,0.45)"
-          : "0 4px 32px 0 rgba(251,146,60,0.10)",
-        border: theme.palette.mode === "dark"
-          ? "1.5px solid #23232a"
-          : "1.5px solid #ffe6d3",
-        transition: "background-color 0.3s",
-        px: { xs: 1, sm: 2 },
-        py: 2,
-      }}
+    <GlassCard 
+      title="Achievements & Milestones" 
+      icon={<FaTrophy size={16} />} 
+      delay={0}
     >
-      <CardContent sx={{ p: 0 }}>
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mb: 1 }}>
-          <Typography
-            variant="h5"
-            fontWeight={900}
-            color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-            sx={{
-              textShadow: theme.palette.mode === "dark"
-                ? "0 1px 8px #18181b"
-                : "0 1px 8px #ffe6d3",
-              fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-              textAlign: "center",
-              fontSize: 26,
-            }}
-          >
-            Achievement Showcase
-          </Typography>
+      <Box sx={{ p: 3 }}>
+        {/* Stats Summary */}
+        <Box sx={{ 
+          display: "grid", 
+          gridTemplateColumns: { xs: "1fr 1fr", md: "1fr 1fr 1fr 1fr" }, 
+          gap: 2, 
+          mb: 3 
+        }}>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "#fb923c" }}>
+              {Math.floor(totalHours)}h
+            </Typography>
+            <Typography variant="body2" sx={{ color: getSecondaryTextColor(mode) }}>
+              Total Hours
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "#34d399" }}>
+              {entries.length}
+            </Typography>
+            <Typography variant="body2" sx={{ color: getSecondaryTextColor(mode) }}>
+              Sessions
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "#60a5fa" }}>
+              {maxStreak}
+            </Typography>
+            <Typography variant="body2" sx={{ color: getSecondaryTextColor(mode) }}>
+              Best Streak
+            </Typography>
+          </Box>
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: "#a78bfa" }}>
+              {unlockedCount}/{milestones.length}
+            </Typography>
+            <Typography variant="body2" sx={{ color: getSecondaryTextColor(mode) }}>
+              Achievements
+            </Typography>
+          </Box>
         </Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", md: "row" },
-            alignItems: "stretch",
-            justifyContent: "center",
-            gap: 2,
-            width: "100%",
-          }}
-        >
-          {ACHIEVEMENTS.map((ach, idx) => {
-            const current = ach.getCurrent(stats);
-            // Find the highest level achieved
-            let level = ach.levels.findIndex(req => current < req);
-            if (level === -1) level = ach.levels.length; // All levels achieved
-            const achieved = level === ach.levels.length;
-            const currentLevel = achieved ? ach.levels.length : level;
-            const prevReq = ach.levels[currentLevel - 1] || 0;
-            const nextReq = ach.levels[currentLevel] || ach.levels[ach.levels.length - 1];
-            const progress = achieved
-              ? 1
-              : (current - prevReq) / (nextReq - prevReq);
 
-            // Layout: make the circle bigger, info below
-            return (
-              <Fade in timeout={500 + idx * 80} key={ach.key}>
-                <Box
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    maxWidth: 400,
-                    minHeight: 170,
-                    maxHeight: 220,
-                    p: { xs: 1.5, sm: 2 },
-                    borderRadius: 4,
-                    bgcolor: ach.bg(theme),
-                    border: achieved
-                      ? `2px solid ${ach.color(theme)}`
-                      : `1px solid ${theme.palette.divider}`,
-                    boxShadow: achieved
-                      ? "0 4px 16px 0 rgba(251,146,60,0.18)"
-                      : theme.shadows[1],
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                    transition: "background-color 0.3s, border-color 0.3s",
-                    overflow: "hidden",
-                    cursor: achieved ? "pointer" : "default",
-                    "&:hover": {
-                      boxShadow: achieved
-                        ? "0 8px 32px 0 rgba(251,146,60,0.28)"
-                        : theme.shadows[3],
-                      transform: "translateY(-2px) scale(1.03)",
-                    },
+        {/* Achievements Grid */}
+        <Box sx={{ 
+          display: "grid", 
+          gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "1fr 1fr 1fr" }, 
+          gap: 2 
+        }}>
+          {milestones.map((milestone, index) => (
+            <motion.div
+              key={milestone.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  background: milestone.unlocked
+                    ? `linear-gradient(135deg, ${milestone.color}20, ${milestone.color}10)`
+                    : mode === 'dark' 
+                      ? "rgba(255, 255, 255, 0.05)"
+                      : "rgba(0, 0, 0, 0.05)",
+                  border: milestone.unlocked 
+                    ? `2px solid ${milestone.color}40`
+                    : mode === 'dark'
+                      ? "2px solid rgba(255, 255, 255, 0.1)"
+                      : "2px solid rgba(0, 0, 0, 0.1)",
+                  backdropFilter: "blur(10px)",
+                  position: "relative",
+                  overflow: "hidden",
+                  opacity: milestone.unlocked ? 1 : 0.6,
+                }}
+              >
+                {/* Shine effect for unlocked achievements */}
+                {milestone.unlocked && (
+                  <motion.div
+                    animate={{ x: [-100, 300] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "50px",
+                      height: "100%",
+                      background: `linear-gradient(90deg, transparent, ${milestone.color}40, transparent)`,
+                      zIndex: 1,
+                    }}
+                  />
+                )}
+
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <motion.div
+                    animate={milestone.unlocked ? { rotate: [0, 15, -15, 0] } : {}}
+                    transition={{ duration: 0.5, repeat: milestone.unlocked ? Infinity : 0, repeatDelay: 2 }}
+                  >
+                    {milestone.icon}
+                  </motion.div>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      ml: 1, 
+                      fontWeight: 600, 
+                      color: milestone.unlocked ? milestone.color : getSecondaryTextColor(mode),
+                      fontSize: "0.95rem"
+                    }}
+                  >
+                    {milestone.title}
+                  </Typography>
+                </Box>
+
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    color: getSecondaryTextColor(mode), 
+                    mb: 1.5,
+                    fontSize: "0.8rem"
                   }}
                 >
-                  <Box sx={{ width: 120, height: 120, mx: "auto", position: "relative" }}>
-                    <CircularProgressbarWithChildren
-                      value={progress * 100}
-                      styles={buildStyles({
-                        pathColor: ach.color(theme),
-                        trailColor: theme.palette.mode === "dark" ? "#23232a" : "#e5e7eb",
-                        strokeLinecap: "round",
-                        backgroundColor: ach.bg(theme),
-                      })}
-                      strokeWidth={10}
-                    >
-                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        {ach.icon(theme)}
-                        <Typography
-                          variant="h6"
-                          fontWeight={800}
-                          color={ach.color(theme)}
-                          sx={{
-                            mt: 0.5,
-                            fontSize: 22,
-                            fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                            letterSpacing: 1,
-                          }}
-                        >
-                          {ach.unit === "hours"
-                            ? `${Math.floor(current)}`
-                            : `${Math.floor(current)}`}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            fontWeight: 700,
-                            fontSize: 13,
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          {ach.unit === "hours" ? "Hours" : "Days"}
-                        </Typography>
-                      </Box>
-                    </CircularProgressbarWithChildren>
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        right: -30,
-                        bgcolor: ach.color(theme),
-                        color: "#fff",
-                        px: 1,
-                        py: 0.2,
-                        borderRadius: 2,
-                        fontWeight: 700,
-                        fontSize: 12,
-                        boxShadow: "0 2px 8px 0 rgba(0,0,0,0.10)",
-                        zIndex: 2,
-                        letterSpacing: 1,
-                        minWidth: 38,
-                        textAlign: "center",
-                      }}
-                    >
-                      Lv {currentLevel}
-                    </Box>
-                  </Box>
-                  <Box sx={{ mt: 1, width: "100%", textAlign: "center" }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={800}
-                      color={ach.color(theme)}
-                      sx={{
-                        fontSize: 15,
-                        letterSpacing: 0.5,
-                        fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      }}
-                    >
-                      {ach.label}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        letterSpacing: 0.2,
-                        maxWidth: 180,
-                        display: "block",
-                        mx: "auto",
-                      }}
-                    >
-                      {ach.description(currentLevel)}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        letterSpacing: 0.5,
-                        display: "block",
-                        mx: "auto",
-                      }}
-                    >
-                      {ach.unit === "hours"
-                        ? `${Math.floor(current)} / ${nextReq} hours`
-                        : `${Math.floor(current)} / ${nextReq} days`}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Fade>
-            );
-          })}
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
+                  {milestone.description}
+                </Typography>
 
-// Helper: parse "1h 30m 10s" to seconds
-function durationToSeconds(str) {
-  if (!str) return 0;
-  let total = 0;
-  const regex = /(\d+)h|(\d+)m|(\d+)s/g;
-  let match;
-  while ((match = regex.exec(str))) {
-    if (match[1]) total += parseInt(match[1]) * 3600;
-    if (match[2]) total += parseInt(match[2]) * 60;
-    if (match[3]) total += parseInt(match[3]);
-  }
-  return total;
+                {/* Progress Bar */}
+                <Box sx={{ mb: 1 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontSize: "0.75rem", color: getTextColor(mode) }}>
+                      Progress
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontSize: "0.75rem", color: milestone.color }}>
+                      {Math.min(Math.floor(milestone.current), milestone.target)}/{milestone.target}
+                    </Typography>
+                  </Box>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.min((milestone.current / milestone.target) * 100, 100)}
+                    sx={{
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: mode === 'dark' 
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "rgba(0, 0, 0, 0.1)",
+                      "& .MuiLinearProgress-bar": {
+                        backgroundColor: milestone.color,
+                        borderRadius: 3,
+                      },
+                    }}
+                  />
+                </Box>
+
+                {milestone.unlocked && (
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mt: 1 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: milestone.color, 
+                        fontWeight: 600,
+                        fontSize: "0.75rem"
+                      }}
+                    >
+                      ✨ UNLOCKED ✨
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            </motion.div>
+          ))}
+        </Box>
+
+        {/* Motivational Message */}
+        <Box sx={{ mt: 3, textAlign: "center" }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: getTextColor(mode, 0.8), 
+              fontStyle: "italic",
+              fontSize: "0.9rem"
+            }}
+          >
+            {unlockedCount === milestones.length 
+              ? "🎉 Congratulations! You've unlocked all achievements!"
+              : `Keep tracking! ${milestones.length - unlockedCount} more achievement${milestones.length - unlockedCount !== 1 ? 's' : ''} to unlock.`
+            }
+          </Typography>
+        </Box>
+      </Box>
+    </GlassCard>
+  );
 }

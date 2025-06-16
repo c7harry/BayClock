@@ -15,6 +15,7 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
 import {FaFolderOpen} from "react-icons/fa";
+import { GlassCard } from "../components/Theme";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -220,12 +221,6 @@ export default function Projects() {
     }
   }, [searchTerm, projects]);
 
-  // Animation variants
-  const tileVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -235,7 +230,7 @@ export default function Projects() {
           py: { xs: 2, md: 4 },
           px: { xs: 0, sm: 1, md: 2 },
           width: "100%",
-          maxWidth: "100%", // Allow full width
+          maxWidth: "100%",
           boxSizing: "border-box",
           overflowX: "auto",
         }}
@@ -253,229 +248,213 @@ export default function Projects() {
           }}
         >
           {/* Projects Table Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card
-              elevation={4}
+          <GlassCard
+            title="Projects"
+            icon={<FaFolderOpen size={16} />}
+            delay={0.1}
+            sx={{
+              width: "100%",
+              maxWidth: "100%",
+            }}
+          >
+            <Box sx={{ p: 2.5 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                {role === "admin" ? (
+                  <Box /> 
+                ) : (
+                  <TextField
+                    placeholder="Search projects..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      bgcolor: "background.default",
+                      borderRadius: 2,
+                      minWidth: 180,
+                      "& .MuiInputBase-input": { fontSize: "0.97rem", py: 0.7 },
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <SearchIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#222", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                )}
+                
+                {role === "admin" && (
+                  <Button
+                    variant="contained"
+                    color="warning"
+                    startIcon={<AddIcon />}
+                    sx={{ borderRadius: 2, fontWeight: 600 }}
+                    onClick={() => handleOpenDialog()}
+                  >
+                    Add Project
+                  </Button>
+                )}
+              </Box>
+              <Divider sx={{ mb: 1, borderColor: 'black', borderBottomWidth: 1 }} />
+              <Box sx={{ overflowX: "auto" }}>
+                <Table size="small" sx={{
+                  '& .MuiTableCell-root': {
+                    borderBottom: '1px solid black'
+                  }
+                }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>Workspace</TableCell>
+                      {role === "admin" && (
+                        <TableCell sx={{ fontWeight: 700 }} align="right">
+                          Actions
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(role === "admin" ? projects : filteredProjects).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={role === "admin" ? 5 : 4} align="center" sx={{ color: "text.disabled" }}>
+                          No projects yet.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      (role === "admin" ? projects : filteredProjects).map((project) => (
+                        <TableRow key={project.id}>
+                          <TableCell>{project.name}</TableCell>
+                          <TableCell>{project.client}</TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "inline-block",
+                                px: 1.2,
+                                py: 0.2,
+                                borderRadius: 2,
+                                bgcolor:
+                                  project.status === "Active"
+                                    ? "success.light"
+                                    : "grey.300",
+                                color:
+                                  project.status === "Active"
+                                    ? "success.dark"
+                                    : "grey.700",
+                                fontWeight: 600,
+                                fontSize: 13,
+                              }}
+                            >
+                              {project.status}
+                            </Box>
+                          </TableCell>
+                          <TableCell>
+                            {workspaces.find(ws => ws.id === project.workspace_id)?.name || "—"}
+                          </TableCell>
+                          {role === "admin" && (
+                            <TableCell align="right">
+                              <>
+                                <Tooltip title="Edit" arrow>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenDialog(project)}
+                                    sx={{ mr: 1 }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete" arrow>
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDelete(project.id)}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </Box>
+            </Box>
+          </GlassCard>
+
+          {/* Deleted Projects Tile */}
+          {deletedProjects.length > 0 && (
+            <GlassCard
+              title="Recently Deleted Projects"
+              delay={0.2}
               sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
                 width: "100%",
                 maxWidth: "100%",
-                overflow: 'hidden'
               }}
             >
-              {/* Compact Header Section */}
-              <Box sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'white', 
-                py: 1, 
-                px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
-              }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FaFolderOpen size={16} /> Projects
-                </Typography>
-              </Box>
-
-              <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                  {role === "admin" ? (
-                    <Box /> 
-                  ) : (
-                    <TextField
-                      placeholder="Search projects..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        bgcolor: "background.default",
-                        borderRadius: 2,
-                        minWidth: 180,
-                        "& .MuiInputBase-input": { fontSize: "0.97rem", py: 0.7 },
-                      }}
-                      InputProps={{
-                        startAdornment: (
-                          <SearchIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#222", mr: 1 }} />
-                        ),
-                      }}
-                    />
-                  )}
-                  
-                  {role === "admin" && (
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      startIcon={<AddIcon />}
-                      sx={{ borderRadius: 2, fontWeight: 600 }}
-                      onClick={() => handleOpenDialog()}
-                    >
-                      Add Project
-                    </Button>
-                  )}
-                </Box>
-                <Divider sx={{ mb: 2 }} />
+              <Box sx={{ p: 2.5 }}>
                 <Box sx={{ overflowX: "auto" }}>
-                  <Table size="small">
+                  <Table size="small" sx={{
+                    '& .MuiTableCell-root': {
+                      borderBottom: '1px solid black'
+                    }
+                  }}>
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 700 }}>Workspace</TableCell>
-                        {role === "admin" && (
-                          <TableCell sx={{ fontWeight: 700 }} align="right">
-                            Actions
-                          </TableCell>
-                        )}
+                        <TableCell sx={{ fontWeight: 700 }} align="right">
+                          Restore
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {(role === "admin" ? projects : filteredProjects).length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={role === "admin" ? 5 : 4} align="center" sx={{ color: "text.disabled" }}>
-                            No projects yet.
+                      {deletedProjects.map((project) => (
+                        <TableRow key={project.id}>
+                          <TableCell>{project.name}</TableCell>
+                          <TableCell>{project.client}</TableCell>
+                          <TableCell>
+                            <Box
+                              sx={{
+                                display: "inline-block",
+                                px: 1.2,
+                                py: 0.2,
+                                borderRadius: 2,
+                                bgcolor:
+                                  project.status === "Active"
+                                    ? "success.light"
+                                    : "grey.300",
+                                color:
+                                  project.status === "Active"
+                                    ? "success.dark"
+                                    : "grey.700",
+                                fontWeight: 600,
+                                fontSize: 13,
+                              }}
+                            >
+                              {project.status}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Tooltip title="Restore" arrow>
+                              <IconButton
+                                size="small"
+                                color="success"
+                                onClick={() => handleRestore(project)}
+                              >
+                                <RestoreIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
                           </TableCell>
                         </TableRow>
-                      ) : (
-                        (role === "admin" ? projects : filteredProjects).map((project) => (
-                          <TableRow key={project.id}>
-                            <TableCell>{project.name}</TableCell>
-                            <TableCell>{project.client}</TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "inline-block",
-                                  px: 1.2,
-                                  py: 0.2,
-                                  borderRadius: 2,
-                                  bgcolor:
-                                    project.status === "Active"
-                                      ? "success.light"
-                                      : "grey.300",
-                                  color:
-                                    project.status === "Active"
-                                      ? "success.dark"
-                                      : "grey.700",
-                                  fontWeight: 600,
-                                  fontSize: 13,
-                                }}
-                              >
-                                {project.status}
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              {workspaces.find(ws => ws.id === project.workspace_id)?.name || "—"}
-                            </TableCell>
-                            {role === "admin" && (
-                              <TableCell align="right">
-                                <>
-                                  <Tooltip title="Edit" arrow>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => handleOpenDialog(project)}
-                                      sx={{ mr: 1 }}
-                                    >
-                                      <EditIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title="Delete" arrow>
-                                    <IconButton
-                                      size="small"
-                                      onClick={() => handleDelete(project.id)}
-                                    >
-                                      <DeleteIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                </>
-                              </TableCell>
-                            )}
-                          </TableRow>
-                        ))
-                      )}
+                      ))}
                     </TableBody>
                   </Table>
                 </Box>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Deleted Projects Tile */}
-          {deletedProjects.length > 0 && (
-            <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-              <Card
-                elevation={2}
-                sx={{
-                  borderRadius: 5,
-                  bgcolor: "background.paper",
-                  mt: 3,
-                  width: "100%",
-                  maxWidth: "100%",
-                }}
-              >
-                <CardContent>
-                  <Typography variant="h6" fontWeight={700} color="text.secondary" sx={{ mb: 2 }}>
-                    Recently Deleted Projects
-                  </Typography>
-                  <Divider sx={{ mb: 2 }} />
-                  <Box sx={{ overflowX: "auto" }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Client</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                          <TableCell sx={{ fontWeight: 700 }} align="right">
-                            Restore
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {deletedProjects.map((project) => (
-                          <TableRow key={project.id}>
-                            <TableCell>{project.name}</TableCell>
-                            <TableCell>{project.client}</TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "inline-block",
-                                  px: 1.2,
-                                  py: 0.2,
-                                  borderRadius: 2,
-                                  bgcolor:
-                                    project.status === "Active"
-                                      ? "success.light"
-                                      : "grey.300",
-                                  color:
-                                    project.status === "Active"
-                                      ? "success.dark"
-                                      : "grey.700",
-                                  fontWeight: 600,
-                                  fontSize: 13,
-                                }}
-                              >
-                                {project.status}
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">
-                              <Tooltip title="Restore" arrow>
-                                <IconButton
-                                  size="small"
-                                  color="success"
-                                  onClick={() => handleRestore(project)}
-                                >
-                                  <RestoreIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
+              </Box>
+            </GlassCard>
           )}
         </Box>
 

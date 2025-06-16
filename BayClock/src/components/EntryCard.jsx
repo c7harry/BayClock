@@ -10,6 +10,7 @@ import styled from "@emotion/styled";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import { getTextColor, getSecondaryTextColor } from "./Theme";
 
 // Styled Menu (adapts to dark/light mode)
 const StyledMenu = styled(Menu)(({ theme }) => ({
@@ -73,6 +74,37 @@ const EntryTooltip = styled(({ className, ...props }) => (
     color: theme.palette.mode === "dark" ? "#23232a" : "#fff",
   },
 }));
+
+// Glass morphism card for entry cards
+const GlassEntryCard = ({ children, delay = 0, ...props }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay }}
+    whileHover={{ y: -2, scale: 1.01 }}
+    style={{
+      background: document.documentElement.classList.contains("dark")
+        ? "rgba(35, 35, 42, 0.6)" 
+        : "rgba(255, 255, 255, 0.6)",
+      backdropFilter: "blur(15px)",
+      border: document.documentElement.classList.contains("dark")
+        ? "1px solid rgba(255, 255, 255, 0.1)" 
+        : "1px solid rgba(0, 0, 0, 0.1)",
+      borderRadius: "16px",
+      boxShadow: document.documentElement.classList.contains("dark")
+        ? "0 4px 16px rgba(0, 0, 0, 0.15)"
+        : "0 4px 16px rgba(0, 0, 0, 0.06)",
+      overflow: 'hidden',
+      marginBottom: 8,
+      transition: "all 0.3s ease",
+      listStyle: "none",
+      ...props.style,
+    }}
+    {...props}
+  >
+    {children}
+  </motion.div>
+);
 
 // Helper to format date as "Wed, Jun 4"
 function formatEntryDate(dateStr) {
@@ -229,278 +261,256 @@ export function EntryCardGroup({
   const totalTime = sumDurations(entries.map(e => e.duration));
 
   return (
-    <motion.li
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      {...motionProps}
-      style={{ listStyle: "none" }}
-    >
-      <Card
-        elevation={0}
+    <GlassEntryCard delay={motionProps.delay || 0}>
+      <Box
         sx={{
-          borderRadius: 3,
-          bgcolor: "background.default",
           display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 2px 8px 0 rgba(0,0,0,0.04)",
-          border: "1px solid",
-          borderColor: "divider",
-          transition: "box-shadow 0.2s, border-color 0.2s",
-          "&:hover": {
-            boxShadow: "0 4px 16px 0 rgba(251,146,60,0.10)",
-            borderColor: "warning.main",
-          },
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { sm: "center" },
+          justifyContent: "space-between",
+          gap: 2,
+          px: { xs: 1.5, sm: 3 },
+          py: { xs: 1.5, sm: 2 },
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { sm: "center" },
-            justifyContent: "space-between",
-            gap: 2,
-            px: { xs: 1.5, sm: 3 },
-            py: { xs: 1.5, sm: 2 },
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Avatar
-                sx={{
-                  bgcolor: "warning.main",
-                  color: "#fff",
-                  width: 40,
-                  height: 40,
-                  fontWeight: 700,
-                  fontSize: 18,
-                  mr: 0,
-                  cursor: "pointer",
-                  boxShadow: "0 1px 4px 0 rgba(251,146,60,0.10)",
-                }}
+        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Avatar
+              sx={{
+                bgcolor: "warning.main",
+                color: "#fff",
+                width: 40,
+                height: 40,
+                fontWeight: 700,
+                fontSize: 18,
+                mr: 0,
+                cursor: "pointer",
+                boxShadow: "0 1px 4px 0 rgba(251,146,60,0.10)",
+              }}
+              onClick={() => setExpanded((v) => !v)}
+            >
+              {entries.length}
+            </Avatar>
+            <EntryTooltip title={`Show ${entries.length} entries`} arrow>
+              <Box
+                sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
                 onClick={() => setExpanded((v) => !v)}
               >
-                {entries.length}
-              </Avatar>
-              <EntryTooltip title={`Show ${entries.length} entries`} arrow>
-                <Box
-                  sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
-                  onClick={() => setExpanded((v) => !v)}
-                >
-                  <ExpandMoreIcon
-                    sx={{
-                      ml: 0.5,
-                      transition: "transform 0.2s",
-                      transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-                      color: "warning.main",
-                      fontSize: 22,
-                    }}
-                  />
-                </Box>
-              </EntryTooltip>
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
-              {/* Task description and project on the same row */}
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
-                <EntryTooltip title={entry.description} arrow>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
-                    color="text.primary"
-                    sx={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      fontSize: 17,
-                      mb: 0.2,
-                      minWidth: 0,
-                      flexGrow: 1,
-                      whiteSpace: "normal",
-                      maxHeight: "3.2em",
-                    }}
-                  >
-                    {entry.description}
-                  </Typography>
-                </EntryTooltip>
-                <Box
+                <ExpandMoreIcon
                   sx={{
-                    minWidth: 100,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mr: 2, 
+                    ml: 0.5,
+                    transition: "transform 0.2s",
+                    transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+                    color: "warning.main",
+                    fontSize: 22,
+                  }}
+                />
+              </Box>
+            </EntryTooltip>
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+            {/* Task description and project on the same row */}
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
+              <EntryTooltip title={entry.description} arrow>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
+                  sx={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontSize: 17,
+                    mb: 0.2,
+                    minWidth: 0,
+                    flexGrow: 1,
+                    whiteSpace: "normal",
+                    maxHeight: "3.2em",
+                    color: getTextColor(mode),
                   }}
                 >
-                  <Typography
-                    variant="caption"
+                  {entry.description}
+                </Typography>
+              </EntryTooltip>
+              <Box
+                sx={{
+                  minWidth: 100,
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mr: 2, 
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    bgcolor: "warning.light",
+                    color: "warning.dark",
+                    borderRadius: 2,
+                    px: 1.2,
+                    py: 0.2,
+                    fontWeight: 500,
+                    fontSize: 13,
+                    letterSpacing: 0.2,
+                    textAlign: "center",
+                    display: "inline-block",
+                    width: "100%",
+                  }}
+                >
+                  • {projectName}
+                </Typography>
+              </Box>
+              {/* Spacer for extra padding between project type and time range*/}
+              <Box sx={{ width: 32 }} />
+              {/* Time range display */}
+              <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
+                <Typography
+                  variant="caption"
+                  sx={{ 
+                    fontWeight: 500,
+                    color: getSecondaryTextColor(mode)
+                  }}
+                >
+                  {!expanded
+                    ? (firstStart && lastEnd
+                        ? `${formatEntryTime(firstStart)} - ${formatEntryTime(lastEnd)}`
+                        : "")
+                    : (overallStart && overallEnd)
+                        ? (
+                          <>
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                background: "#e3f2fd", // blue-100
+                                color: "#1976d2",      // blue-700
+                                borderRadius: 4,
+                                padding: "0 4px",
+                                transition: "background 0.2s",
+                              }}
+                            >
+                              {formatEntryTime(overallStart)}
+                            </span>
+                            {" - "}
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                background: "#e8f5e9", // green-100
+                                color: "#388e3c",      // green-700
+                                borderRadius: 4,
+                                padding: "0 4px",
+                                transition: "background 0.2s",
+                              }}
+                            >
+                              {formatEntryTime(overallEnd)}
+                            </span>
+                          </>
+                        )
+                        : ""
+                  }
+                </Typography>
+              </Box>
+              {/* Resume Task Button */}
+              <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
+                <span>
+                  <IconButton
+                    aria-label="resume"
+                    color="warning"
                     sx={{
                       bgcolor: "warning.light",
                       color: "warning.dark",
-                      borderRadius: 2,
-                      px: 1.2,
-                      py: 0.2,
-                      fontWeight: 500,
-                      fontSize: 13,
-                      letterSpacing: 0.2,
-                      textAlign: "center",
-                      display: "inline-block",
-                      width: "100%",
+                      ml: 1,
+                      "&:hover": { bgcolor: "warning.main", color: "#fff" },
                     }}
+                    size="small"
+                    onClick={() => !isRunning && onResume && onResume(entry)}
+                    disabled={isRunning}
                   >
-                    • {projectName}
-                  </Typography>
-                </Box>
-                {/* Spacer for extra padding between project type and time range*/}
-                <Box sx={{ width: 32 }} />
-                {/* Time range display */}
-                <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ fontWeight: 500 }}
-                  >
-                    {!expanded
-                      ? (firstStart && lastEnd
-                          ? `${formatEntryTime(firstStart)} - ${formatEntryTime(lastEnd)}`
-                          : "")
-                      : (overallStart && overallEnd)
-                          ? (
-                            <>
-                              <span
-                                style={{
-                                  fontWeight: 700,
-                                  background: "#e3f2fd", // blue-100
-                                  color: "#1976d2",      // blue-700
-                                  borderRadius: 4,
-                                  padding: "0 4px",
-                                  transition: "background 0.2s",
-                                }}
-                              >
-                                {formatEntryTime(overallStart)}
-                              </span>
-                              {" - "}
-                              <span
-                                style={{
-                                  fontWeight: 700,
-                                  background: "#e8f5e9", // green-100
-                                  color: "#388e3c",      // green-700
-                                  borderRadius: 4,
-                                  padding: "0 4px",
-                                  transition: "background 0.2s",
-                                }}
-                              >
-                                {formatEntryTime(overallEnd)}
-                              </span>
-                            </>
-                          )
-                          : ""
-                    }
-                  </Typography>
-                </Box>
-                {/* Resume Task Button */}
-                <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
-                  <span>
-                    <IconButton
-                      aria-label="resume"
-                      color="warning"
-                      sx={{
-                        bgcolor: "warning.light",
-                        color: "warning.dark",
-                        ml: 1,
-                        "&:hover": { bgcolor: "warning.main", color: "#fff" },
-                      }}
-                      size="small"
-                      onClick={() => !isRunning && onResume && onResume(entry)}
-                      disabled={isRunning}
-                    >
-                      <PlayArrowIcon fontSize="small" />
-                    </IconButton>
-                  </span>
-                </EntryTooltip>
-                {/* Vertical button stays at the right */}
-                {showActions && onDelete && (
-                  <>
-                    <EntryTooltip title="More actions" arrow>
-                      <span>
-                        <StyledIconButton
-                          aria-label="more"
-                          aria-controls={menuOpen ? "entry-group-menu" : undefined}
-                          aria-haspopup="true"
-                          aria-expanded={menuOpen ? "true" : undefined}
-                          onClick={handleMenuOpen}
-                          size="small"
-                          sx={{
-                            overflow: "visible", 
-                            zIndex: 2,         
-                          }}
-                        >
-                          <MoreVertIcon />
-                        </StyledIconButton>
-                      </span>
-                    </EntryTooltip>
-                    <StyledMenu
-                      id="entry-group-menu"
-                      anchorEl={anchorEl}
-                      open={menuOpen}
-                      onClose={handleMenuClose}
-                      anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "right",
-                      }}
-                      transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right",
-                      }}
-                    >
-                      <StyledMenuItem
-                        onClick={() => {
-                          handleMenuClose();
-                          // Delete all entries in this group (by date)
-                          entries.forEach((e) => onDelete(e.id));
+                    <PlayArrowIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </EntryTooltip>
+              {/* Vertical button stays at the right */}
+              {showActions && onDelete && (
+                <>
+                  <EntryTooltip title="More actions" arrow>
+                    <span>
+                      <StyledIconButton
+                        aria-label="more"
+                        aria-controls={menuOpen ? "entry-group-menu" : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={menuOpen ? "true" : undefined}
+                        onClick={handleMenuOpen}
+                        size="small"
+                        sx={{
+                          overflow: "visible", 
+                          zIndex: 2,         
                         }}
                       >
-                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-                        Delete All
-                      </StyledMenuItem>
-                    </StyledMenu>
-                  </>
-                )}
-              </Stack>
-            </Box>
-          </Stack>
-        </Box>
-        <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box sx={{ pl: 1, pt: 0 }}>
-            {entries.map((e, idx) => (
-              <Box
-                key={e.id}
-                sx={{
-                  mb: idx === entries.length - 1 ? 1.5 : 0 // Add spacing below the last card
-                }}
-              >
-                <EntryCard
-                  entry={e}
-                  projects={projects}
-                  mode={mode}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  showActions={showActions}
-                  motionProps={{ initial: false, animate: true }}
-                  hideDate
-                  showTimeRange // prop to show time range on single cards
-                  onResume={onResume}
-                  isRunning={isRunning}
-                  // --- Pass highlight props ---
-                  highlightStart={e.start === overallStart}
-                  highlightEnd={e.end === overallEnd}
-                />
-              </Box>
-            ))}
+                        <MoreVertIcon />
+                      </StyledIconButton>
+                    </span>
+                  </EntryTooltip>
+                  <StyledMenu
+                    id="entry-group-menu"
+                    anchorEl={anchorEl}
+                    open={menuOpen}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                  >
+                    <StyledMenuItem
+                      onClick={() => {
+                        handleMenuClose();
+                        // Delete all entries in this group (by date)
+                        entries.forEach((e) => onDelete(e.id));
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                      Delete All
+                    </StyledMenuItem>
+                  </StyledMenu>
+                </>
+              )}
+            </Stack>
           </Box>
-        </Collapse>
-      </Card>
-    </motion.li>
+        </Stack>
+      </Box>
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
+        <Box sx={{ pl: 1, pt: 0 }}>
+          {entries.map((e, idx) => (
+            <Box
+              key={e.id}
+              sx={{
+                mb: idx === entries.length - 1 ? 1.5 : 0 // Add spacing below the last card
+              }}
+            >
+              <EntryCard
+                entry={e}
+                projects={projects}
+                mode={mode}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                showActions={showActions}
+                motionProps={{ initial: false, animate: true }}
+                hideDate
+                showTimeRange // prop to show time range on single cards
+                onResume={onResume}
+                isRunning={isRunning}
+                // --- Pass highlight props ---
+                highlightStart={e.start === overallStart}
+                highlightEnd={e.end === overallEnd}
+              />
+            </Box>
+          ))}
+        </Box>
+      </Collapse>
+    </GlassEntryCard>
   );
 }
 
@@ -534,32 +544,10 @@ export default function EntryCard({
   const handleMenuClose = () => setAnchorEl(null);
 
   return (
-    <motion.li
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      {...motionProps}
-      style={{ listStyle: "none" }}
-    >
-      <Card
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          bgcolor: "background.default",
-          display: "flex",
-          flexDirection: "column",
-          boxShadow: "0 2px 8px 0 rgba(0,0,0,0.04)",
-          border: "1px solid",
-          borderColor: "divider",
-          transition: "box-shadow 0.2s, border-color 0.2s",
-          "&:hover": {
-            boxShadow: "0 4px 16px 0 rgba(251,146,60,0.10)",
-            borderColor: "warning.main",
-          },
-        }}
-      >
-        {/* Date and duration row on top */}
-        {!hideDate && (
+    <GlassEntryCard delay={motionProps.delay || 0}>
+      {/* Date and duration row on top */}
+      {!hideDate && (
+        <>
           <Box
             sx={{
               px: { xs: 1.5, sm: 3 },
@@ -573,8 +561,11 @@ export default function EntryCard({
           >
             <Typography
               variant="caption"
-              color="text.disabled"
-              sx={{ fontSize: 13, fontWeight: 600 }}
+              sx={{ 
+                fontSize: 13, 
+                fontWeight: 600,
+                color: getSecondaryTextColor(mode)
+              }}
             >
               {formatEntryDate(entry.date)}
             </Typography>
@@ -586,236 +577,248 @@ export default function EntryCard({
               Total: {sumDurations([entry.duration])}
             </Typography>
           </Box>
-        )}
-        {!hideDate && <Divider />}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: { sm: "center" },
-            justifyContent: "space-between",
-            gap: 2,
-            px: { xs: 1.5, sm: 3 },
-            py: { xs: 1.5, sm: 2 },
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              {/* Task description and project on the same row */}
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
-                <EntryTooltip title={entry.description} arrow>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight={600}
-                    color="text.primary"
-                    sx={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2, // Show up to 2 lines, then ellipsis
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      fontSize: 17,
-                      mb: 0.2,
-                      minWidth: 0,
-                      flexGrow: 1,
-                      whiteSpace: "normal",
-                      maxHeight: "3.2em", // Prevents overflow (2 lines)
-                    }}
-                  >
-                    {entry.description}
-                  </Typography>
-                </EntryTooltip>
-                <Box
+          <Divider sx={{ 
+            borderColor: mode === 'dark' 
+              ? 'rgba(255, 255, 255, 0.1)' 
+              : 'rgba(0, 0, 0, 0.1)' 
+          }} />
+        </>
+      )}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { sm: "center" },
+          justifyContent: "space-between",
+          gap: 2,
+          px: { xs: 1.5, sm: 3 },
+          py: { xs: 1.5, sm: 2 },
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Task description and project on the same row */}
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 0, overflow: "hidden", flexWrap: "nowrap" }}>
+              <EntryTooltip title={entry.description} arrow>
+                <Typography
+                  variant="subtitle1"
+                  fontWeight={600}
                   sx={{
-                    minWidth: 100,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mr: 2,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2, // Show up to 2 lines, then ellipsis
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    fontSize: 17,
+                    mb: 0.2,
+                    minWidth: 0,
+                    flexGrow: 1,
+                    whiteSpace: "normal",
+                    maxHeight: "3.2em", // Prevents overflow (2 lines)
+                    color: getTextColor(mode),
                   }}
                 >
+                  {entry.description}
+                </Typography>
+              </EntryTooltip>
+              <Box
+                sx={{
+                  minWidth: 100,
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  mr: 2,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    bgcolor: "warning.light",
+                    color: "warning.dark",
+                    borderRadius: 2,
+                    px: 1.2,
+                    py: 0.2,
+                    fontWeight: 500,
+                    fontSize: 13,
+                    letterSpacing: 0.2,
+                    textAlign: "center",
+                    display: "inline-block",
+                    width: "100%",
+                  }}
+                >
+                  • {projectName}
+                </Typography>
+              </Box>
+              {/* Spacer for extra padding */}
+              <Box sx={{ width: 32 /* or 24, adjust as needed */ }} />
+              {/* Always show time range for single entry */}
+              {displayTimeRange && (
+                <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
                   <Typography
                     variant="caption"
-                    sx={{
-                      bgcolor: "warning.light",
-                      color: "warning.dark",
-                      borderRadius: 2,
-                      px: 1.2,
-                      py: 0.2,
+                    sx={{ 
                       fontWeight: 500,
-                      fontSize: 13,
-                      letterSpacing: 0.2,
-                      textAlign: "center",
-                      display: "inline-block",
-                      width: "100%",
+                      color: getSecondaryTextColor(mode)
                     }}
                   >
-                    • {projectName}
+                    <span
+                      style={{
+                        fontWeight: highlightStart ? 700 : 500,
+                        background: highlightStart ? "#e3f2fd" : "none", // blue-100
+                        color: highlightStart ? "#1976d2" : undefined,   // blue-700
+                        borderRadius: highlightStart ? 4 : undefined,
+                        padding: highlightStart ? "0 4px" : undefined,
+                        transition: "background 0.2s",
+                      }}
+                    >
+                      {formatEntryTime(entry.start)}
+                    </span>
+                    {" - "}
+                    <span
+                      style={{
+                        fontWeight: highlightEnd ? 700 : 500,
+                        background: highlightEnd ? "#e8f5e9" : "none", // green-100
+                        color: highlightEnd ? "#388e3c" : undefined,  // green-700
+                        borderRadius: highlightEnd ? 4 : undefined,
+                        padding: highlightEnd ? "0 4px" : undefined,
+                        transition: "background 0.2s",
+                      }}
+                    >
+                      {formatEntryTime(entry.end)}
+                    </span>
                   </Typography>
                 </Box>
-                {/* Spacer for extra padding */}
-                <Box sx={{ width: 32 /* or 24, adjust as needed */ }} />
-                {/* Always show time range for single entry */}
-                {displayTimeRange && (
-                  <Box sx={{ minWidth: 120, mr: 2, display: "flex", alignItems: "center" }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontWeight: 500 }}
-                    >
-                      <span
-                        style={{
-                          fontWeight: highlightStart ? 700 : 500,
-                          background: highlightStart ? "#e3f2fd" : "none", // blue-100
-                          color: highlightStart ? "#1976d2" : undefined,   // blue-700
-                          borderRadius: highlightStart ? 4 : undefined,
-                          padding: highlightStart ? "0 4px" : undefined,
-                          transition: "background 0.2s",
-                        }}
-                      >
-                        {formatEntryTime(entry.start)}
-                      </span>
-                      {" - "}
-                      <span
-                        style={{
-                          fontWeight: highlightEnd ? 700 : 500,
-                          background: highlightEnd ? "#e8f5e9" : "none", // green-100
-                          color: highlightEnd ? "#388e3c" : undefined,  // green-700
-                          borderRadius: highlightEnd ? 4 : undefined,
-                          padding: highlightEnd ? "0 4px" : undefined,
-                          transition: "background 0.2s",
-                        }}
-                      >
-                        {formatEntryTime(entry.end)}
-                      </span>
-                    </Typography>
-                  </Box>
-                )}
-                {/* === Individual Entry Duration === */}
-                <Box
+              )}
+              {/* === Individual Entry Duration === */}
+              <Box
+                sx={{
+                  minWidth: 60,
+                  mr: 2,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  color="warning.main"
                   sx={{
-                    minWidth: 60,
-                    mr: 2,
-                    display: "flex",
-                    alignItems: "center",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    bgcolor: "warning.light",
+                    color: "warning.dark",
+                    borderRadius: 2,
+                    px: 1.5,
+                    py: 0.5,
+                    letterSpacing: 0.2,
+                    textAlign: "center",
+                    display: "inline-block",
+                    width: "100%",
                   }}
                 >
-                  <Typography
-                    variant="caption"
-                    color="warning.main"
+                  {formatDurationHMS(entry.duration)}
+                </Typography>
+              </Box>
+              {/* Resume Task Button */}
+              <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
+                <span>
+                  <IconButton
+                    aria-label="resume"
+                    color="warning"
                     sx={{
-                      fontSize: 13,
-                      fontWeight: 700,
                       bgcolor: "warning.light",
                       color: "warning.dark",
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 0.5,
-                      letterSpacing: 0.2,
-                      textAlign: "center",
-                      display: "inline-block",
-                      width: "100%",
+                      ml: 1,
+                      "&:hover": { bgcolor: "warning.main", color: "#fff" },
+                    }}
+                    size="small"
+                    onClick={() => !isRunning && onResume && onResume(entry)}
+                    disabled={isRunning}
+                  >
+                    <PlayArrowIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </EntryTooltip>
+              {/* 3 vertical dots menu for actions */}
+              {showActions && (
+                <>
+                  <EntryTooltip title="More actions" arrow>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        position: "relative",
+                        zIndex: 2, // Ensure tooltip and hover effect are above parent overflow
+                      }}
+                    >
+                      <IconButton
+                        aria-label="more"
+                        aria-controls={menuOpen ? "entry-menu" : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={menuOpen ? "true" : undefined}
+                        onClick={handleMenuOpen}
+                        sx={{
+                          ml: 1,
+                          bgcolor: mode === 'dark' 
+                            ? "rgba(255, 255, 255, 0.1)" 
+                            : "rgba(0, 0, 0, 0.05)",
+                          borderRadius: 2,
+                          boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
+                          "&:hover": { 
+                            bgcolor: mode === 'dark' 
+                              ? "rgba(255, 255, 255, 0.15)" 
+                              : "rgba(0, 0, 0, 0.08)"
+                          },
+                          p: 0.7,
+                          overflow: "visible",
+                          zIndex: 2,         
+                        }}
+                        size="small"
+                      >
+                        <MoreVertIcon sx={{ color: getTextColor(mode) }} />
+                      </IconButton>
+                    </span>
+                  </EntryTooltip>
+                  <StyledMenu
+                    id="entry-menu"
+                    anchorEl={anchorEl}
+                    open={menuOpen}
+                    onClose={handleMenuClose}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
                     }}
                   >
-                    {formatDurationHMS(entry.duration)}
-                  </Typography>
-                </Box>
-                {/* Resume Task Button */}
-                <EntryTooltip title={isRunning ? "A task is already running" : "Resume this task"} arrow>
-                  <span>
-                    <IconButton
-                      aria-label="resume"
-                      color="warning"
-                      sx={{
-                        bgcolor: "warning.light",
-                        color: "warning.dark",
-                        ml: 1,
-                        "&:hover": { bgcolor: "warning.main", color: "#fff" },
-                      }}
-                      size="small"
-                      onClick={() => !isRunning && onResume && onResume(entry)}
-                      disabled={isRunning}
-                    >
-                      <PlayArrowIcon fontSize="small" />
-                    </IconButton>
-                  </span>
-                </EntryTooltip>
-                {/* 3 vertical dots menu for actions */}
-                {showActions && (
-                  <>
-                    <EntryTooltip title="More actions" arrow>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          position: "relative",
-                          zIndex: 2, // Ensure tooltip and hover effect are above parent overflow
+                    {onEdit && (
+                      <StyledMenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          onEdit(entry);
                         }}
                       >
-                        <IconButton
-                          aria-label="more"
-                          aria-controls={menuOpen ? "entry-menu" : undefined}
-                          aria-haspopup="true"
-                          aria-expanded={menuOpen ? "true" : undefined}
-                          onClick={handleMenuOpen}
-                          sx={{
-                            ml: 1,
-                            bgcolor: "background.paper",
-                            borderRadius: 2,
-                            boxShadow: "0 1px 4px 0 rgba(0,0,0,0.04)",
-                            "&:hover": { bgcolor: "grey.100" },
-                            p: 0.7,
-                            overflow: "visible",
-                            zIndex: 2,         
-                          }}
-                          size="small"
-                        >
-                          <MoreVertIcon />
-                        </IconButton>
-                      </span>
-                    </EntryTooltip>
-                    <StyledMenu
-                      id="entry-menu"
-                      anchorEl={anchorEl}
-                      open={menuOpen}
-                      onClose={handleMenuClose}
-                      anchorOrigin={{
-                        vertical: "bottom",
-                        horizontal: "right",
-                      }}
-                      transformOrigin={{
-                        vertical: "top",
-                        horizontal: "right",
-                      }}
-                    >
-                      {onEdit && (
-                        <StyledMenuItem
-                          onClick={() => {
-                            handleMenuClose();
-                            onEdit(entry);
-                          }}
-                        >
-                          <EditIcon fontSize="small" sx={{ mr: 1 }} />
-                          Edit
-                        </StyledMenuItem>
-                      )}
-                      {onDelete && (
-                        <StyledMenuItem
-                          onClick={() => {
-                            handleMenuClose();
-                            onDelete(entry.id);
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
-                          Delete
-                        </StyledMenuItem>
-                      )}
-                    </StyledMenu>
-                  </>
-                )}
-              </Stack>
-            </Box>
-          </Stack>
-        </Box>
-      </Card>
-    </motion.li>
+                        <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                        Edit
+                      </StyledMenuItem>
+                    )}
+                    {onDelete && (
+                      <StyledMenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          onDelete(entry.id);
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                        Delete
+                      </StyledMenuItem>
+                    )}
+                  </StyledMenu>
+                </>
+              )}
+            </Stack>
+          </Box>
+        </Stack>
+      </Box>
+    </GlassEntryCard>
   );
 }

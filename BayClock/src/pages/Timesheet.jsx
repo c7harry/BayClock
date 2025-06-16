@@ -14,8 +14,6 @@ import {
   MenuItem,
   TextField,
   Button,
-  Card,
-  CardContent,
   useTheme,
   CssBaseline,
 } from "@mui/material";
@@ -26,6 +24,7 @@ import { format, startOfWeek, addDays } from "date-fns";
 import { motion } from "framer-motion";
 import { supabase } from "../supabaseClient";
 import { FaListAlt } from "react-icons/fa";
+import { GlassCard } from "../components/Theme";
 
 const DAYS_IN_WEEK = 7;
 
@@ -409,7 +408,7 @@ export default function Timesheet() {
           py: { xs: 2, md: 4 },
           px: { xs: 0, sm: 1, md: 2 },
           width: "100%",
-          maxWidth: "100vw", // Allow full viewport width
+          maxWidth: "100vw",
           boxSizing: "border-box",
         }}
       >
@@ -426,31 +425,15 @@ export default function Timesheet() {
           }}
         >
           {/* Timesheet Table Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card
-              elevation={4}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%",
-                maxWidth: "100%",
-                overflow: 'hidden'
-              }}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <GlassCard
+              title="Timesheet (View Only)"
+              icon={<FaListAlt size={16} />}
+              delay={0}
+              sx={{ width: "100%", maxWidth: "100%", overflow: 'hidden' }}
+              whileHover={{}} // Disable hover effect
             >
-              {/* Compact Header Section */}
-              <Box sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'white', 
-                py: 1, 
-                px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
-              }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FaListAlt size={16} /> Timesheet (View Only)
-                </Typography>
-              </Box>
-
-              <CardContent>
+              <Box sx={{ p: 2.5 }}>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1.5 }}>
                   <Button
                     variant="outlined"
@@ -479,8 +462,24 @@ export default function Timesheet() {
                       sx={{
                         bgcolor: "background.default",
                         borderRadius: 2,
-                        minWidth: 110, // Smaller date field
+                        minWidth: 110,
                         "& .MuiInputBase-input": { fontSize: "0.95rem", py: 0.5 },
+                        "& .MuiInputBase-input::-webkit-calendar-picker-indicator": {
+                          filter: mode === "light" ? "invert(1)" : "none",
+                          cursor: "pointer",
+                          opacity: 0.8,
+                          "&:hover": {
+                            opacity: 1,
+                          },
+                        },
+                        "& input[type='date']::-webkit-calendar-picker-indicator": {
+                          filter: mode === "light" ? "invert(1)" : "none",
+                          cursor: "pointer",
+                          opacity: 0.8,
+                          "&:hover": {
+                            opacity: 1,
+                          },
+                        },
                       }}
                     />
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -521,7 +520,6 @@ export default function Timesheet() {
                   <Table
                     sx={{
                       minWidth: 600,
-                      // Remove all vertical borders
                       "& td, & th": {
                         borderRight: "none !important",
                         borderLeft: "none !important",
@@ -570,7 +568,6 @@ export default function Timesheet() {
                         >
                           Total:
                         </TableCell>
-                        {/* Top-right cell: match the rest of the header row */}
                         <TableCell
                           sx={{
                             bgcolor: theme.palette.mode === "dark"
@@ -822,8 +819,8 @@ export default function Timesheet() {
                 <Box sx={{ mt: 1.5, display: "flex", gap: 1.5 }}>
                   {/* Remove Save and Add Row buttons for view-only */}
                 </Box>
-              </CardContent>
-            </Card>
+              </Box>
+            </GlassCard>
           </motion.div>
         </Box>
       </Box>

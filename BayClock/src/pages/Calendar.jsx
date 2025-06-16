@@ -4,8 +4,6 @@ import {
   CssBaseline,
   Box,
   Typography,
-  Card,
-  CardContent,
   useTheme,
   Button,
   Dialog,
@@ -22,6 +20,7 @@ import { createTheme } from "@mui/material/styles";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { FaCalendar } from "react-icons/fa";
+import { GlassCard } from "../components/Theme";
 
 // Get the start of the week (Sunday)
 function getWeekStart(date) {
@@ -256,39 +255,14 @@ export default function CalendarPage() {
           }}
         >
           <motion.div style={{ width: "100%" }}>
-            <Card
-              elevation={6}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%", // Full width
-                maxWidth: "100%",
-                boxShadow: mode === "dark"
-                  ? "0 4px 24px 0 rgba(0,0,0,0.24)"
-                  : "0 4px 24px 0 rgba(251,146,60,0.06)",
-                transition: "background 0.3s",
-                color: mode === "light" ? "#18181b" : "inherit",
-                overflow: 'hidden'
-              }}
+            <GlassCard
+              title="Calendar"
+              icon={<FaCalendar size={16} />}
+              delay={0}
+              sx={{ width: "100%", maxWidth: "100%" }}
+              whileHover={{}} // Disable hover effect
             >
-              {/* Compact Header Section */}
-              <Box sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'white', 
-                py: 1, 
-                px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
-              }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FaCalendar size={16} /> Calendar
-                </Typography>
-              </Box>
-
-              <CardContent
-                sx={{
-                  color: mode === "light" ? "#18181b" : "inherit",
-                }}
-              >
+              <Box sx={{ p: 2.5 }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
                   <Button
                     onClick={handlePrevWeek}
@@ -647,8 +621,8 @@ export default function CalendarPage() {
                     });
                   })}
                 </Box>
-              </CardContent>
-            </Card>
+              </Box>
+            </GlassCard>
           </motion.div>
         </Box>
         {/* Dialog for entries in a block */}

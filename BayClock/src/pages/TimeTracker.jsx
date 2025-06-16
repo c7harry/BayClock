@@ -2,7 +2,7 @@
 // Imports and Setup
 // =======================
 import { useState, useMemo, useEffect, useRef } from "react";
-import { FaPlay, FaStop, FaRegClock } from "react-icons/fa";
+import { FaPlay, FaStop, FaRegClock, FaHistory } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import { GlassCard, getTextColor, getSecondaryTextColor } from "../components/Theme";
 
 // =======================
 // Constants and Helpers
@@ -53,6 +54,74 @@ function formatDisplayDate(dateStr) {
     day: "numeric",
   });
 }
+
+// Glass morphism card for individual entry groups
+const EntryGroupCard = ({ children, date, totalTime, mode, delay = 0 }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.4, delay }}
+    style={{
+      background: document.documentElement.classList.contains("dark")
+        ? "rgba(35, 35, 42, 0.5)" 
+        : "rgba(255, 255, 255, 0.5)",
+      backdropFilter: "blur(15px)",
+      border: document.documentElement.classList.contains("dark")
+        ? "1px solid rgba(255, 255, 255, 0.08)" 
+        : "1px solid rgba(0, 0, 0, 0.08)",
+      borderRadius: "16px",
+      boxShadow: document.documentElement.classList.contains("dark")
+        ? "0 4px 16px rgba(0, 0, 0, 0.15)"
+        : "0 4px 16px rgba(0, 0, 0, 0.06)",
+      overflow: 'hidden',
+      marginBottom: 16,
+    }}
+  >
+    {/* Date Header */}
+    <Box sx={{ 
+      bgcolor: 'rgba(251, 146, 60, 0.1)', 
+      borderBottom: 1,
+      borderColor: 'rgba(251, 146, 60, 0.2)',
+      py: 1.5, 
+      px: 2.5,
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "space-between" 
+    }}>
+      <Typography 
+        variant="subtitle1" 
+        fontWeight={700} 
+        sx={{ 
+          color: "#fb923c",
+          fontSize: "1rem"
+        }}
+      >
+        {formatDisplayDate(date)}
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: 600,
+          bgcolor: "rgba(251, 146, 60, 0.15)",
+          color: "#fb923c",
+          borderRadius: 2,
+          px: 1.5,
+          py: 0.5,
+          fontSize: "0.8rem",
+          border: 1,
+          borderColor: "rgba(251, 146, 60, 0.3)"
+        }}
+      >
+        Total: {totalTime}
+      </Typography>
+    </Box>
+    
+    {/* Content */}
+    <Box sx={{ p: 2 }}>
+      {children}
+    </Box>
+  </motion.div>
+);
 
 // =======================
 // Main TimeTracker Component
@@ -565,447 +634,438 @@ export default function TimeTracker() {
       <Box
         sx={{
           minHeight: "100vh",
-          py: { xs: 2, md: 4 },
-          px: { xs: 0, sm: 1, md: 2 },
+          py: { xs: 1.5, md: 2 },
+          px: { xs: 1, sm: 2, md: 3 },
           width: "100%",
-          maxWidth: "100%", 
           boxSizing: "border-box",
-          overflowX: "hidden",
+          overflowX: "auto",
         }}
       >
         <Box
           sx={{
             width: "100%",
-            maxWidth: "1600px",
+            maxWidth: "100%",
             mx: "auto",
             display: "flex",
             flexDirection: "column",
-            gap: { xs: 2, md: 3 },
-            px: { xs: 0.5, sm: 2, md: 4 },
+            gap: { xs: 1.5, md: 2 },
             boxSizing: "border-box",
-            overflowX: "hidden",
           }}
         >
           {/* =====================
               Entry Form Tile
               ===================== */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card 
-              elevation={0} 
-              sx={{ 
-                borderRadius: 4, 
-                bgcolor: "background.paper", 
-                border: 1,
-                borderColor: "divider",
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(135deg, #23232a 0%, #2a2a32 100%)'
-                  : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                overflow: 'hidden'
-              }}
-            >
-              {/* Compact Header Section */}
+          <GlassCard 
+            title="Track Your Time" 
+            icon={<FaRegClock size={16} />} 
+            delay={0.1}
+          >
+            <Box sx={{ p: 2.5 }}>
+              {/* Compact Primary Input Row */}
               <Box sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'white', 
-                py: 1, 
-                px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+                display: 'grid', 
+                gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' }, 
+                gap: 2, 
+                mb: 2 
               }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <FaRegClock size={16} /> Track Your Time
-                </Typography>
+                <TextField
+                  label="What are you working on?"
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'background.default',
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: getSecondaryTextColor(mode)
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: getTextColor(mode)
+                    }
+                  }}
+                />
+
+                <TextField
+                  select
+                  label="Project"
+                  fullWidth
+                  size="small"
+                  value={project}
+                  onChange={(e) => setProject(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'background.default',
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: getSecondaryTextColor(mode)
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: getTextColor(mode)
+                    }
+                  }}
+                >
+                  <MenuItem value="">Select Project</MenuItem>
+                  {projects.map((p) => (
+                    <MenuItem key={p.id} value={p.id}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ 
+                          width: 6, 
+                          height: 6, 
+                          borderRadius: '50%', 
+                          bgcolor: 'warning.main' 
+                        }} />
+                        {p.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </TextField>
+
+                <TextField
+                  label="Date"
+                  type="date"
+                  fullWidth
+                  size="small"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'background.default',
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: getSecondaryTextColor(mode)
+                    },
+                    '& .MuiOutlinedInput-input': {
+                      color: getTextColor(mode)
+                    },
+                    '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                      filter: mode === "light" ? "invert(1)" : "none",
+                      cursor: "pointer",
+                      opacity: 0.8,
+                      "&:hover": {
+                        opacity: 1,
+                      },
+                    },
+                    '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                      filter: mode === "light" ? "invert(1)" : "none",
+                      cursor: "pointer",
+                      opacity: 0.8,
+                      "&:hover": {
+                        opacity: 1,
+                      },
+                    },
+                  }}
+                />
               </Box>
 
-              <CardContent sx={{ p: 2 }}>
-                {/* Compact Primary Input Row */}
-                <Box sx={{ 
-                  display: 'grid', 
-                  gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr 1fr' }, 
-                  gap: 2, 
-                  mb: 2 
-                }}>
-                  <TextField
-                    label="What are you working on?"
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        bgcolor: 'background.default',
-                      }
-                    }}
-                  />
-
-                  <TextField
-                    select
-                    label="Project"
-                    fullWidth
-                    size="small"
-                    value={project}
-                    onChange={(e) => setProject(e.target.value)}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        bgcolor: 'background.default',
-                      }
-                    }}
-                  >
-                    <MenuItem value="">Select Project</MenuItem>
-                    {projects.map((p) => (
-                      <MenuItem key={p.id} value={p.id}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{ 
-                            width: 6, 
-                            height: 6, 
-                            borderRadius: '50%', 
-                            bgcolor: 'warning.main' 
-                          }} />
-                          {p.name}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </TextField>
-
-                  <TextField
-                    label="Date"
-                    type="date"
-                    fullWidth
-                    size="small"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    InputLabelProps={{ shrink: true }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                        bgcolor: 'background.default',
-                      }
-                    }}
-                  />
-                </Box>
-
-                {/* Compact Timer and Controls Section */}
+              {/* Compact Timer and Controls Section */}
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: 2,
+                alignItems: 'center',
+                p: 2,
+                bgcolor: mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                borderRadius: 3,
+                border: 1,
+                borderColor: 'divider'
+              }}>
+                {/* Compact Timer Display */}
                 <Box sx={{ 
                   display: 'flex', 
-                  flexDirection: { xs: 'column', md: 'row' },
-                  gap: 2,
                   alignItems: 'center',
-                  p: 2,
-                  bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                  borderRadius: 3,
-                  border: 1,
-                  borderColor: 'divider'
+                  gap: 2
                 }}>
-                  {/* Compact Timer Display */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    gap: 2
-                  }}>
-                    <Box sx={{ position: 'relative', width: 80, height: 80 }}>
-                      <CircularProgressbar
-                        value={timer % MAX_TIMER}
-                        maxValue={MAX_TIMER}
-                        text={timerToDuration(timer) || "0s"}
-                        styles={buildStyles({
-                          pathColor: isRunning ? "#fb923c" : "#bdbdbd",
-                          textColor: theme.palette.text.primary,
-                          trailColor: theme.palette.mode === 'dark' ? "#2a2a32" : "#f1f5f9",
-                          textSize: "12px",
-                          pathTransitionDuration: 0.5,
-                        })}
-                      />
-                      {isRunning && (
-                        <Box sx={{
-                          position: 'absolute',
-                          top: -3,
-                          right: -3,
-                          width: 12,
-                          height: 12,
-                          bgcolor: 'success.main',
-                          borderRadius: '50%',
-                          animation: 'pulse 2s infinite',
-                          '@keyframes pulse': {
-                            '0%': { transform: 'scale(1)', opacity: 1 },
-                            '50%': { transform: 'scale(1.2)', opacity: 0.7 },
-                            '100%': { transform: 'scale(1)', opacity: 1 },
-                          }
-                        }} />
-                      )}
-                    </Box>
-                    
-                    {/* Compact Timer Control Buttons */}
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant={isRunning ? "outlined" : "contained"}
-                        color="warning"
-                        size="small"
-                        startIcon={<FaPlay size={12} />}
-                        onClick={handleStart}
-                        disabled={isRunning}
-                        sx={{
-                          borderRadius: 2,
-                          px: 2,
-                          py: 1,
-                          fontWeight: 600,
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        Start
-                      </Button>
-                      
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        startIcon={<FaStop size={12} />}
-                        onClick={handleStop}
-                        disabled={!timer}
-                        sx={{
-                          borderRadius: 2,
-                          px: 2,
-                          py: 1,
-                          fontWeight: 600,
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        Stop
-                      </Button>
-                    </Box>
+                  <Box sx={{ position: 'relative', width: 80, height: 80 }}>
+                    <CircularProgressbar
+                      value={timer % MAX_TIMER}
+                      maxValue={MAX_TIMER}
+                      text={timerToDuration(timer) || "0s"}
+                      styles={buildStyles({
+                        pathColor: isRunning ? "#fb923c" : "#bdbdbd",
+                        textColor: getTextColor(mode),
+                        trailColor: mode === 'dark' ? "#2a2a32" : "#f1f5f9",
+                        textSize: "12px",
+                        pathTransitionDuration: 0.5,
+                      })}
+                    />
+                    {isRunning && (
+                      <Box sx={{
+                        position: 'absolute',
+                        top: -3,
+                        right: -3,
+                        width: 12,
+                        height: 12,
+                        bgcolor: 'success.main',
+                        borderRadius: '50%',
+                        animation: 'pulse 2s infinite',
+                        '@keyframes pulse': {
+                          '0%': { transform: 'scale(1)', opacity: 1 },
+                          '50%': { transform: 'scale(1.2)', opacity: 0.7 },
+                          '100%': { transform: 'scale(1)', opacity: 1 },
+                        }
+                      }} />
+                    )}
                   </Box>
-
-                  {/* Compact Manual Entry Section */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    gap: 1,
-                    flex: 1,
-                    minWidth: 0
-                  }}>
-                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ whiteSpace: 'nowrap' }}>
-                      Manual:
-                    </Typography>
-                    
-                    <TextField
-                      label="Start"
-                      type="time"
-                      size="small"
-                      value={manualStart}
-                      onChange={(e) => setManualStart(e.target.value)}
-                      InputLabelProps={{ shrink: true }}
-                      inputProps={{ step: 60 }}
-                      sx={{
-                        minWidth: 100,
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                          bgcolor: 'background.default',
-                        }
-                      }}
-                    />
-                    
-                    <TextField
-                      label="End"
-                      type="time"
-                      size="small"
-                      value={manualEnd}
-                      onChange={(e) => setManualEnd(e.target.value)}
-                      InputLabelProps={{ shrink: true }}
-                      inputProps={{ step: 60 }}
-                      sx={{
-                        minWidth: 100,
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 1,
-                          bgcolor: 'background.default',
-                        }
-                      }}
-                    />
-                    
+                  
+                  {/* Compact Timer Control Buttons */}
+                  <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
-                      variant="outlined"
+                      variant={isRunning ? "outlined" : "contained"}
                       color="warning"
                       size="small"
-                      onClick={handleManualAdd}
-                      disabled={!manualStart || !manualEnd}
+                      startIcon={<FaPlay size={12} />}
+                      onClick={handleStart}
+                      disabled={isRunning}
                       sx={{
-                        borderRadius: 1,
+                        borderRadius: 2,
                         px: 2,
                         py: 1,
                         fontWeight: 600,
-                        whiteSpace: 'nowrap',
                         fontSize: '0.75rem'
                       }}
                     >
-                      Add
+                      Start
+                    </Button>
+                    
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      startIcon={<FaStop size={12} />}
+                      onClick={handleStop}
+                      disabled={!timer}
+                      sx={{
+                        borderRadius: 2,
+                        px: 2,
+                        py: 1,
+                        fontWeight: 600,
+                        fontSize: '0.75rem'
+                      }}
+                    >
+                      Stop
                     </Button>
                   </Box>
                 </Box>
-              </CardContent>
-            </Card>
-          </motion.div>
+
+                {/* Compact Manual Entry Section */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  gap: 1,
+                  flex: 1,
+                  minWidth: 0
+                }}>
+                  <Typography variant="caption" sx={{ 
+                    whiteSpace: 'nowrap',
+                    color: getSecondaryTextColor(mode),
+                    fontWeight: 600
+                  }}>
+                    Manual:
+                  </Typography>
+                  
+                  <TextField
+                    label="Start"
+                    type="time"
+                    size="small"
+                    value={manualStart}
+                    onChange={(e) => setManualStart(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 60 }}
+                    sx={{
+                      minWidth: 100,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 1,
+                        bgcolor: 'background.default',
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: getSecondaryTextColor(mode)
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: getTextColor(mode)
+                      },
+                      '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                        filter: mode === "light" ? "invert(1)" : "none",
+                        cursor: "pointer",
+                        opacity: 0.8,
+                        "&:hover": {
+                          opacity: 1,
+                        },
+                      },
+                      '& input[type="time"]::-webkit-calendar-picker-indicator': {
+                        filter: mode === "light" ? "invert(1)" : "none",
+                        cursor: "pointer",
+                        opacity: 0.8,
+                        "&:hover": {
+                          opacity: 1,
+                        },
+                      },
+                    }}
+                  />
+                  
+                  <TextField
+                    label="End"
+                    type="time"
+                    size="small"
+                    value={manualEnd}
+                    onChange={(e) => setManualEnd(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                    inputProps={{ step: 60 }}
+                    sx={{
+                      minWidth: 100,
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 1,
+                        bgcolor: 'background.default',
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: getSecondaryTextColor(mode)
+                      },
+                      '& .MuiOutlinedInput-input': {
+                        color: getTextColor(mode)
+                      },
+                      '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                        filter: mode === "light" ? "invert(1)" : "none",
+                        cursor: "pointer",
+                        opacity: 0.8,
+                        "&:hover": {
+                          opacity: 1,
+                        },
+                      },
+                      '& input[type="time"]::-webkit-calendar-picker-indicator': {
+                        filter: mode === "light" ? "invert(1)" : "none",
+                        cursor: "pointer",
+                        opacity: 0.8,
+                        "&:hover": {
+                          opacity: 1,
+                        },
+                      },
+                    }}
+                  />
+                  
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    size="small"
+                    onClick={handleManualAdd}
+                    disabled={!manualStart || !manualEnd}
+                    sx={{
+                      borderRadius: 1,
+                      px: 2,
+                      py: 1,
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    Add
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          </GlassCard>
 
           {/* =====================
               Entries List Tile
               ===================== */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Card 
-              elevation={0} 
-              sx={{ 
-                borderRadius: 4, 
-                bgcolor: "background.paper", 
-                border: 1,
-                borderColor: "divider",
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(135deg, #23232a 0%, #2a2a32 100%)'
-                  : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                overflow: 'hidden'
-              }}
-            >
-              {/* Header Section for Recent Entries */}
-              <Box sx={{ 
-                bgcolor: 'warning.main', 
-                color: 'white', 
-                py: 1, 
-                px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 45%, #fb923c 100%)'
-              }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  Recent Entries
-                </Typography>
-              </Box>
-
-              <CardContent sx={{ p: 2 }}>
-                {entries.length === 0 ? (
-                  <Typography color="text.disabled" sx={{ textAlign: "center" }}>
-                    No entries yet.
-                  </Typography>
-                ) : (
-                  <Box
-                    component="ul"
-                    sx={{
-                      listStyle: "none",
-                      p: 0,
-                      m: 0,
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
-                      width: "100%",
-                    }}
-                  >
-                    {/* --------- Group and Display Recent Entries --------- */}
-                    {Object.entries(grouped)
-  .sort((a, b) => b[0].localeCompare(a[0]))
-  .slice(0, 5)
-  .map(([date, tasks]) => {
-    // Flatten all entries for this date to calculate total duration
-    const allEntries = Object.values(tasks).flat();
-    // Helper to sum durations like "1h 2m 3s"
-    function sumDurations(durations) {
-      let totalSeconds = 0;
-      const regex = /(\d+)h|(\d+)m|(\d+)s/g;
-      durations.forEach((str) => {
-        let match;
-        while ((match = regex.exec(str))) {
-          if (match[1]) totalSeconds += parseInt(match[1]) * 3600;
-          if (match[2]) totalSeconds += parseInt(match[2]) * 60;
-          if (match[3]) totalSeconds += parseInt(match[3]);
-        }
-      });
-      const h = Math.floor(totalSeconds / 3600);
-      const m = Math.floor((totalSeconds % 3600) / 60);
-      const s = totalSeconds % 60;
-      let out = [];
-      if (h) out.push(`${h}h`);
-      if (m) out.push(`${m}m`);
-      out.push(`${s}s`);
-      return out.join(" ") || "0s";
-    }
-    const totalTime = sumDurations(allEntries.map(e => e.duration));
-    return (
-      <Card
-        key={date}
-        elevation={2}
-        sx={{
-          borderRadius: 4,
-          bgcolor: "background.default",
-          mb: 2,
-          px: 2,
-          py: 1.5,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography variant="subtitle2"
-                              color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                              mb={1}
-                              sx={{
-                                fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                                fontWeight: 800,
-                                fontSize: 16,
-                                textAlign: "center",
-                              }}
-                            >
-            {formatDisplayDate(date)}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              fontWeight: 600,
-              bgcolor: "warning.light",
-              color: "warning.dark",
-              borderRadius: 2,
-              px: 1.5,
-              py: 0.5,
-              fontSize: 14,
-              display: "inline-block"
-            }}
+          <GlassCard 
+            title="Recent Entries" 
+            icon={<FaHistory size={16} />} 
+            delay={0.2}
           >
-            Total: {totalTime}
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          {Object.values(tasks).map((group) =>
-            group.length > 1 ? (
-              <EntryCardGroup
-                key={group[0].id}
-                entries={group}
-                mode={mode}
-                onEdit={handleEditOpen}
-                onDelete={handleDeleteEntry}
-                showActions
-                onResume={handleResumeTask}
-                isRunning={isRunning}
-                projects={projects}
-                // Remove date and total time from EntryCardGroup display if present
-                hideDate
-                hideTotal
-              />
-            ) : (
-              <EntryCard
-                key={group[0].id}
-                entry={group[0]}
-                mode={mode}
-                onEdit={handleEditOpen}
-                onDelete={handleDeleteEntry}
-                showActions
-                onResume={handleResumeTask}
-                isRunning={isRunning}
-                projects={projects}
-                hideDate // Remove date from single entry card
-                hideTotal // Remove total from single entry card
-              />
-            )
-          )}
-        </Box>
-      </Card>
-    );
-  })}
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+            <Box sx={{ p: 2.5 }}>
+              {entries.length === 0 ? (
+                <Typography sx={{ 
+                  textAlign: "center",
+                  color: getSecondaryTextColor(mode)
+                }}>
+                  No entries yet.
+                </Typography>
+              ) : (
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  {/* --------- Group and Display Recent Entries --------- */}
+                  {Object.entries(grouped)
+                    .sort((a, b) => b[0].localeCompare(a[0]))
+                    .slice(0, 5)
+                    .map(([date, tasks], index) => {
+                      // Flatten all entries for this date to calculate total duration
+                      const allEntries = Object.values(tasks).flat();
+                      // Helper to sum durations like "1h 2m 3s"
+                      function sumDurations(durations) {
+                        let totalSeconds = 0;
+                        const regex = /(\d+)h|(\d+)m|(\d+)s/g;
+                        durations.forEach((str) => {
+                          let match;
+                          while ((match = regex.exec(str))) {
+                            if (match[1]) totalSeconds += parseInt(match[1]) * 3600;
+                            if (match[2]) totalSeconds += parseInt(match[2]) * 60;
+                            if (match[3]) totalSeconds += parseInt(match[3]);
+                          }
+                        });
+                        const h = Math.floor(totalSeconds / 3600);
+                        const m = Math.floor((totalSeconds % 3600) / 60);
+                        const s = totalSeconds % 60;
+                        let out = [];
+                        if (h) out.push(`${h}h`);
+                        if (m) out.push(`${m}m`);
+                        out.push(`${s}s`);
+                        return out.join(" ") || "0s";
+                      }
+                      const totalTime = sumDurations(allEntries.map(e => e.duration));
+                      
+                      return (
+                        <EntryGroupCard
+                          key={date}
+                          date={date}
+                          totalTime={totalTime}
+                          mode={mode}
+                          delay={index * 0.1}
+                        >
+                          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                            {Object.values(tasks).map((group) =>
+                              group.length > 1 ? (
+                                <EntryCardGroup
+                                  key={group[0].id}
+                                  entries={group}
+                                  mode={mode}
+                                  onEdit={handleEditOpen}
+                                  onDelete={handleDeleteEntry}
+                                  showActions
+                                  onResume={handleResumeTask}
+                                  isRunning={isRunning}
+                                  projects={projects}
+                                  hideDate
+                                  hideTotal
+                                />
+                              ) : (
+                                <EntryCard
+                                  key={group[0].id}
+                                  entry={group[0]}
+                                  mode={mode}
+                                  onEdit={handleEditOpen}
+                                  onDelete={handleDeleteEntry}
+                                  showActions
+                                  onResume={handleResumeTask}
+                                  isRunning={isRunning}
+                                  projects={projects}
+                                  hideDate
+                                  hideTotal
+                                />
+                              )
+                            )}
+                          </Box>
+                        </EntryGroupCard>
+                      );
+                    })}
+                </Box>
+              )}
+            </Box>
+          </GlassCard>
         </Box>
         {/* =====================
             Edit Dialog
@@ -1028,7 +1088,7 @@ export default function TimeTracker() {
             sx={{
               fontWeight: 700,
               fontSize: 22,
-              color: "text.primary",
+              color: getTextColor(mode),
               pb: 1,
               borderBottom: "1px solid",
               borderColor: "divider",
@@ -1059,7 +1119,15 @@ export default function TimeTracker() {
               multiline
               minRows={1}
               maxRows={3}
-              sx={{ mt: 3 }}
+              sx={{ 
+                mt: 3,
+                '& .MuiInputLabel-root': {
+                  color: getSecondaryTextColor(mode)
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: getTextColor(mode)
+                }
+              }}
             />
             <TextField
               select
@@ -1068,6 +1136,14 @@ export default function TimeTracker() {
               onChange={(e) => setEditProject(e.target.value)}
               fullWidth
               variant="outlined"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: getSecondaryTextColor(mode)
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: getTextColor(mode)
+                }
+              }}
             >
               <MenuItem value="">Select</MenuItem>
               {projects.map((p) => (
@@ -1084,6 +1160,30 @@ export default function TimeTracker() {
               InputLabelProps={{ shrink: true }}
               fullWidth
               variant="outlined"
+              sx={{
+                '& .MuiInputLabel-root': {
+                  color: getSecondaryTextColor(mode)
+                },
+                '& .MuiOutlinedInput-input': {
+                  color: getTextColor(mode)
+                },
+                '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                  filter: mode === "light" ? "invert(1)" : "none",
+                  cursor: "pointer",
+                  opacity: 0.8,
+                  "&:hover": {
+                    opacity: 1,
+                  },
+                },
+                '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                  filter: mode === "light" ? "invert(1)" : "none",
+                  cursor: "pointer",
+                  opacity: 0.8,
+                  "&:hover": {
+                    opacity: 1,
+                  },
+                },
+              }}
             />
             <Box sx={{ display: "flex", gap: 2 }}>
               <TextField
@@ -1095,6 +1195,30 @@ export default function TimeTracker() {
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ step: 60, style: { minWidth: 0 } }}
                 variant="outlined"
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: getSecondaryTextColor(mode)
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: getTextColor(mode)
+                  },
+                  '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                    filter: mode === "light" ? "invert(1)" : "none",
+                    cursor: "pointer",
+                    opacity: 0.8,
+                    "&:hover": {
+                      opacity: 1,
+                    },
+                  },
+                  '& input[type="time"]::-webkit-calendar-picker-indicator': {
+                    filter: mode === "light" ? "invert(1)" : "none",
+                    cursor: "pointer",
+                    opacity: 0.8,
+                    "&:hover": {
+                      opacity: 1,
+                    },
+                  },
+                }}
               />
               <TextField
                 label="End Time"
@@ -1105,6 +1229,30 @@ export default function TimeTracker() {
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ step: 60, style: { minWidth: 0 } }}
                 variant="outlined"
+                sx={{
+                  '& .MuiInputLabel-root': {
+                    color: getSecondaryTextColor(mode)
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: getTextColor(mode)
+                  },
+                  '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                    filter: mode === "light" ? "invert(1)" : "none",
+                    cursor: "pointer",
+                    opacity: 0.8,
+                    "&:hover": {
+                      opacity: 1,
+                    },
+                  },
+                  '& input[type="time"]::-webkit-calendar-picker-indicator': {
+                    filter: mode === "light" ? "invert(1)" : "none",
+                    cursor: "pointer",
+                    opacity: 0.8,
+                    "&:hover": {
+                      opacity: 1,
+                    },
+                  },
+                }}
               />
             </Box>
           </DialogContent>
