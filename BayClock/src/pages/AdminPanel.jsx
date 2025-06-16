@@ -724,7 +724,15 @@ export default function AdminPanel() {
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 700, fontSize: 22, display: "flex", alignItems: "center", flexDirection: "column", alignItems: "flex-start" }}>
+          <DialogTitle
+            sx={{
+              fontWeight: 700,
+              fontSize: 22,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start", 
+            }}
+          >
             <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
               Entries for {selectedUserName}
               <IconButton
