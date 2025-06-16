@@ -21,6 +21,7 @@ import Tooltip from "@mui/material/Tooltip";
 import { createTheme } from "@mui/material/styles";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { FaCalendar } from "react-icons/fa";
 
 // Get the start of the week (Sunday)
 function getWeekStart(date) {
@@ -279,7 +280,7 @@ export default function CalendarPage() {
                 background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
               }}>
                 <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Calendar
+                  <FaCalendar size={16} /> Calendar
                 </Typography>
               </Box>
 

@@ -612,7 +612,7 @@ export default function TimeTracker() {
                 background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
               }}>
                 <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Track Your Time
+                  <FaRegClock size={16} /> Track Your Time
                 </Typography>
               </Box>
 
@@ -868,9 +868,9 @@ export default function TimeTracker() {
                 color: 'white', 
                 py: 1, 
                 px: 2,
-                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+                background: 'linear-gradient(135deg, #0F2D52 45%, #fb923c 100%)'
               }}>
-                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                   Recent Entries
                 </Typography>
               </Box>

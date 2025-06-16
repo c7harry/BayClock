@@ -10,11 +10,11 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import RestoreIcon from "@mui/icons-material/Restore";
-import FolderIcon from "@mui/icons-material/Folder";
 import SearchIcon from "@mui/icons-material/Search";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import MenuItem from "@mui/material/MenuItem";
+import {FaFolderOpen} from "react-icons/fa";
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -273,7 +273,7 @@ export default function Projects() {
                 background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
               }}>
                 <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Projects
+                  <FaFolderOpen size={16} /> Projects
                 </Typography>
               </Box>
 

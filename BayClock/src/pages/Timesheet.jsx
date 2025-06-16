@@ -425,35 +425,6 @@ export default function Timesheet() {
             boxSizing: "border-box",
           }}
         >
-          {/* Header Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
-              <CardContent
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  py: 3,
-                  bgcolor: "background.paper",
-                  transition: "background-color 0.3s",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <FaListAlt size={32} color="#fb923c" />
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    color="text.primary"
-                    sx={{ textAlign: "center" }}
-                  >
-                    Timesheet (View Only)
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </motion.div>
-
           {/* Timesheet Table Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
             <Card
@@ -463,8 +434,22 @@ export default function Timesheet() {
                 bgcolor: "background.paper",
                 width: "100%",
                 maxWidth: "100%",
+                overflow: 'hidden'
               }}
             >
+              {/* Compact Header Section */}
+              <Box sx={{ 
+                bgcolor: 'warning.main', 
+                color: 'white', 
+                py: 1, 
+                px: 2,
+                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FaListAlt size={16} /> Timesheet (View Only)
+                </Typography>
+              </Box>
+
               <CardContent>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1, gap: 1.5 }}>
                   <Button
