@@ -1,10 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
-  Box, Typography, Table, TableHead, TableRow, TableCell, TableBody, Card, CardContent,
-  TableContainer, Chip, Tooltip, Paper, Pagination, TextField, MenuItem, InputLabel, FormControl, Select} from "@mui/material";
+  Box, Typography, Table, TableHead, TableRow, TableCell, TableBody,
+  TableContainer, Chip, Tooltip, Paper, Pagination, TextField, MenuItem, InputLabel, FormControl, Select,
+  CssBaseline} from "@mui/material";
 import { FaListAlt } from "react-icons/fa";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { motion } from "framer-motion";
+import { GlassCard } from "../components/Theme";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);
@@ -22,9 +25,10 @@ export default function AllEntries() {
     document.documentElement.classList.contains("dark") ? "dark" : "light"
   );
   useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
-    });
+    const getMode = () =>
+      document.documentElement.classList.contains("dark") ? "dark" : "light";
+    setMode(getMode());
+    const observer = new MutationObserver(() => setMode(getMode()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => observer.disconnect();
   }, []);
@@ -142,278 +146,290 @@ export default function AllEntries() {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box
         sx={{
-          p: { xs: 1, md: 5 },
-          width: "100%",
-          maxWidth: "1550px",
-          mx: "auto",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
           minHeight: "100vh",
+          py: { xs: 2, md: 4 },
+          px: { xs: 0, sm: 1, md: 2 },
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
-        {/* Title Card */}
-        <Card
-          elevation={6}
+        <Box
           sx={{
-            borderRadius: 5,
-            bgcolor: "background.paper",
-            mb: 3,
             width: "100%",
-            maxWidth: "100%",
-            color: "text.primary",
+            maxWidth: "1600px", 
+            mx: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: { xs: 2, md: 3 },
+            px: { xs: 0.5, sm: 2, md: 4 },
+            boxSizing: "border-box",
           }}
         >
-          <CardContent
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 2,
-              py: 3,
-              bgcolor: "background.paper",
-              transition: "background-color 0.3s",
-              color: "text.primary",
-            }}
-          >
-            <FaListAlt size={32} color={theme.palette.warning.main} />
-            <Typography
-              variant="h4"
-              fontWeight={700}
-              color="text.primary"
-              sx={{ textAlign: "center" }}
+          {/* All User Entries Table */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0 }}>
+            <GlassCard
+              title="All User Entries"
+              icon={<FaListAlt size={16} />}
+              delay={0}
+              sx={{ width: "100%", maxWidth: "100%" }}
+              whileHover={{}} // Disable hover effect
             >
-              All User Entries
-            </Typography>
-          </CardContent>
-        </Card>
-        {/* Entries Table Card */}
-        <Card
-          elevation={4}
-          sx={{
-            borderRadius: 5,
-            bgcolor: "background.paper",
-            width: "100%",
-            maxWidth: "100%",
-            color: "text.primary",
-          }}
-        >
-          <CardContent sx={{ p: 0, bgcolor: "background.paper", color: "text.primary" }}>
-            {/* All Entries Title and Filters in the same row */}
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: { xs: "flex-start", sm: "center" },
-                flexDirection: { xs: "column", sm: "row" },
-                gap: 2,
-                mb: 2,
-                px: 2,
-                pt: 2,
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                mb={1}
-                sx={{
-                  fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                  fontWeight: 800,
-                  fontSize: 20,
-                  textAlign: "left",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                All Entries
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 2,
-                  alignItems: "center",
-                  width: "100%",
-                  justifyContent: { xs: "flex-start", sm: "flex-end" },
-                }}
-              >
-                <TextField
-                  label="Search by Email"
-                  size="small"
-                  value={searchEmail}
-                  onChange={(e) => setSearchEmail(e.target.value)}
-                  sx={{ minWidth: 220 }}
-                />
-                <FormControl sx={{ minWidth: 180 }}>
-                  <InputLabel id="filter-project-label">Project</InputLabel>
-                  <Select
-                    labelId="filter-project-label"
-                    value={filterProject}
-                    label="Project"
-                    onChange={(e) => setFilterProject(e.target.value)}
-                    size="small"
+              <Box sx={{ p: 2.5 }}>
+                {/* Filters */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      alignItems: "center",
+                      width: "100%",
+                      justifyContent: { xs: "flex-start", sm: "flex-end" },
+                    }}
                   >
-                    <MenuItem value="">All Projects</MenuItem>
-                    {projects.map((proj) => (
-                      <MenuItem key={proj.id} value={proj.id}>
-                        {proj.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Date"
-                  type="date"
-                  size="small"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ minWidth: 150 }}
-                />
-              </Box>
-            </Box>
-            <TableContainer
-              component={Paper}
-              sx={{
-                maxHeight: "70vh",
-                borderRadius: 3,
-                boxShadow: "none",
-                overflowX: "auto",
-                overflowY: "auto",
-                bgcolor: "background.paper",
-                color: "text.primary",
-                minWidth: 900,
-              }}
-            >
-              <Table
-                stickyHeader
-                size="small"
-                aria-label="entries table"
-                sx={{
-                  mx: "auto",
-                  tableLayout: "auto",
-                  minWidth: 900,
-                  bgcolor: "background.paper",
-                  color: "text.primary",
-                }}
-              >
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>User</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Start</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>End</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Duration</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200, textAlign: "center", color: "text.primary" }}>Description</TableCell>
-                    <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", textAlign: "center", color: "text.primary" }}>Project</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pagedEntries.map((entry, idx) => (
-                    <TableRow
-                      key={entry.id}
-                      hover
-                      sx={{
-                        bgcolor: idx % 2 === 0 ? "background.paper" : (mode === "dark" ? "#23232a" : "grey.50"),
-                        transition: "background 0.2s",
-                        color: "text.primary",
+                    <TextField
+                      label="Search by Email"
+                      size="small"
+                      value={searchEmail}
+                      onChange={(e) => setSearchEmail(e.target.value)}
+                      sx={{ 
+                        minWidth: 220,
+                        bgcolor: "background.default",
+                        borderRadius: 2,
+                        '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                          filter: mode === "light" ? "invert(1)" : "none",
+                          cursor: "pointer",
+                          opacity: 0.8,
+                          "&:hover": {
+                            opacity: 1,
+                          },
+                        },
                       }}
-                    >
-                      <TableCell align="center" sx={{ color: "text.primary" }}>{entry.profile?.full_name || entry.user_id}</TableCell>
-                      <TableCell align="center" sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "text.primary" }}>
-                        <Tooltip title={entry.profile?.email || ""} arrow>
-                          <span>{entry.profile?.email || ""}</span>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: "text.primary" }}>
-                        {entry.date
-                          ? (() => {
-                              const [year, month, day] = entry.date.split("-");
-                              return `${month}/${day}/${year}`;
-                            })()
-                          : ""}
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: "text.primary" }}>
-                        {entry.start
-                          ? (() => {
-                              const [h, m, s] = entry.start.split(":").map(Number);
-                              const date = new Date();
-                              date.setHours(h, m, s || 0, 0);
-                              return date.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                              });
-                            })()
-                          : ""}
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: "text.primary" }}>
-                        {entry.end
-                          ? (() => {
-                              const [h, m, s] = entry.end.split(":").map(Number);
-                              const date = new Date();
-                              date.setHours(h, m, s || 0, 0);
-                              return date.toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                              });
-                            })()
-                          : ""}
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: "text.primary" }}>{entry.duration}</TableCell>
-                      <TableCell align="center" sx={{ maxWidth: 200, p: 0.5, color: "text.primary" }}>
-                        <Tooltip title={entry.description || ""} arrow>
-                          <Typography
-                            variant="body2"
+                    />
+                    <FormControl sx={{ minWidth: 180 }}>
+                      <InputLabel id="filter-project-label">Project</InputLabel>
+                      <Select
+                        labelId="filter-project-label"
+                        value={filterProject}
+                        label="Project"
+                        onChange={(e) => setFilterProject(e.target.value)}
+                        size="small"
+                        sx={{
+                          bgcolor: "background.default",
+                          borderRadius: 2,
+                        }}
+                      >
+                        <MenuItem value="">All Projects</MenuItem>
+                        {projects.map((proj) => (
+                          <MenuItem key={proj.id} value={proj.id}>
+                            {proj.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      label="Date"
+                      type="date"
+                      size="small"
+                      value={filterDate}
+                      onChange={(e) => setFilterDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                      sx={{ 
+                        minWidth: 150,
+                        bgcolor: "background.default",
+                        borderRadius: 2,
+                        '& .MuiInputBase-input::-webkit-calendar-picker-indicator': {
+                          filter: mode === "light" ? "invert(1)" : "none",
+                          cursor: "pointer",
+                          opacity: 0.8,
+                          "&:hover": {
+                            opacity: 1,
+                          },
+                        },
+                        '& input[type="date"]::-webkit-calendar-picker-indicator': {
+                          filter: mode === "light" ? "invert(1)" : "none",
+                          cursor: "pointer",
+                          opacity: 0.8,
+                          "&:hover": {
+                            opacity: 1,
+                          },
+                        },
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    maxHeight: "70vh",
+                    borderRadius: 2,
+                    bgcolor: "background.default",
+                    boxShadow: mode === "dark"
+                      ? "0 2px 8px 0 rgba(0,0,0,0.18)"
+                      : "0 2px 8px 0 rgba(251,146,60,0.10)",
+                    overflowX: "auto",
+                    overflowY: "auto",
+                    minWidth: 900,
+                    border: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <Table
+                    stickyHeader
+                    size="small"
+                    aria-label="entries table"
+                    sx={{
+                      mx: "auto",
+                      tableLayout: "auto",
+                      minWidth: 900,
+                      '& .MuiTableCell-root': {
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }
+                    }}
+                  >
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>User</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>Date</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>Start</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>End</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>Duration</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", maxWidth: 200, textAlign: "center" }}>Description</TableCell>
+                        <TableCell sx={{ fontWeight: 700, bgcolor: "background.paper", textAlign: "center" }}>Project</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {pagedEntries.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} align="center" sx={{ color: "text.disabled", py: 4 }}>
+                            No entries found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        pagedEntries.map((entry, idx) => (
+                          <TableRow
+                            key={entry.id}
+                            hover
                             sx={{
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "normal",
-                              maxWidth: 200,
-                              color: "text.primary",
+                              bgcolor: idx % 2 === 0 ? "background.paper" : "background.default",
+                              transition: "background 0.2s",
+                              "&:hover": {
+                                bgcolor: "action.hover",
+                              },
                             }}
                           >
-                            {entry.description}
-                          </Typography>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Chip
-                          label={entry.projectName}
-                          color="warning"
-                          size="small"
-                          sx={{
-                            bgcolor: "warning.light",
-                            color: "warning.dark",
-                            fontWeight: 600,
-                            fontSize: 13,
-                          }}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-              <Pagination
-                count={pageCount}
-                page={page}
-                onChange={(_, value) => setPage(value)}
-                color="primary"
-                shape="rounded"
-                showFirstButton
-                showLastButton
-              />
-            </Box>
-          </CardContent>
-        </Card>
+                            <TableCell align="center">{entry.profile?.full_name || entry.user_id}</TableCell>
+                            <TableCell align="center" sx={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              <Tooltip title={entry.profile?.email || ""} arrow>
+                                <span>{entry.profile?.email || ""}</span>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell align="center">
+                              {entry.date
+                                ? (() => {
+                                    const [year, month, day] = entry.date.split("-");
+                                    return `${month}/${day}/${year}`;
+                                  })()
+                                : ""}
+                            </TableCell>
+                            <TableCell align="center">
+                              {entry.start
+                                ? (() => {
+                                    const [h, m, s] = entry.start.split(":").map(Number);
+                                    const date = new Date();
+                                    date.setHours(h, m, s || 0, 0);
+                                    return date.toLocaleTimeString("en-US", {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    });
+                                  })()
+                                : ""}
+                            </TableCell>
+                            <TableCell align="center">
+                              {entry.end
+                                ? (() => {
+                                    const [h, m, s] = entry.end.split(":").map(Number);
+                                    const date = new Date();
+                                    date.setHours(h, m, s || 0, 0);
+                                    return date.toLocaleTimeString("en-US", {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    });
+                                  })()
+                                : ""}
+                            </TableCell>
+                            <TableCell align="center">{entry.duration}</TableCell>
+                            <TableCell align="center" sx={{ maxWidth: 200, p: 0.5 }}>
+                              <Tooltip title={entry.description || ""} arrow>
+                                <Typography
+                                  variant="body2"
+                                  sx={{
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "normal",
+                                    maxWidth: 200,
+                                  }}
+                                >
+                                  {entry.description}
+                                </Typography>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip
+                                label={entry.projectName}
+                                color="warning"
+                                size="small"
+                                sx={{
+                                  bgcolor: "warning.light",
+                                  color: "warning.dark",
+                                  fontWeight: 600,
+                                  fontSize: 13,
+                                }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                  <Pagination
+                    count={pageCount}
+                    page={page}
+                    onChange={(_, value) => setPage(value)}
+                    color="warning"
+                    shape="rounded"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Box>
+              </Box>
+            </GlassCard>
+          </motion.div>
+        </Box>
       </Box>
     </ThemeProvider>
   );

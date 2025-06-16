@@ -1,16 +1,17 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
-  Card, CardContent, Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
+  Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
   Select, MenuItem, Paper, Snackbar, Alert, Stack, Divider, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer
 } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion } from "framer-motion";
-import { FaUserShield } from "react-icons/fa";
+import { FaUserShield, FaCog, FaUsers } from "react-icons/fa";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import Pagination from "@mui/material/Pagination";
+import { GlassCard } from "../components/Theme";
 
 // Helper to parse durations like "4h", "1m 41s", "2h 3m 10s", etc
 function parseDurationTextToSeconds(duration) {
@@ -323,66 +324,17 @@ export default function AdminPanel() {
             boxSizing: "border-box",
           }}
         >
-          {/* Header Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card
-              elevation={6}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%", 
-                maxWidth: "100%",
-              }}
-            >
-              <CardContent
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  py: 3,
-                  bgcolor: "background.paper",
-                  transition: "background-color 0.3s",
-                }}
-              >
-                <FaUserShield size={32} color="#fb923c" />
-                <Typography
-                  variant="h4"
-                  fontWeight={700}
-                  color="text.primary"
-                  sx={{ textAlign: "center" }}
-                >
-                  Admin
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {/* Workspace Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
-            <Card
-              elevation={4}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%", 
-                maxWidth: "100%",
-              }}
+          {/* Workspace Management Tile */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+            <GlassCard
+              title="Workspace Management"
+              icon={<FaCog size={16} />}
+              delay={0.1}
+              sx={{ width: "100%", maxWidth: "100%" }}
+              whileHover={{}} // Disable hover effect
             >
-              <CardContent>
-                <Typography
-                  variant="subtitle2"
-                  color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                  mb={1}
-                  sx={{
-                    fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                    fontWeight: 800,
-                    fontSize: 20,
-                    textAlign: "left",
-                  }}
-                >
-                  Workspace
-                </Typography>
+              <Box sx={{ p: 2.5 }}>
                 <Stack direction="row" spacing={2} mb={2}>
                   <TextField
                     label="Workspace Name"
@@ -390,20 +342,51 @@ export default function AdminPanel() {
                     onChange={e => setNewWorkspace(e.target.value)}
                     size="small"
                     variant="outlined"
+                    sx={{
+                      bgcolor: "background.default",
+                      borderRadius: 2,
+                    }}
                   />
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="warning"
                     onClick={handleCreateWorkspace}
                     disabled={!newWorkspace.trim()}
+                    sx={{
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      bgcolor: "warning.main",
+                      "&:hover": {
+                        bgcolor: "warning.dark",
+                      },
+                    }}
                   >
                     Create
                   </Button>
                 </Stack>
-                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, boxShadow: "none" }}>
-                  <Table size="small" aria-label="workspace table">
+                <TableContainer 
+                  component={Paper} 
+                  variant="outlined" 
+                  sx={{ 
+                    borderRadius: 2, 
+                    boxShadow: "none",
+                    bgcolor: "background.default",
+                    border: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <Table 
+                    size="small" 
+                    aria-label="workspace table"
+                    sx={{
+                      '& .MuiTableCell-root': {
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }
+                    }}
+                  >
                     <TableHead>
-                      <TableRow sx={{ bgcolor: "background.default" }}>
+                      <TableRow sx={{ bgcolor: "background.paper" }}>
                         <TableCell sx={{ fontWeight: 700, width: "65%" }}>Name</TableCell>
                         <TableCell sx={{ fontWeight: 700, width: "35%" }} align="right">
                           Actions
@@ -505,23 +488,21 @@ export default function AdminPanel() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </CardContent>
-            </Card>
+              </Box>
+            </GlassCard>
           </motion.div>
 
-          {/* Profiles Table Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
-            <Card
-              elevation={4}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%",
-                maxWidth: "100%",
-              }}
+          {/* User Profiles Tile */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
+            <GlassCard
+              title="User Profiles"
+              icon={<FaUsers size={16} />}
+              delay={0.2}
+              sx={{ width: "100%", maxWidth: "100%" }}
+              whileHover={{}} // Disable hover effect
             >
-              <CardContent>
-                {/* User Profiles Title and Filters in the same row */}
+              <Box sx={{ p: 2.5 }}>
+                {/* Filters */}
                 <Box
                   sx={{
                     display: "flex",
@@ -532,20 +513,6 @@ export default function AdminPanel() {
                     mb: 2,
                   }}
                 >
-                  <Typography
-                    variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 20,
-                      textAlign: "left",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    User Profiles
-                  </Typography>
                   <Box
                     sx={{
                       display: "flex",
@@ -562,13 +529,21 @@ export default function AdminPanel() {
                       onChange={e => setSearchEmail(e.target.value)}
                       size="small"
                       variant="outlined"
+                      sx={{
+                        bgcolor: "background.default",
+                        borderRadius: 2,
+                      }}
                     />
                     <Select
                       value={sortField}
                       onChange={e => setSortField(e.target.value)}
                       size="small"
                       displayEmpty
-                      sx={{ minWidth: 160 }}
+                      sx={{ 
+                        minWidth: 160,
+                        bgcolor: "background.default",
+                        borderRadius: 2,
+                      }}
                     >
                       <MenuItem value="">Sort By...</MenuItem>
                       <MenuItem value="totalTime">Total Time</MenuItem>
@@ -579,6 +554,10 @@ export default function AdminPanel() {
                         variant="outlined"
                         size="small"
                         onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 600,
+                        }}
                       >
                         {sortOrder === "asc" ? "Ascending" : "Descending"}
                       </Button>
@@ -589,6 +568,10 @@ export default function AdminPanel() {
                         size="small"
                         color="inherit"
                         onClick={() => { setSortField(""); setSortOrder("desc"); }}
+                        sx={{
+                          borderRadius: 2,
+                          fontWeight: 600,
+                        }}
                       >
                         Clear Sort
                       </Button>
@@ -596,104 +579,127 @@ export default function AdminPanel() {
                   </Box>
                 </Box>
                 <Divider sx={{ mb: 2 }} />
-                <Table size="small" aria-label="user profiles table">
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: "background.default" }}>
-                      <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>User</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "24%", textAlign: "center" }}>Email</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "10%", textAlign: "center" }}>Role</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>Workspace</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "14%", textAlign: "center" }}>Total Time</TableCell>
-                      <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Created</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedProfiles.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} align="center" sx={{ color: "text.disabled" }}>
-                          No profiles found.
-                        </TableCell>
+                <TableContainer 
+                  sx={{ 
+                    borderRadius: 2,
+                    bgcolor: "background.default",
+                    border: 1,
+                    borderColor: "divider",
+                  }}
+                >
+                  <Table 
+                    size="small" 
+                    aria-label="user profiles table"
+                    sx={{
+                      '& .MuiTableCell-root': {
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }
+                    }}
+                  >
+                    <TableHead>
+                      <TableRow sx={{ bgcolor: "background.paper" }}>
+                        <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>User</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "24%", textAlign: "center" }}>Email</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "10%", textAlign: "center" }}>Role</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>Workspace</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "14%", textAlign: "center" }}>Total Time</TableCell>
+                        <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Created</TableCell>
                       </TableRow>
-                    ) : (
-                      paginatedProfiles.map((profile) => (
-                        <TableRow key={profile.id} hover>
-                          <TableCell align="center">
-                            <Tooltip title="View user's entries" arrow>
-                              <Button
-                                variant="text"
-                                onClick={() => handleShowEntries(profile)}
-                                sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
-                              >
-                                {profile.full_name || profile.email || profile.id}
-                              </Button>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography variant="body2">{profile.email || ""}</Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Chip
-                              label={profile.role}
-                              color={profile.role === "admin" ? "warning" : "default"}
-                              size="small"
-                              sx={{
-                                fontWeight: 600,
-                                bgcolor: profile.role === "admin"
-                                  ? "warning.light"
-                                  : (mode === "dark" ? "grey.800" : "grey.200"),
-                                color: profile.role === "admin"
-                                  ? "warning.dark"
-                                  : (mode === "dark" ? "#fff" : "text.primary"),
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell align="center">
-                            <Select
-                              value={profile.workspace_id || ""}
-                              onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
-                              size="small"
-                              sx={{ minWidth: 120, bgcolor: "background.default" }}
-                            >
-                              <MenuItem value="">None</MenuItem>
-                              {workspaces.map((ws) => (
-                                <MenuItem key={ws.id} value={ws.id}>
-                                  {ws.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                              {userTimes[profile.id]
-                                ? formatSecondsToHMS(userTimes[profile.id])
-                                : "00:00:00"}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography variant="body2" sx={{ fontWeight: 400 }}>
-                              {profile.created_at
-                                ? new Date(profile.created_at).toLocaleDateString()
-                                : "—"}
-                            </Typography>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedProfiles.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ color: "text.disabled" }}>
+                            No profiles found.
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                      ) : (
+                        paginatedProfiles.map((profile) => (
+                          <TableRow key={profile.id} hover>
+                            <TableCell align="center">
+                              <Tooltip title="View user's entries" arrow>
+                                <Button
+                                  variant="text"
+                                  onClick={() => handleShowEntries(profile)}
+                                  sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
+                                >
+                                  {profile.full_name || profile.email || profile.id}
+                                </Button>
+                              </Tooltip>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography variant="body2">{profile.email || ""}</Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip
+                                label={profile.role}
+                                color={profile.role === "admin" ? "warning" : "default"}
+                                size="small"
+                                sx={{
+                                  fontWeight: 600,
+                                  bgcolor: profile.role === "admin"
+                                    ? "warning.light"
+                                    : (mode === "dark" ? "grey.800" : "grey.200"),
+                                  color: profile.role === "admin"
+                                    ? "warning.dark"
+                                    : (mode === "dark" ? "#fff" : "text.primary"),
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell align="center">
+                              <Select
+                                value={profile.workspace_id || ""}
+                                onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
+                                size="small"
+                                sx={{ 
+                                  minWidth: 120, 
+                                  bgcolor: "background.default",
+                                  borderRadius: 1,
+                                }}
+                              >
+                                <MenuItem value="">None</MenuItem>
+                                {workspaces.map((ws) => (
+                                  <MenuItem key={ws.id} value={ws.id}>
+                                    {ws.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                {userTimes[profile.id]
+                                  ? formatSecondsToHMS(userTimes[profile.id])
+                                  : "00:00:00"}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                                {profile.created_at
+                                  ? new Date(profile.created_at).toLocaleDateString()
+                                  : "—"}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
                 {/* Pagination controls */}
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                   <Pagination
                     count={Math.ceil(filteredProfiles.length / rowsPerPage)}
                     page={page}
                     onChange={(_, value) => setPage(value)}
-                    color="primary"
+                    color="warning"
                   />
                 </Box>
-              </CardContent>
-            </Card>
+              </Box>
+            </GlassCard>
           </motion.div>
         </Box>
+        
         {/* Snackbar for feedback */}
         <Snackbar
           open={snackbar.open}
