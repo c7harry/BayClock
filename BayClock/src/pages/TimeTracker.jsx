@@ -1,3 +1,6 @@
+// =======================
+// Imports and Setup
+// =======================
 import { useState, useMemo, useEffect, useRef } from "react";
 import { FaPlay, FaStop, FaRegClock } from "react-icons/fa";
 import { motion } from "framer-motion";
@@ -25,15 +28,21 @@ import "react-circular-progressbar/dist/styles.css";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
 
+// =======================
+// Constants and Helpers
+// =======================
+
+// Maximum timer value (12 hours in seconds)
 const MAX_TIMER = 3600 * 12; 
 
+// Get today's date as YYYY-MM-DD string
 function getLocalDateString() {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 10);
 }
 
-// Helper to format date as "Thu, Jun 12" (treats YYYY-MM-DD as local date)
+// Format a date string as "Thu, Jun 12"
 function formatDisplayDate(dateStr) {
   if (!dateStr) return "";
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -45,17 +54,24 @@ function formatDisplayDate(dateStr) {
   });
 }
 
+// =======================
+// Main TimeTracker Component
+// =======================
 export default function TimeTracker() {
   const navigate = useNavigate();
 
-  // Route protection
+  // -----------------------
+  // Route Protection
+  // -----------------------
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) navigate("/login");
     });
   }, [navigate]);
 
-  // Dark/Light mode with Tailwind
+  // -----------------------
+  // Theme (Dark/Light Mode)
+  // -----------------------
   const [mode, setMode] = useState(
     document.documentElement.classList.contains("dark") ? "dark" : "light"
   );
@@ -99,13 +115,17 @@ export default function TimeTracker() {
     [mode]
   );
   
-  // --- Timer state ---
+  // -----------------------
+  // Timer State
+  // -----------------------
   const [isRunning, setIsRunning] = useState(false);
   const [timer, setTimer] = useState(0);
   const [intervalId, setIntervalId] = useState(null);
   const [timerId, setTimerId] = useState(null); // Supabase timer row id
 
-  // Entry form state
+  // -----------------------
+  // Entry Form State
+  // -----------------------
   const [description, setDescription] = useState("");
   const [project, setProject] = useState("");
   const [date, setDate] = useState(() => getLocalDateString());
@@ -115,7 +135,9 @@ export default function TimeTracker() {
   const [manualStart, setManualStart] = useState("");
   const [manualEnd, setManualEnd] = useState("");
 
-  // Entries state (from Supabase)
+  // -----------------------
+  // Entries State (from Supabase)
+  // -----------------------
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -136,7 +158,9 @@ export default function TimeTracker() {
     return () => window.removeEventListener("entries-updated", fetchEntries);
   }, []);
 
-  // Projects (from Supabase)
+  // -----------------------
+  // Projects State (from Supabase)
+  // -----------------------
   const [projects, setProjects] = useState([]); // store full objects
 
   useEffect(() => {
@@ -147,9 +171,14 @@ export default function TimeTracker() {
     fetchProjects();
   }, []);
 
+  // -----------------------
+  // Timer Interval Ref
+  // -----------------------
   const intervalRef = useRef(null);
 
-  // --- Load timer state from Supabase on mount and on timer-updated event ---
+  // -----------------------
+  // Load Timer State from Supabase (on mount and on timer-updated event)
+  // -----------------------
   useEffect(() => {
     let unsubscribed = false;
 
@@ -207,7 +236,9 @@ export default function TimeTracker() {
     };
   }, []);
 
-  // --- Save timer state to Supabase whenever timer or running state changes ---
+  // -----------------------
+  // Save Timer State to Supabase (heartbeat)
+  // -----------------------
   useEffect(() => {
     // Only update if timer is running and timerId exists
     if (isRunning && timerId) {
@@ -220,7 +251,11 @@ export default function TimeTracker() {
     // No-op if not running
   }, [isRunning, timer, timerId]);
 
-  // --- Timer handlers ---
+  // =======================
+  // Timer Handlers
+  // =======================
+
+  // Start Timer
   const handleStart = async () => {
     if (isRunning) return;
     // Get user and workspace_id
@@ -262,6 +297,7 @@ export default function TimeTracker() {
     window.dispatchEvent(new Event("timer-updated")); 
   };
 
+  // Stop Timer and Save Entry
   const handleStop = async () => {
     setIsRunning(false);
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -275,8 +311,12 @@ export default function TimeTracker() {
     setTimer(0);
     setTimerId(null);
 
-    window.dispatchEvent(new Event("timer-updated")); // <-- Add this
+    window.dispatchEvent(new Event("timer-updated"));
   };
+
+  // =======================
+  // Entry Handlers
+  // =======================
 
   // Add entry (timer or manual)
   const addEntry = async (durationStr, startTime = "", endTime = "") => {
@@ -327,7 +367,7 @@ export default function TimeTracker() {
     setManualEnd("");
   };
 
-  // Manual entry handler (combine hours and mins)
+  // Add Manual Entry (from start/end time)
   const handleManualAdd = () => {
     if (!manualStart || !manualEnd) return;
     // Parse times as Date objects (today's date)
@@ -350,7 +390,7 @@ export default function TimeTracker() {
     // Inputs are already reset in addEntry
   };
 
-  // Delete entry handler
+  // Delete Entry Handler
   const handleDeleteEntry = async (id) => {
     await supabase.from("entries").delete().eq("id", id);
     window.dispatchEvent(new Event("entries-updated"));
@@ -370,13 +410,17 @@ export default function TimeTracker() {
       .join(" ");
   }
 
-  // Animation variants for tiles
+  // -----------------------
+  // Animation Variants for Tiles
+  // -----------------------
   const tileVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
-  // Edit dialog state
+  // -----------------------
+  // Edit Dialog State
+  // -----------------------
   const [editOpen, setEditOpen] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
   const [editDescription, setEditDescription] = useState("");
@@ -385,7 +429,7 @@ export default function TimeTracker() {
   const [editStart, setEditStart] = useState(""); 
   const [editEnd, setEditEnd] = useState("");   
 
-  // Open edit dialog
+  // Open Edit Dialog
   const handleEditOpen = (entry) => {
     setEditEntry(entry);
     setEditDescription(entry.description);
@@ -396,7 +440,7 @@ export default function TimeTracker() {
     setEditOpen(true);
   };
 
-  // Save edit
+  // Save Edit
   const handleEditSave = async () => {
     if (!editDescription || !editProject || !editDate || !editStart || !editEnd) return;
 
@@ -436,7 +480,9 @@ export default function TimeTracker() {
     window.dispatchEvent(new Event("entries-updated"));
   };
 
-  // Group entries by date and then by description
+  // -----------------------
+  // Group Entries by Date and Description
+  // -----------------------
   const grouped = entries.reduce((acc, entry) => {
     if (!acc[entry.date]) acc[entry.date] = {};
     if (!acc[entry.date][entry.description]) acc[entry.date][entry.description] = [];
@@ -444,7 +490,9 @@ export default function TimeTracker() {
     return acc;
   }, {});
 
-  // Resume task handler
+  // =======================
+  // Resume Task Handler
+  // =======================
   const handleResumeTask = async (entry) => {
     // Stop any existing timer for this user
     if (timerId) {
@@ -498,6 +546,9 @@ export default function TimeTracker() {
     window.dispatchEvent(new Event("timer-updated"));
   };
 
+  // -----------------------
+  // Project Prompt Snackbar State
+  // -----------------------
   const [showProjectPrompt, setShowProjectPrompt] = useState(false);
 
   const handleClosePrompt = (event, reason) => {
@@ -505,6 +556,9 @@ export default function TimeTracker() {
     setShowProjectPrompt(false);
   };
 
+  // =======================
+  // Render UI
+  // =======================
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -532,7 +586,9 @@ export default function TimeTracker() {
             overflowX: "hidden",
           }}
         >
-          {/* Header Tile */}
+          {/* =====================
+              Header Tile
+              ===================== */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible">
             <Card elevation={6} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent
@@ -561,10 +617,13 @@ export default function TimeTracker() {
             </Card>
           </motion.div>
 
-          {/* Entry Form Tile */}
+          {/* =====================
+              Entry Form Tile
+              ===================== */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent>
+                {/* --------- Entry Form --------- */}
                 <Box
                   component="form"
                   sx={{
@@ -620,7 +679,7 @@ export default function TimeTracker() {
                   />
                 </Box>
                 <Divider sx={{ my: 2 }} />
-                {/* Timer Controls Tile */}
+                {/* --------- Timer Controls --------- */}
                 <Box
                   sx={{
                     display: "flex",
@@ -730,6 +789,7 @@ export default function TimeTracker() {
                     </Button>
                   </Box>
                 </Box>
+                {/* --------- Project Prompt Snackbar --------- */}
                 <Snackbar
                   open={showProjectPrompt}
                   autoHideDuration={4000}
@@ -757,7 +817,9 @@ export default function TimeTracker() {
             </Card>
           </motion.div>
 
-          {/* Entries List Tile */}
+          {/* =====================
+              Entries List Tile
+              ===================== */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.2 }}>
             <Card elevation={4} sx={{ borderRadius: 5, bgcolor: "background.paper", width: "100%", maxWidth: "100%" }}>
               <CardContent>
@@ -791,6 +853,7 @@ export default function TimeTracker() {
                       width: "100%",
                     }}
                   >
+                    {/* --------- Group and Display Recent Entries --------- */}
                     {Object.entries(grouped)
   .sort((a, b) => b[0].localeCompare(a[0]))
   .slice(0, 5)
@@ -904,7 +967,9 @@ export default function TimeTracker() {
             </Card>
           </motion.div>
         </Box>
-        {/* Edit Dialog */}
+        {/* =====================
+            Edit Dialog
+            ===================== */}
         <Dialog
           open={editOpen}
           onClose={() => setEditOpen(false)}
