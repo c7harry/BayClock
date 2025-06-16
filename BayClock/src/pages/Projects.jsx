@@ -252,41 +252,6 @@ export default function Projects() {
             boxSizing: "border-box",
           }}
         >
-          {/* Header Tile */}
-          <motion.div variants={tileVariants} initial="hidden" animate="visible">
-            <Card
-              elevation={6}
-              sx={{
-                borderRadius: 5,
-                bgcolor: "background.paper",
-                width: "100%", 
-                maxWidth: "100%",
-              }}
-            >
-              <CardContent
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 2,
-                  py: 3,
-                  bgcolor: "background.paper",
-                  transition: "background-color 0.3s",
-                }}
-              >
-                <FolderIcon sx={{ fontSize: 32, color: "warning.main" }} />
-                <Typography
-                  variant="h4"
-                  fontWeight={700}
-                  color="text.primary"
-                  sx={{ textAlign: "center" }}
-                >
-                  Projects
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
-
           {/* Projects Table Tile */}
           <motion.div variants={tileVariants} initial="hidden" animate="visible" transition={{ delay: 0.1 }}>
             <Card
@@ -296,52 +261,57 @@ export default function Projects() {
                 bgcolor: "background.paper",
                 width: "100%",
                 maxWidth: "100%",
+                overflow: 'hidden'
               }}
             >
+              {/* Compact Header Section */}
+              <Box sx={{ 
+                bgcolor: 'warning.main', 
+                color: 'white', 
+                py: 1, 
+                px: 2,
+                background: 'linear-gradient(135deg, #0F2D52 0%, #fb923c 100%)'
+              }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  Projects
+                </Typography>
+              </Box>
+
               <CardContent>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="subtitle2"
-                    color={theme.palette.mode === "dark" ? "warning.light" : "warning.dark"}
-                    mb={1}
-                    sx={{
-                      fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                      fontWeight: 800,
-                      fontSize: 20,
-                      textAlign: "center",
-                    }}
-                  >Project List</Typography>
                   {role === "admin" ? (
+                    <Box /> 
+                  ) : (
+                    <TextField
+                      placeholder="Search projects..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        bgcolor: "background.default",
+                        borderRadius: 2,
+                        minWidth: 180,
+                        "& .MuiInputBase-input": { fontSize: "0.97rem", py: 0.7 },
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <SearchIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#222", mr: 1 }} />
+                        ),
+                      }}
+                    />
+                  )}
+                  
+                  {role === "admin" && (
                     <Button
                       variant="contained"
                       color="warning"
                       startIcon={<AddIcon />}
                       sx={{ borderRadius: 2, fontWeight: 600 }}
-                      onClick={() => handleOpenDialog()
-                      }
+                      onClick={() => handleOpenDialog()}
                     >
                       Add Project
                     </Button>
-                  ) : (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <TextField
-                        placeholder="Search projects..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          bgcolor: "background.default",
-                          borderRadius: 2,
-                          minWidth: 180,
-                          "& .MuiInputBase-input": { fontSize: "0.97rem", py: 0.7 },
-                        }}
-                        InputProps={{
-                          startAdornment: (
-                            <SearchIcon sx={{ color: theme.palette.mode === "dark" ? "#fff" : "#222", mr: 1 }} />
-                          ),
-                        }}
-                      />
-                    </Box>
                   )}
                 </Box>
                 <Divider sx={{ mb: 2 }} />
