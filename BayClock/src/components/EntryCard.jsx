@@ -309,7 +309,7 @@ export function EntryCardGroup({
                     color="text.primary"
                     sx={{
                       display: "-webkit-box",
-                      WebkitLineClamp: 2, // Show up to 2 lines, then ellipsis
+                      WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -318,7 +318,7 @@ export function EntryCardGroup({
                       minWidth: 0,
                       flexGrow: 1,
                       whiteSpace: "normal",
-                      maxHeight: "3.2em", // Prevents overflow (2 lines)
+                      maxHeight: "3.2em",
                     }}
                   >
                     {entry.description}
@@ -365,7 +365,35 @@ export function EntryCardGroup({
                           ? `${formatEntryTime(firstStart)} - ${formatEntryTime(lastEnd)}`
                           : "")
                       : (overallStart && overallEnd)
-                          ? `${formatEntryTime(overallStart)} - ${formatEntryTime(overallEnd)}`
+                          ? (
+                            <>
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  background: "#e3f2fd", // blue-100
+                                  color: "#1976d2",      // blue-700
+                                  borderRadius: 4,
+                                  padding: "0 4px",
+                                  transition: "background 0.2s",
+                                }}
+                              >
+                                {formatEntryTime(overallStart)}
+                              </span>
+                              {" - "}
+                              <span
+                                style={{
+                                  fontWeight: 700,
+                                  background: "#e8f5e9", // green-100
+                                  color: "#388e3c",      // green-700
+                                  borderRadius: 4,
+                                  padding: "0 4px",
+                                  transition: "background 0.2s",
+                                }}
+                              >
+                                {formatEntryTime(overallEnd)}
+                              </span>
+                            </>
+                          )
                           : ""
                     }
                   </Typography>
@@ -463,6 +491,9 @@ export function EntryCardGroup({
                   showTimeRange // prop to show time range on single cards
                   onResume={onResume}
                   isRunning={isRunning}
+                  // --- Pass highlight props ---
+                  highlightStart={e.start === overallStart}
+                  highlightEnd={e.end === overallEnd}
                 />
               </Box>
             ))}
@@ -485,7 +516,9 @@ export default function EntryCard({
   showTimeRange = false,
   onResume,
   isRunning,
-  projects = [], // <-- add this prop
+  projects = [],
+  highlightStart = false,
+  highlightEnd = false,
 }) {
   // Find project name for this entry
   const projectName =
@@ -629,7 +662,31 @@ export default function EntryCard({
                       color="text.secondary"
                       sx={{ fontWeight: 500 }}
                     >
-                      {formatEntryTime(entry.start)} - {formatEntryTime(entry.end)}
+                      <span
+                        style={{
+                          fontWeight: highlightStart ? 700 : 500,
+                          background: highlightStart ? "#e3f2fd" : "none", // blue-100
+                          color: highlightStart ? "#1976d2" : undefined,   // blue-700
+                          borderRadius: highlightStart ? 4 : undefined,
+                          padding: highlightStart ? "0 4px" : undefined,
+                          transition: "background 0.2s",
+                        }}
+                      >
+                        {formatEntryTime(entry.start)}
+                      </span>
+                      {" - "}
+                      <span
+                        style={{
+                          fontWeight: highlightEnd ? 700 : 500,
+                          background: highlightEnd ? "#e8f5e9" : "none", // green-100
+                          color: highlightEnd ? "#388e3c" : undefined,  // green-700
+                          borderRadius: highlightEnd ? 4 : undefined,
+                          padding: highlightEnd ? "0 4px" : undefined,
+                          transition: "background 0.2s",
+                        }}
+                      >
+                        {formatEntryTime(entry.end)}
+                      </span>
                     </Typography>
                   </Box>
                 )}
