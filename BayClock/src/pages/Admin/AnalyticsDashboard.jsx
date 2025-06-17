@@ -195,7 +195,7 @@ export default function AnalyticsDashboard() {
     };
   }, [allEntries, profiles, workspaces, projects, statsPeriod]);
 
-  // NEW: Calculate advanced analytics
+  // Calculate advanced analytics
   const advancedAnalytics = useMemo(() => {
     // User activity analysis
     const userActivity = profiles.map(profile => {
@@ -252,11 +252,20 @@ export default function AnalyticsDashboard() {
       const totalSeconds = workspaceEntries.reduce((sum, entry) => 
         sum + parseDurationTextToSeconds(entry.duration), 0);
       
+      // Calculate users with actual activity (hours > 0)
+      const activeWorkspaceUsers = workspaceUsers.filter(user => {
+        const userEntries = allEntries.filter(entry => entry.user_id === user.id);
+        const userSeconds = userEntries.reduce((sum, entry) => 
+          sum + parseDurationTextToSeconds(entry.duration), 0);
+        return userSeconds > 0;
+      });
+      
       return {
         name: workspace.name,
         userCount: workspaceUsers.length,
+        activeUserCount: activeWorkspaceUsers.length,
         totalHours: totalSeconds / 3600,
-        avgHoursPerUser: workspaceUsers.length > 0 ? (totalSeconds / 3600) / workspaceUsers.length : 0
+        avgHoursPerUser: activeWorkspaceUsers.length > 0 ? (totalSeconds / 3600) / activeWorkspaceUsers.length : 0
       };
     }).sort((a, b) => b.totalHours - a.totalHours);
 
@@ -275,43 +284,37 @@ export default function AnalyticsDashboard() {
       title: "Total Users",
       value: filteredStatsData.totalUsers,
       icon: <FaUsers size={20} />,
-      color: "primary",
-      change: `+${filteredStatsData.newUsersThisPeriod} this ${statsPeriod.slice(0, -2)}`
+      color: "primary"
     },
     {
       title: "Active Users",
       value: filteredStatsData.activeUsers,
       icon: <MdTrendingUp size={20} />,
-      color: "success",
-      change: `Last ${statsPeriod.slice(0, -2)}`
+      color: "success"
     },
     {
       title: "Total Hours",
       value: `${filteredStatsData.totalHours}h`,
       icon: <FaClock size={20} />,
-      color: "warning",
-      change: `This ${statsPeriod.slice(0, -2)}`
+      color: "warning"
     },
     {
       title: "Workspaces",
       value: filteredStatsData.totalWorkspaces,
       icon: <MdBusiness size={20} />,
-      color: "info",
-      change: "Total available"
+      color: "info"
     },
     {
       title: "Projects",
       value: filteredStatsData.totalProjects,
       icon: <FaProjectDiagram size={20} />,
-      color: "secondary",
-      change: "Active projects"
+      color: "secondary"
     },
     {
       title: "Entries",
       value: filteredStatsData.totalEntries.toLocaleString(),
       icon: <FaListAlt size={20} />,
-      color: "error",
-      change: `This ${statsPeriod.slice(0, -2)}`
+      color: "error"
     }
   ];
 
@@ -457,7 +460,7 @@ export default function AnalyticsDashboard() {
                               p: 2.5,
                               borderRadius: 3,
                               height: "100%",
-                              minHeight: 140,
+                              minHeight: 120,
                               background: `linear-gradient(135deg, ${theme.palette[card.color].main}15 0%, ${theme.palette[card.color].light}10 100%)`,
                               border: 1,
                               borderColor: `${card.color}.light`,
@@ -474,7 +477,7 @@ export default function AnalyticsDashboard() {
                               }
                             }}
                           >
-                            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 2 }}>
+                            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                               <Avatar
                                 sx={{
                                   bgcolor: `${card.color}.main`,
@@ -492,7 +495,8 @@ export default function AnalyticsDashboard() {
                                     fontWeight: 800, 
                                     color: `${card.color}.main`, 
                                     lineHeight: 1,
-                                    fontSize: { xs: "1.75rem", sm: "2rem" }
+                                    fontSize: { xs: "1.75rem", sm: "2rem" },
+                                    mb: 1
                                   }}
                                 >
                                   {card.value}
@@ -509,29 +513,6 @@ export default function AnalyticsDashboard() {
                                 </Typography>
                               </Box>
                             </Box>
-                            <Box
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 2,
-                                bgcolor: "background.default",
-                                border: 1,
-                                borderColor: "divider",
-                              }}
-                            >
-                              <Typography 
-                                variant="caption" 
-                                sx={{ 
-                                  color: "text.secondary", 
-                                  fontWeight: 600,
-                                  fontSize: "0.75rem",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 0.5
-                                }}
-                              >
-                                {card.change}
-                              </Typography>
-                            </Box>
                           </Paper>
                         </motion.div>
                       </Grid>
@@ -541,7 +522,7 @@ export default function AnalyticsDashboard() {
               </GlassCard>
             </motion.div>
 
-            {/* NEW: Activity Trends */}
+            {/* Activity Trends */}
             <motion.div variants={itemVariants}>
               <GlassCard
                 title="Activity Trends (Last 7 Days)"
@@ -613,7 +594,7 @@ export default function AnalyticsDashboard() {
               </GlassCard>
             </motion.div>
 
-            {/* NEW: Top Performers & Workspace Analytics */}
+            {/* Top Performers & Workspace Analytics */}
             <Grid container spacing={3}>
               {/* Top Users */}
               <Grid item xs={12} lg={6}>
@@ -714,7 +695,7 @@ export default function AnalyticsDashboard() {
                                 <TableCell sx={{ fontWeight: 600 }}>Workspace</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600 }}>Users</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 600 }}>Total Hours</TableCell>
-                                <TableCell align="center" sx={{ fontWeight: 600 }}>Avg/User</TableCell>
+                                <TableCell align="center" sx={{ fontWeight: 600 }}>Avg/Active User</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -737,12 +718,19 @@ export default function AnalyticsDashboard() {
                                     </Box>
                                   </TableCell>
                                   <TableCell align="center">
-                                    <Chip 
-                                      label={workspace.userCount} 
-                                      size="small" 
-                                      color="primary" 
-                                      variant="outlined"
-                                    />
+                                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5 }}>
+                                      <Chip 
+                                        label={workspace.userCount} 
+                                        size="small" 
+                                        color="primary" 
+                                        variant="outlined"
+                                      />
+                                      {workspace.activeUserCount !== workspace.userCount && (
+                                        <Typography variant="caption" color="text.secondary">
+                                          ({workspace.activeUserCount} active)
+                                        </Typography>
+                                      )}
+                                    </Box>
                                   </TableCell>
                                   <TableCell align="center">
                                     <Typography variant="body2" fontWeight={600} color="warning.main">
@@ -751,7 +739,10 @@ export default function AnalyticsDashboard() {
                                   </TableCell>
                                   <TableCell align="center">
                                     <Typography variant="body2" color="text.secondary">
-                                      {workspace.avgHoursPerUser.toFixed(1)}h
+                                      {workspace.activeUserCount > 0 ? 
+                                        `${workspace.avgHoursPerUser.toFixed(1)}h` : 
+                                        'No activity'
+                                      }
                                     </Typography>
                                   </TableCell>
                                 </TableRow>
@@ -772,89 +763,6 @@ export default function AnalyticsDashboard() {
                 </motion.div>
               </Grid>
             </Grid>
-
-            {/* NEW: Quick Insights */}
-            <motion.div variants={itemVariants}>
-              <GlassCard
-                title="Quick Insights"
-                icon={<MdAnalytics size={16} />}
-                sx={{ width: "100%" }}
-              >
-                <Box sx={{ p: 3 }}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper sx={{ p: 2, borderRadius: 2, bgcolor: 'success.light', color: 'success.contrastText' }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                          <MdAccessTime />
-                          <Typography variant="body2" fontWeight={600}>
-                            Most Active User
-                          </Typography>
-                        </Box>
-                        <Typography variant="h6" fontWeight={800}>
-                          {advancedAnalytics.topUsers[0]?.name || 'N/A'}
-                        </Typography>
-                        <Typography variant="caption">
-                          {advancedAnalytics.topUsers[0]?.totalHours.toFixed(1)}h total
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                    
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper sx={{ p: 2, borderRadius: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                          <MdPersonAdd />
-                          <Typography variant="body2" fontWeight={600}>
-                            Growth Rate
-                          </Typography>
-                        </Box>
-                        <Typography variant="h6" fontWeight={800}>
-                          {filteredStatsData.newUsersThisPeriod > 0 ? '+' : ''}{filteredStatsData.newUsersThisPeriod}
-                        </Typography>
-                        <Typography variant="caption">
-                          New users this {statsPeriod.slice(0, -2)}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper sx={{ p: 2, borderRadius: 2, bgcolor: 'warning.light', color: 'warning.contrastText' }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                          <FaClock />
-                          <Typography variant="body2" fontWeight={600}>
-                            Avg Session
-                          </Typography>
-                        </Box>
-                        <Typography variant="h6" fontWeight={800}>
-                          {advancedAnalytics.topUsers.length > 0 ? 
-                            Math.round(advancedAnalytics.topUsers.reduce((sum, user) => sum + user.avgSessionMinutes, 0) / advancedAnalytics.topUsers.length) 
-                            : 0}min
-                        </Typography>
-                        <Typography variant="caption">
-                          Average per session
-                        </Typography>
-                      </Paper>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Paper sx={{ p: 2, borderRadius: 2, bgcolor: 'secondary.light', color: 'secondary.contrastText' }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                          <MdBusiness />
-                          <Typography variant="body2" fontWeight={600}>
-                            Top Workspace
-                          </Typography>
-                        </Box>
-                        <Typography variant="h6" fontWeight={800}>
-                          {advancedAnalytics.workspaceStats[0]?.name || 'N/A'}
-                        </Typography>
-                        <Typography variant="caption">
-                          {advancedAnalytics.workspaceStats[0]?.totalHours.toFixed(1) || '0'}h total
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </GlassCard>
-            </motion.div>
           </Box>
         </motion.div>
         
