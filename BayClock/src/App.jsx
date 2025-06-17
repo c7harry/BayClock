@@ -6,14 +6,16 @@ import Projects from "./pages/Projects";
 import LandingPage from "./pages/LandingPage";
 import CalendarPage from "./pages/Calendar";
 import LoginPage from "./pages/LoginPage";
-import AdminPanel from "./pages/AdminPanel";
-import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import { supabase } from "./supabaseClient";
 import { useEffect, useState } from "react";
-import AllEntries from "./pages/AdminEntries";
 import ResetPassword from "./pages/ResetPassword";
 import UnifiedSidebar from "./components/UnifiedSidebar";
 import Timesheet from "./pages/Timesheet";
+
+//Admin
+import AllEntries from "./pages/Admin/AdminEntries";
+import AnalyticsDashboard from "./pages/Admin/AnalyticsDashboard";
+import AdminPanel from "./pages/Admin/AdminPanel";
 
 // Helper: Protect routes by role
 function ProtectedRoute({ children, allowedRoles }) {

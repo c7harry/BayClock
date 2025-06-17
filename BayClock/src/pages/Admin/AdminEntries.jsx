@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 import {
   Box, Typography, Table, TableHead, TableRow, TableCell, TableBody,
   TableContainer, Chip, Tooltip, Paper, Pagination, TextField, MenuItem, 
@@ -13,7 +13,7 @@ import {
 } from "react-icons/fa";
 import { MdRefresh, MdViewColumn } from "react-icons/md";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { GlassCard } from "../components/Theme";
+import { GlassCard } from "../../components/Theme";
 
 export default function AllEntries() {
   const [entries, setEntries] = useState([]);

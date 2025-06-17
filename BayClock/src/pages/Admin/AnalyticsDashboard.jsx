@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 import {
   Typography, Box, Button, Snackbar, Alert,
   Grid, Avatar, CircularProgress, ToggleButton, ToggleButtonGroup, Paper
@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { FaUsers, FaChartBar, FaClock, FaProjectDiagram, FaListAlt } from "react-icons/fa";
 import { MdTrendingUp, MdBusiness } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { GlassCard } from "../components/Theme";
+import { GlassCard } from "../../components/Theme";
 
 // Helper to parse durations like "4h", "1m 41s", "2h 3m 10s", etc
 function parseDurationTextToSeconds(duration) {

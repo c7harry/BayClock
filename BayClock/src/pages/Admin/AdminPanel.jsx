@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 import {
   Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
   Select, MenuItem, Paper, Snackbar, Alert, Stack, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer,
@@ -13,7 +13,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
 import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import Pagination from "@mui/material/Pagination";
-import { GlassCard } from "../components/Theme";
+import { GlassCard } from "../../components/Theme";
 
 // Helper to parse durations like "4h", "1m 41s", "2h 3m 10s", etc
 function parseDurationTextToSeconds(duration) {
