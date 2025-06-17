@@ -400,8 +400,14 @@ export default function AllEntries() {
             icon={<FaListAlt size={16} />}
             sx={{ 
               display: "flex",
-              flexDirection: "column"
+              flexDirection: "column",
+              '&:hover': {
+                transform: 'none !important',
+                scale: 'none !important',
+                y: 'none !important'
+              }
             }}
+            whileHover={{}}
           >
             <Box sx={{ p: 2.5, flex: 1, display: "flex", flexDirection: "column" }}>
               {/* Header Controls */}
