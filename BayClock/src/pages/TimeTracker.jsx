@@ -12,21 +12,15 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import Tooltip from "@mui/material/Tooltip";
 import EntryCard, { EntryCardGroup } from "../components/EntryCard";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import Snackbar from "@mui/material/Snackbar";
-import MuiAlert from "@mui/material/Alert";
 import { GlassCard, getTextColor, getSecondaryTextColor } from "../components/Theme";
 
 // =======================
@@ -977,6 +971,16 @@ export default function TimeTracker() {
             title="Recent Entries" 
             icon={<FaHistory size={16} />} 
             delay={0.2}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              '&:hover': {
+                transform: 'none !important',
+                scale: 'none !important',
+                y: 'none !important'
+              }
+            }}
+            whileHover={{}}
           >
             <Box sx={{ p: 2.5 }}>
               {entries.length === 0 ? (
