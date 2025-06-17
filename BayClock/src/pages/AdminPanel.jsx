@@ -3,8 +3,7 @@ import { supabase } from "../supabaseClient";
 import {
   Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
   Select, MenuItem, Paper, Snackbar, Alert, Stack, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer,
-  Grid, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress
-} from "@mui/material";
+  Grid, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCog, FaUsers, FaChartBar, FaClock, FaCalendarAlt, FaProjectDiagram, FaListAlt } from "react-icons/fa";
@@ -62,19 +61,18 @@ export default function AdminPanel() {
   const [compactView, setCompactView] = useState(false);
   const [showInactiveUsers, setShowInactiveUsers] = useState(true);
   const [dateRange, setDateRange] = useState("all");
-  const [statsData, setStatsData] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalWorkspaces: 0,
-    totalProjects: 0,
-    totalHours: 0,
-    newUsersThisMonth: 0
-  });
+  
+  // Stats period filter
+  const [statsPeriod, setStatsPeriod] = useState("weekly");
 
   // Search and sort states
   const [searchEmail, setSearchEmail] = useState("");
   const [sortField, setSortField] = useState(""); 
   const [sortOrder, setSortOrder] = useState("desc");
+
+  // State for all entries and user total times
+  const [allEntries, setAllEntries] = useState([]);
+  const [userTimes, setUserTimes] = useState({});
 
   // Theme
   const [mode, setMode] = useState(
@@ -171,9 +169,6 @@ export default function AdminPanel() {
       setWorkspaces(workspacesRes.data || []);
       setProjects(projectsRes.data || []);
       setAllEntries(entriesRes.data || []);
-      
-      // Calculate stats
-      calculateStats(profilesRes.data || [], workspacesRes.data || [], projectsRes.data || [], entriesRes.data || []);
     } catch (error) {
       setSnackbar({ open: true, message: "Error fetching data", severity: "error" });
     } finally {
@@ -188,34 +183,6 @@ export default function AdminPanel() {
     setSnackbar({ open: true, message: "Data refreshed!", severity: "success" });
   };
 
-  const calculateStats = (profilesData, workspacesData, projectsData, entriesData) => {
-    const now = new Date();
-    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    
-    // Calculate total hours
-    const totalSeconds = entriesData.reduce((sum, entry) => {
-      return sum + parseDurationTextToSeconds(entry.duration);
-    }, 0);
-
-    // Get active users (users with entries in last 30 days)
-    const recentEntries = entriesData.filter(entry => new Date(entry.created_at) >= oneMonthAgo);
-    const activeUserIds = new Set(recentEntries.map(entry => entry.user_id));
-
-    // New users this month
-    const newUsers = profilesData.filter(profile => 
-      profile.created_at && new Date(profile.created_at) >= oneMonthAgo
-    );
-
-    setStatsData({
-      totalUsers: profilesData.length,
-      activeUsers: activeUserIds.size,
-      totalWorkspaces: workspacesData.length,
-      totalProjects: projectsData.length,
-      totalHours: Math.round(totalSeconds / 3600),
-      newUsersThisMonth: newUsers.length
-    });
-  };
-
   // Create a new workspace
   const handleCreateWorkspace = async () => {
     if (!newWorkspace.trim()) return;
@@ -228,7 +195,6 @@ export default function AdminPanel() {
       setSnackbar({ open: true, message: error.message, severity: "error" });
     } else {
       setWorkspaces((prev) => [...prev, data]);
-      setStatsData(prev => ({ ...prev, totalWorkspaces: prev.totalWorkspaces + 1 }));
       setSnackbar({ open: true, message: "Workspace created!", severity: "success" });
       setNewWorkspace("");
     }
@@ -270,7 +236,6 @@ export default function AdminPanel() {
       setSnackbar({ open: true, message: error.message, severity: "error" });
     } else {
       setWorkspaces((prev) => prev.filter((w) => w.id !== ws.id));
-      setStatsData(prev => ({ ...prev, totalWorkspaces: prev.totalWorkspaces - 1 }));
       setSnackbar({ open: true, message: "Workspace deleted.", severity: "success" });
     }
   };
@@ -362,10 +327,6 @@ export default function AdminPanel() {
     setSelectedUserName("");
   };
 
-  // State for all entries and user total times
-  const [allEntries, setAllEntries] = useState([]);
-  const [userTimes, setUserTimes] = useState({});
-
   // Calculate total time per user in seconds
   useEffect(() => {
     const grouped = {};
@@ -375,6 +336,101 @@ export default function AdminPanel() {
     });
     setUserTimes(grouped);
   }, [allEntries]);
+
+  // Calculate filtered stats based on period
+  const filteredStatsData = useMemo(() => {
+    const now = new Date();
+    let startDate;
+
+    switch (statsPeriod) {
+      case "weekly":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "monthly":
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case "yearly":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      default:
+        startDate = new Date(0);
+    }
+
+    // Filter entries by period
+    const periodEntries = allEntries.filter(entry => 
+      new Date(entry.created_at) >= startDate
+    );
+
+    // Calculate total hours for the period
+    const totalSeconds = periodEntries.reduce((sum, entry) => {
+      return sum + parseDurationTextToSeconds(entry.duration);
+    }, 0);
+
+    // Get active users in this period
+    const activeUserIds = new Set(periodEntries.map(entry => entry.user_id));
+
+    // Get new users in this period
+    const newUsers = profiles.filter(profile => 
+      profile.created_at && new Date(profile.created_at) >= startDate
+    );
+
+    return {
+      totalUsers: profiles.length,
+      activeUsers: activeUserIds.size,
+      totalWorkspaces: workspaces.length,
+      totalProjects: projects.length,
+      totalHours: Math.round(totalSeconds / 3600),
+      newUsersThisPeriod: newUsers.length,
+      totalEntries: periodEntries.length,
+      period: statsPeriod
+    };
+  }, [allEntries, profiles, workspaces, projects, statsPeriod]);
+
+  // Enhanced stats cards data with period filtering
+  const statsCards = [
+    {
+      title: "Total Users",
+      value: filteredStatsData.totalUsers,
+      icon: <FaUsers size={20} />,
+      color: "primary",
+      change: `+${filteredStatsData.newUsersThisPeriod} this ${statsPeriod.slice(0, -2)}`
+    },
+    {
+      title: "Active Users",
+      value: filteredStatsData.activeUsers,
+      icon: <MdTrendingUp size={20} />,
+      color: "success",
+      change: `Last ${statsPeriod.slice(0, -2)}`
+    },
+    {
+      title: "Total Hours",
+      value: `${filteredStatsData.totalHours}h`,
+      icon: <FaClock size={20} />,
+      color: "warning",
+      change: `This ${statsPeriod.slice(0, -2)}`
+    },
+    {
+      title: "Workspaces",
+      value: filteredStatsData.totalWorkspaces,
+      icon: <MdBusiness size={20} />,
+      color: "info",
+      change: "Total available"
+    },
+    {
+      title: "Projects",
+      value: filteredStatsData.totalProjects,
+      icon: <FaProjectDiagram size={20} />,
+      color: "secondary",
+      change: "Active projects"
+    },
+    {
+      title: "Entries",
+      value: filteredStatsData.totalEntries.toLocaleString(),
+      icon: <FaListAlt size={20} />,
+      color: "error",
+      change: `This ${statsPeriod.slice(0, -2)}`
+    }
+  ];
 
   // Filter and sort profiles
   const filteredProfiles = useMemo(() => {
@@ -422,52 +478,6 @@ export default function AdminPanel() {
   useEffect(() => {
     setPage(1);
   }, [searchEmail, sortField, sortOrder, compactView]);
-
-  // Enhanced stats cards data with entries information
-  const statsCards = [
-    {
-      title: "Total Users",
-      value: statsData.totalUsers,
-      icon: <FaUsers size={24} />,
-      color: "primary",
-      change: `+${statsData.newUsersThisMonth} this month`
-    },
-    {
-      title: "Active Users",
-      value: statsData.activeUsers,
-      icon: <MdTrendingUp size={24} />,
-      color: "success",
-      change: "Last 30 days"
-    },
-    {
-      title: "Total Hours",
-      value: `${statsData.totalHours}h`,
-      icon: <FaClock size={24} />,
-      color: "warning",
-      change: "All time tracking"
-    },
-    {
-      title: "Workspaces",
-      value: statsData.totalWorkspaces,
-      icon: <MdBusiness size={24} />,
-      color: "info",
-      change: "Total available"
-    },
-    {
-      title: "Projects",
-      value: statsData.totalProjects,
-      icon: <FaProjectDiagram size={24} />,
-      color: "secondary",
-      change: "Active projects"
-    },
-    {
-      title: "Total Entries",
-      value: allEntries.length.toLocaleString(),
-      icon: <FaListAlt size={24} />,
-      color: "error",
-      change: "All time entries"
-    }
-  ];
 
   if (loading) {
     return (
@@ -519,53 +529,6 @@ export default function AdminPanel() {
               boxSizing: "border-box",
             }}
           >
-            {/* Stats Cards */}
-            <motion.div variants={itemVariants}>
-              <Grid container spacing={1.8}>
-                {statsCards.map((card, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={2} key={card.title}>
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      <GlassCard
-                        delay={index * 0.1}
-                        sx={{
-                          height: "100%",
-                          minHeight: 120,
-                        }}
-                      >
-                        <Box sx={{ p: 2 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                            <Avatar
-                              sx={{
-                                bgcolor: `${card.color}.main`,
-                                width: 40,
-                                height: 40,
-                              }}
-                            >
-                              {card.icon}
-                            </Avatar>
-                            <Box sx={{ flexGrow: 1 }}>
-                              <Typography variant="h4" sx={{ fontWeight: 700, color: "primary.main", lineHeight: 1 }}>
-                                {card.value}
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
-                                {card.title}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500 }}>
-                            {card.change}
-                          </Typography>
-                        </Box>
-                      </GlassCard>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-            </motion.div>
-
             {/* Tabs Navigation */}
             <motion.div variants={itemVariants}>
               <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>

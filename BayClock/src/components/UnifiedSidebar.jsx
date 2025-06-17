@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FaHome, FaRegClock, FaFolderOpen, FaCalendar,
-  FaUserShield, FaListAlt, FaChevronLeft, FaChevronRight, FaCog
+  FaUserShield, FaListAlt, FaChevronLeft, FaChevronRight, FaCog, FaChartBar
 } from "react-icons/fa";
 import logo from "../assets/Logo.png";
 import Drawer from "@mui/material/Drawer";
@@ -21,6 +21,7 @@ const userLinks = [
 ];
 const adminLinks = [
   { to: "/admin", icon: FaUserShield, label: "Admin Panel" },
+  { to: "/analytics", icon: FaChartBar, label: "Analytics" },
   { to: "/projects", icon: FaFolderOpen, label: "Projects" },
   { to: "/all-entries", icon: FaListAlt, label: "All Entries" },
 ];

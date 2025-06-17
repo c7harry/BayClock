@@ -7,6 +7,7 @@ import LandingPage from "./pages/LandingPage";
 import CalendarPage from "./pages/Calendar";
 import LoginPage from "./pages/LoginPage";
 import AdminPanel from "./pages/AdminPanel";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import { supabase } from "./supabaseClient";
 import { useEffect, useState } from "react";
 import AllEntries from "./pages/AdminEntries";
@@ -144,12 +145,20 @@ function App() {
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
-            {/* Admin-only route */}
+            {/* Admin-only routes */}
             <Route
               path="/admin"
               element={
                 <ProtectedRoute allowedRoles={["admin"]}>
                   <AdminPanel />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AnalyticsDashboard />
                 </ProtectedRoute>
               }
             />
@@ -203,14 +212,6 @@ function App() {
               }
             />
             <Route path="/landingPage" element={<LandingPage />} />
-            <Route
-              path="/all-entries"
-              element={
-                <ProtectedRoute allowedRoles={["user", "admin"]}>
-                  <AllEntries />
-                </ProtectedRoute>
-              }
-            />
             <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </Layout>
