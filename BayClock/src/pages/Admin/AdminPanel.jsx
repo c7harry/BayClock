@@ -6,8 +6,8 @@ import {
   Grid, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCog, FaUsers, FaChartBar, FaClock, FaCalendarAlt, FaProjectDiagram, FaListAlt } from "react-icons/fa";
-import { MdDashboard, MdTrendingUp, MdBusiness } from "react-icons/md";
+import { FaCog, FaUsers, FaProjectDiagram, FaListAlt } from "react-icons/fa";
+import { MdBusiness } from "react-icons/md";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import { useNavigate } from "react-router-dom";
@@ -60,10 +60,6 @@ export default function AdminPanel() {
   const [currentTab, setCurrentTab] = useState(0);
   const [compactView, setCompactView] = useState(false);
   const [showInactiveUsers, setShowInactiveUsers] = useState(true);
-  const [dateRange, setDateRange] = useState("all");
-  
-  // Stats period filter
-  const [statsPeriod, setStatsPeriod] = useState("weekly");
 
   // Search and sort states
   const [searchEmail, setSearchEmail] = useState("");
@@ -337,101 +333,6 @@ export default function AdminPanel() {
     setUserTimes(grouped);
   }, [allEntries]);
 
-  // Calculate filtered stats based on period
-  const filteredStatsData = useMemo(() => {
-    const now = new Date();
-    let startDate;
-
-    switch (statsPeriod) {
-      case "weekly":
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-      case "monthly":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case "yearly":
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
-      default:
-        startDate = new Date(0);
-    }
-
-    // Filter entries by period
-    const periodEntries = allEntries.filter(entry => 
-      new Date(entry.created_at) >= startDate
-    );
-
-    // Calculate total hours for the period
-    const totalSeconds = periodEntries.reduce((sum, entry) => {
-      return sum + parseDurationTextToSeconds(entry.duration);
-    }, 0);
-
-    // Get active users in this period
-    const activeUserIds = new Set(periodEntries.map(entry => entry.user_id));
-
-    // Get new users in this period
-    const newUsers = profiles.filter(profile => 
-      profile.created_at && new Date(profile.created_at) >= startDate
-    );
-
-    return {
-      totalUsers: profiles.length,
-      activeUsers: activeUserIds.size,
-      totalWorkspaces: workspaces.length,
-      totalProjects: projects.length,
-      totalHours: Math.round(totalSeconds / 3600),
-      newUsersThisPeriod: newUsers.length,
-      totalEntries: periodEntries.length,
-      period: statsPeriod
-    };
-  }, [allEntries, profiles, workspaces, projects, statsPeriod]);
-
-  // Enhanced stats cards data with period filtering
-  const statsCards = [
-    {
-      title: "Total Users",
-      value: filteredStatsData.totalUsers,
-      icon: <FaUsers size={20} />,
-      color: "primary",
-      change: `+${filteredStatsData.newUsersThisPeriod} this ${statsPeriod.slice(0, -2)}`
-    },
-    {
-      title: "Active Users",
-      value: filteredStatsData.activeUsers,
-      icon: <MdTrendingUp size={20} />,
-      color: "success",
-      change: `Last ${statsPeriod.slice(0, -2)}`
-    },
-    {
-      title: "Total Hours",
-      value: `${filteredStatsData.totalHours}h`,
-      icon: <FaClock size={20} />,
-      color: "warning",
-      change: `This ${statsPeriod.slice(0, -2)}`
-    },
-    {
-      title: "Workspaces",
-      value: filteredStatsData.totalWorkspaces,
-      icon: <MdBusiness size={20} />,
-      color: "info",
-      change: "Total available"
-    },
-    {
-      title: "Projects",
-      value: filteredStatsData.totalProjects,
-      icon: <FaProjectDiagram size={20} />,
-      color: "secondary",
-      change: "Active projects"
-    },
-    {
-      title: "Entries",
-      value: filteredStatsData.totalEntries.toLocaleString(),
-      icon: <FaListAlt size={20} />,
-      color: "error",
-      change: `This ${statsPeriod.slice(0, -2)}`
-    }
-  ];
-
   // Filter and sort profiles
   const filteredProfiles = useMemo(() => {
     let filtered = profiles;
@@ -531,33 +432,93 @@ export default function AdminPanel() {
           >
             {/* Tabs Navigation */}
             <motion.div variants={itemVariants}>
-              <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+              <Paper 
+                sx={{ 
+                  borderRadius: 3, 
+                  overflow: "hidden",
+                  background: mode === "dark"
+                    ? "rgba(35, 35, 42, 0.7)" 
+                    : "rgba(255, 255, 255, 0.7)",
+                  backdropFilter: "blur(20px)",
+                  border: mode === "dark"
+                    ? "1px solid rgba(255, 255, 255, 0.1)" 
+                    : "1px solid rgba(0, 0, 0, 0.1)",
+                  boxShadow: mode === "dark"
+                    ? "0 8px 20px rgba(0, 0, 0, 0.2)"
+                    : "0 8px 20px rgba(0, 0, 0, 0.08)",
+                }}
+              >
                 <Tabs
                   value={currentTab}
                   onChange={(_, newValue) => setCurrentTab(newValue)}
                   sx={{
-                    bgcolor: "background.paper",
+                    bgcolor: "transparent",
                     "& .MuiTab-root": {
                       minHeight: 64,
                       fontWeight: 600,
+                      fontSize: '1rem',
+                      color: mode === "dark" ? "rgba(255, 255, 255, 0.7)" : "rgba(0, 0, 0, 0.7)",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        color: "#fb923c",
+                        backgroundColor: mode === "dark" 
+                          ? "rgba(251, 146, 60, 0.1)" 
+                          : "rgba(251, 146, 60, 0.05)",
+                      },
+                      "&.Mui-selected": {
+                        color: "#fb923c",
+                        fontWeight: 700,
+                        backgroundColor: mode === "dark" 
+                          ? "rgba(251, 146, 60, 0.15)" 
+                          : "rgba(251, 146, 60, 0.1)",
+                      }
+                    },
+                    "& .MuiTabs-indicator": {
+                      backgroundColor: "#fb923c",
+                      height: 3,
+                      borderRadius: "2px 2px 0 0",
+                      background: "linear-gradient(135deg, #fb923c 0%, #0F2D52 100%)",
+                    },
+                    "& .MuiTabs-flexContainer": {
+                      borderBottom: mode === "dark" 
+                        ? "1px solid rgba(255, 255, 255, 0.1)" 
+                        : "1px solid rgba(0, 0, 0, 0.1)",
                     }
                   }}
                   variant="fullWidth"
+                  TabIndicatorProps={{
+                    sx: {
+                      background: "linear-gradient(135deg, #fb923c 0%, #0F2D52 100%)",
+                    }
+                  }}
                 >
                   <Tab
                     icon={<FaUsers size={18} />}
                     label="User Management"
                     iconPosition="start"
+                    sx={{
+                      textTransform: "none",
+                      "& .MuiTab-iconWrapper": {
+                        transition: "transform 0.3s ease",
+                      },
+                      "&:hover .MuiTab-iconWrapper": {
+                        transform: "scale(1.1)",
+                      }
+                    }}
                   />
                   <Tab
                     icon={<MdBusiness size={18} />}
                     label="Workspace Management"
                     iconPosition="start"
-                  />
-                  <Tab
-                    icon={<MdDashboard size={18} />}
-                    label="System Overview"
-                    iconPosition="start"
+                    sx={{
+                      textTransform: "none",
+                      "& .MuiTab-iconWrapper": {
+                        transition: "transform 0.3s ease",
+                      },
+                      "&:hover .MuiTab-iconWrapper": {
+                        transform: "scale(1.1)",
+                      }
+                    }}
                   />
                 </Tabs>
               </Paper>
@@ -1006,116 +967,6 @@ export default function AdminPanel() {
                           </TableBody>
                         </Table>
                       </TableContainer>
-                    </Box>
-                  </GlassCard>
-                </motion.div>
-              )}
-
-              {currentTab === 2 && (
-                <motion.div
-                  key="overview"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <GlassCard
-                    title="System Overview"
-                    icon={<MdDashboard size={16} />}
-                    sx={{ width: "100%", maxWidth: "100%" }}
-                    whileHover={{}}
-                  >
-                    <Box sx={{ p: 2.5 }}>
-                      <Grid container spacing={3}>
-                        {/* Recent Activity */}
-                        <Grid item xs={12} md={6}>
-                          <Paper sx={{ p: 3, borderRadius: 2, height: "100%" }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                              <FaCalendarAlt /> Recent Activity
-                            </Typography>
-                            <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
-                              {profiles.slice(0, 5).map((profile, index) => (
-                                <Box key={profile.id} sx={{ py: 1, borderBottom: index < 4 ? "1px solid" : "none", borderColor: "divider" }}>
-                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                    {profile.full_name || profile.email}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {profile.role} • {getWorkspaceName(profile.workspace_id)}
-                                  </Typography>
-                                </Box>
-                              ))}
-                            </Box>
-                          </Paper>
-                        </Grid>
-
-                        {/* Top Users */}
-                        <Grid item xs={12} md={6}>
-                          <Paper sx={{ p: 3, borderRadius: 2, height: "100%" }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                              <FaChartBar /> Top Users by Hours
-                            </Typography>
-                            <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
-                              {profiles
-                                .sort((a, b) => (userTimes[b.id] || 0) - (userTimes[a.id] || 0))
-                                .slice(0, 5)
-                                .map((profile, index) => (
-                                  <Box key={profile.id} sx={{ py: 1, borderBottom: index < 4 ? "1px solid" : "none", borderColor: "divider" }}>
-                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                      <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                          {profile.full_name || profile.email}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                          Rank #{index + 1}
-                                        </Typography>
-                                      </Box>
-                                      <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
-                                        {userTimes[profile.id] ? formatSecondsToHMS(userTimes[profile.id]) : "00:00:00"}
-                                      </Typography>
-                                    </Box>
-                                  </Box>
-                                ))}
-                            </Box>
-                          </Paper>
-                        </Grid>
-
-                        {/* Workspace Distribution */}
-                        <Grid item xs={12}>
-                          <Paper sx={{ p: 3, borderRadius: 2 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
-                              <MdBusiness /> Workspace Distribution
-                            </Typography>
-                            <Grid container spacing={2}>
-                              {workspaces.map((workspace) => {
-                                const userCount = profiles.filter(p => p.workspace_id === workspace.id).length;
-                                const percentage = profiles.length > 0 ? Math.round((userCount / profiles.length) * 100) : 0;
-                                return (
-                                  <Grid item xs={12} sm={6} md={4} key={workspace.id}>
-                                    <Box sx={{ p: 2, borderRadius: 1, bgcolor: "background.default" }}>
-                                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                        {workspace.name}
-                                      </Typography>
-                                      <Typography variant="body2" color="text.secondary">
-                                        {userCount} users ({percentage}%)
-                                      </Typography>
-                                      <Box sx={{ mt: 1, height: 4, bgcolor: "grey.300", borderRadius: 2, overflow: "hidden" }}>
-                                        <Box
-                                          sx={{
-                                            height: "100%",
-                                            width: `${percentage}%`,
-                                            bgcolor: "primary.main",
-                                            transition: "width 0.3s ease",
-                                          }}
-                                        />
-                                      </Box>
-                                    </Box>
-                                  </Grid>
-                                );
-                              })}
-                            </Grid>
-                          </Paper>
-                        </Grid>
-                      </Grid>
                     </Box>
                   </GlassCard>
                 </motion.div>
