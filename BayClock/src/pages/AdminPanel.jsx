@@ -2,18 +2,15 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
   Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
-  Select, MenuItem, Paper, Snackbar, Alert, Stack, Divider, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer,
-  Grid, Card, CardContent, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress
+  Select, MenuItem, Paper, Snackbar, Alert, Stack, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer,
+  Grid, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress
 } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaUserShield, FaCog, FaUsers, FaChartBar, FaClock, FaCalendarAlt, FaProjectDiagram, FaListAlt } from "react-icons/fa";
-import { MdDashboard, MdSettings, MdSecurity, MdTrendingUp, MdGroup, MdBusiness } from "react-icons/md";
+import { FaCog, FaUsers, FaChartBar, FaClock, FaCalendarAlt, FaProjectDiagram, FaListAlt } from "react-icons/fa";
+import { MdDashboard, MdTrendingUp, MdBusiness } from "react-icons/md";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import GetAppIcon from "@mui/icons-material/GetApp";
 import { useNavigate } from "react-router-dom";
 import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import Pagination from "@mui/material/Pagination";
