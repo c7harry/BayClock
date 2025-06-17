@@ -2,12 +2,18 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "../supabaseClient";
 import {
   Typography, Box, Button, TextField, Table, TableHead, TableRow, TableCell, TableBody,
-  Select, MenuItem, Paper, Snackbar, Alert, Stack, Divider, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer
+  Select, MenuItem, Paper, Snackbar, Alert, Stack, Divider, Dialog, DialogTitle, DialogContent, IconButton, Chip, Tooltip, TableContainer,
+  Grid, Card, CardContent, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress
 } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import { motion } from "framer-motion";
-import { FaUserShield, FaCog, FaUsers } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaUserShield, FaCog, FaUsers, FaChartBar, FaClock, FaCalendarAlt, FaProjectDiagram, FaListAlt } from "react-icons/fa";
+import { MdDashboard, MdSettings, MdSecurity, MdTrendingUp, MdGroup, MdBusiness } from "react-icons/md";
 import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import GetAppIcon from "@mui/icons-material/GetApp";
 import { useNavigate } from "react-router-dom";
 import { MdEdit, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import Pagination from "@mui/material/Pagination";
@@ -17,10 +23,6 @@ import { GlassCard } from "../components/Theme";
 function parseDurationTextToSeconds(duration) {
   if (!duration || typeof duration !== "string") return 0;
   let total = 0;
-  const regex = /(\d+)\s*h|\s*(\d+)\s*m|\s*(\d+)\s*s/gi;
-  let match;
-  // Support for "4h", "1m 41s", "2h 3m 10s", etc.
-  // We'll use a global regex to match all occurrences
   const hourMatch = duration.match(/(\d+)\s*h/);
   if (hourMatch) total += parseInt(hourMatch[1], 10) * 3600;
   const minMatch = duration.match(/(\d+)\s*m/);
@@ -55,13 +57,29 @@ export default function AdminPanel() {
   const [projects, setProjects] = useState([]);
   const [editingWorkspace, setEditingWorkspace] = useState(null);
   const [editWorkspaceName, setEditWorkspaceName] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // New states for enhanced features
+  const [currentTab, setCurrentTab] = useState(0);
+  const [compactView, setCompactView] = useState(false);
+  const [showInactiveUsers, setShowInactiveUsers] = useState(true);
+  const [dateRange, setDateRange] = useState("all");
+  const [statsData, setStatsData] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalWorkspaces: 0,
+    totalProjects: 0,
+    totalHours: 0,
+    newUsersThisMonth: 0
+  });
 
   // Search and sort states
   const [searchEmail, setSearchEmail] = useState("");
-  const [sortField, setSortField] = useState(""); // "totalTime" or "created"
-  const [sortOrder, setSortOrder] = useState("desc"); // "asc" or "desc"
+  const [sortField, setSortField] = useState(""); 
+  const [sortOrder, setSortOrder] = useState("desc");
 
-  // Theme (match Projects page)
+  // Theme
   const [mode, setMode] = useState(
     document.documentElement.classList.contains("dark") ? "dark" : "light"
   );
@@ -84,17 +102,37 @@ export default function AdminPanel() {
                   default: "#f3f4f6",
                   paper: "#fff",
                 },
+                primary: {
+                  main: "#fb923c",
+                  light: "#ffc896",
+                  dark: "#e67e22",
+                },
               }
             : {
                 background: {
                   default: "#18181b",
                   paper: "#23232a",
                 },
+                primary: {
+                  main: "#fb923c",
+                  light: "#ffc896",
+                  dark: "#e67e22",
+                },
               }),
           warning: {
             main: "#fb923c",
             light: "#ffe6d3",
             dark: "#b45309",
+          },
+        },
+        components: {
+          MuiTab: {
+            styleOverrides: {
+              root: {
+                fontWeight: 600,
+                fontSize: '0.95rem',
+              },
+            },
           },
         },
       }),
@@ -117,19 +155,69 @@ export default function AdminPanel() {
     });
   }, [navigate]);
 
-  // Fetch all profiles, workspaces, and projects
+  // Fetch all data
   useEffect(() => {
-    async function fetchData() {
-      // Add created_at to select for sorting
-      const { data: profilesData } = await supabase.from("profiles").select("id, full_name, email, workspace_id, role, created_at");
-      const { data: workspacesData } = await supabase.from("workspaces").select("id, name");
-      const { data: projectsData } = await supabase.from("projects").select("id, name");
-      setProfiles(profilesData || []);
-      setWorkspaces(workspacesData || []);
-      setProjects(projectsData || []);
-    }
-    fetchData();
+    fetchAllData();
   }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const [profilesRes, workspacesRes, projectsRes, entriesRes] = await Promise.all([
+        supabase.from("profiles").select("id, full_name, email, workspace_id, role, created_at"),
+        supabase.from("workspaces").select("id, name"),
+        supabase.from("projects").select("id, name"),
+        supabase.from("entries").select("user_id, duration, date, created_at")
+      ]);
+
+      setProfiles(profilesRes.data || []);
+      setWorkspaces(workspacesRes.data || []);
+      setProjects(projectsRes.data || []);
+      setAllEntries(entriesRes.data || []);
+      
+      // Calculate stats
+      calculateStats(profilesRes.data || [], workspacesRes.data || [], projectsRes.data || [], entriesRes.data || []);
+    } catch (error) {
+      setSnackbar({ open: true, message: "Error fetching data", severity: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAllData();
+    setRefreshing(false);
+    setSnackbar({ open: true, message: "Data refreshed!", severity: "success" });
+  };
+
+  const calculateStats = (profilesData, workspacesData, projectsData, entriesData) => {
+    const now = new Date();
+    const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+    
+    // Calculate total hours
+    const totalSeconds = entriesData.reduce((sum, entry) => {
+      return sum + parseDurationTextToSeconds(entry.duration);
+    }, 0);
+
+    // Get active users (users with entries in last 30 days)
+    const recentEntries = entriesData.filter(entry => new Date(entry.created_at) >= oneMonthAgo);
+    const activeUserIds = new Set(recentEntries.map(entry => entry.user_id));
+
+    // New users this month
+    const newUsers = profilesData.filter(profile => 
+      profile.created_at && new Date(profile.created_at) >= oneMonthAgo
+    );
+
+    setStatsData({
+      totalUsers: profilesData.length,
+      activeUsers: activeUserIds.size,
+      totalWorkspaces: workspacesData.length,
+      totalProjects: projectsData.length,
+      totalHours: Math.round(totalSeconds / 3600),
+      newUsersThisMonth: newUsers.length
+    });
+  };
 
   // Create a new workspace
   const handleCreateWorkspace = async () => {
@@ -143,6 +231,7 @@ export default function AdminPanel() {
       setSnackbar({ open: true, message: error.message, severity: "error" });
     } else {
       setWorkspaces((prev) => [...prev, data]);
+      setStatsData(prev => ({ ...prev, totalWorkspaces: prev.totalWorkspaces + 1 }));
       setSnackbar({ open: true, message: "Workspace created!", severity: "success" });
       setNewWorkspace("");
     }
@@ -184,11 +273,12 @@ export default function AdminPanel() {
       setSnackbar({ open: true, message: error.message, severity: "error" });
     } else {
       setWorkspaces((prev) => prev.filter((w) => w.id !== ws.id));
+      setStatsData(prev => ({ ...prev, totalWorkspaces: prev.totalWorkspaces - 1 }));
       setSnackbar({ open: true, message: "Workspace deleted.", severity: "success" });
     }
   };
 
-  // Assign workspace to user (already updates on dropdown change)
+  // Assign workspace to user
   const handleWorkspaceChange = async (userId, workspaceId) => {
     const value = workspaceId === "" ? null : workspaceId;
     const { error } = await supabase
@@ -220,13 +310,52 @@ export default function AdminPanel() {
     }
   };
 
+  // Export data functionality
+  const handleExportData = () => {
+    const csvData = profiles.map(profile => ({
+      Name: profile.full_name || "",
+      Email: profile.email || "",
+      Role: profile.role || "",
+      Workspace: workspaces.find(w => w.id === profile.workspace_id)?.name || "None",
+      TotalTime: userTimes[profile.id] ? formatSecondsToHMS(userTimes[profile.id]) : "00:00:00",
+      Created: profile.created_at ? new Date(profile.created_at).toLocaleDateString() : ""
+    }));
+
+    const csvContent = [
+      Object.keys(csvData[0]).join(","),
+      ...csvData.map(row => Object.values(row).join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `admin_panel_export_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    setSnackbar({ open: true, message: "Data exported successfully!", severity: "success" });
+  };
+
   // Helper to get project name by id
   const getProjectName = (id) => projects.find((p) => p.id === id)?.name || id;
 
+  // Helper to get workspace name by id
+  const getWorkspaceName = (id) => workspaces.find((w) => w.id === id)?.name || "None";
+
   // Animation variants
-  const tileVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
   };
 
   // Close dialog handler
@@ -236,18 +365,9 @@ export default function AdminPanel() {
     setSelectedUserName("");
   };
 
-  // Add state for all entries and user total times
+  // State for all entries and user total times
   const [allEntries, setAllEntries] = useState([]);
   const [userTimes, setUserTimes] = useState({});
-
-  // Fetch all entries for all users
-  useEffect(() => {
-    async function fetchEntries() {
-      const { data: entriesData } = await supabase.from("entries").select("user_id, duration");
-      setAllEntries(entriesData || []);
-    }
-    fetchEntries();
-  }, []);
 
   // Calculate total time per user in seconds
   useEffect(() => {
@@ -262,11 +382,19 @@ export default function AdminPanel() {
   // Filter and sort profiles
   const filteredProfiles = useMemo(() => {
     let filtered = profiles;
+    
     if (searchEmail.trim()) {
       filtered = filtered.filter((profile) =>
-        (profile.email || "").toLowerCase().includes(searchEmail.trim().toLowerCase())
+        (profile.email || "").toLowerCase().includes(searchEmail.trim().toLowerCase()) ||
+        (profile.full_name || "").toLowerCase().includes(searchEmail.trim().toLowerCase())
       );
     }
+    
+    if (!showInactiveUsers) {
+      const activeUserIds = new Set(allEntries.map(entry => entry.user_id));
+      filtered = filtered.filter(profile => activeUserIds.has(profile.id));
+    }
+    
     if (sortField === "totalTime") {
       filtered = [...filtered].sort((a, b) => {
         const aTime = userTimes[a.id] || 0;
@@ -281,22 +409,87 @@ export default function AdminPanel() {
       });
     }
     return filtered;
-  }, [profiles, searchEmail, sortField, sortOrder, userTimes]);
+  }, [profiles, searchEmail, sortField, sortOrder, userTimes, showInactiveUsers, allEntries]);
 
   // Pagination state
   const [page, setPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = compactView ? 15 : 10;
 
   // Paginated profiles
   const paginatedProfiles = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     return filteredProfiles.slice(start, start + rowsPerPage);
-  }, [filteredProfiles, page]);
+  }, [filteredProfiles, page, rowsPerPage]);
 
-  // Reset to first page if filter changes and current page is out of range
+  // Reset to first page if filter changes
   useEffect(() => {
     setPage(1);
-  }, [searchEmail, sortField, sortOrder]);
+  }, [searchEmail, sortField, sortOrder, compactView]);
+
+  // Enhanced stats cards data with entries information
+  const statsCards = [
+    {
+      title: "Total Users",
+      value: statsData.totalUsers,
+      icon: <FaUsers size={24} />,
+      color: "primary",
+      change: `+${statsData.newUsersThisMonth} this month`
+    },
+    {
+      title: "Active Users",
+      value: statsData.activeUsers,
+      icon: <MdTrendingUp size={24} />,
+      color: "success",
+      change: "Last 30 days"
+    },
+    {
+      title: "Total Hours",
+      value: `${statsData.totalHours}h`,
+      icon: <FaClock size={24} />,
+      color: "warning",
+      change: "All time tracking"
+    },
+    {
+      title: "Workspaces",
+      value: statsData.totalWorkspaces,
+      icon: <MdBusiness size={24} />,
+      color: "info",
+      change: "Total available"
+    },
+    {
+      title: "Projects",
+      value: statsData.totalProjects,
+      icon: <FaProjectDiagram size={24} />,
+      color: "secondary",
+      change: "Active projects"
+    },
+    {
+      title: "Total Entries",
+      value: allEntries.length.toLocaleString(),
+      icon: <FaListAlt size={24} />,
+      color: "error",
+      change: "All time entries"
+    }
+  ];
+
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: theme.palette.background.default,
+          }}
+        >
+          <CircularProgress size={60} color="primary" />
+        </Box>
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -312,393 +505,664 @@ export default function AdminPanel() {
           overflowX: "hidden",
         }}
       >
-        <Box
-          sx={{
-            width: "100%",
-            maxWidth: "1600px", 
-            mx: "auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: { xs: 2, md: 3 },
-            px: { xs: 0.5, sm: 2, md: 4 },
-            boxSizing: "border-box",
-          }}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
         >
-
-          {/* Workspace Management Tile */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
-            <GlassCard
-              title="Workspace Management"
-              icon={<FaCog size={16} />}
-              delay={0.1}
-              sx={{ width: "100%", maxWidth: "100%" }}
-              whileHover={{}} // Disable hover effect
-            >
-              <Box sx={{ p: 2.5 }}>
-                <Stack direction="row" spacing={2} mb={2}>
-                  <TextField
-                    label="Workspace Name"
-                    value={newWorkspace}
-                    onChange={e => setNewWorkspace(e.target.value)}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      bgcolor: "background.default",
-                      borderRadius: 2,
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    color="warning"
-                    onClick={handleCreateWorkspace}
-                    disabled={!newWorkspace.trim()}
-                    sx={{
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      bgcolor: "warning.main",
-                      "&:hover": {
-                        bgcolor: "warning.dark",
-                      },
-                    }}
-                  >
-                    Create
-                  </Button>
-                </Stack>
-                <TableContainer 
-                  component={Paper} 
-                  variant="outlined" 
-                  sx={{ 
-                    borderRadius: 2, 
-                    boxShadow: "none",
-                    bgcolor: "background.default",
-                    border: 1,
-                    borderColor: "divider",
-                  }}
-                >
-                  <Table 
-                    size="small" 
-                    aria-label="workspace table"
-                    sx={{
-                      '& .MuiTableCell-root': {
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
-                      }
-                    }}
-                  >
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: "background.paper" }}>
-                        <TableCell sx={{ fontWeight: 700, width: "65%" }}>Name</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "35%" }} align="right">
-                          Actions
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {workspaces.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={2} align="center" sx={{ color: "text.disabled" }}>
-                            No workspaces found.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        workspaces.map((ws) => (
-                          <TableRow key={ws.id} hover>
-                            <TableCell>
-                              {editingWorkspace?.id === ws.id ? (
-                                <TextField
-                                  value={editWorkspaceName}
-                                  onChange={e => setEditWorkspaceName(e.target.value)}
-                                  size="small"
-                                  variant="standard"
-                                  autoFocus
-                                  fullWidth
-                                  sx={{ minWidth: 120 }}
-                                />
-                              ) : (
-                                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                                  {ws.name}
-                                </Typography>
-                              )}
-                            </TableCell>
-                            <TableCell align="right">
-                              {editingWorkspace?.id === ws.id ? (
-                                <>
-                                  <Button
-                                    size="small"
-                                    color="primary"
-                                    onClick={handleSaveWorkspace}
-                                    disabled={!editWorkspaceName.trim()}
-                                    sx={{ mr: 1, minWidth: 36 }}
-                                    variant="contained"
-                                  >
-                                    <MdSave />
-                                  </Button>
-                                  <Button
-                                    size="small"
-                                    color="inherit"
-                                    onClick={handleCancelEditWorkspace}
-                                    sx={{ minWidth: 36 }}
-                                    variant="outlined"
-                                  >
-                                    <MdCancel />
-                                  </Button>
-                                </>
-                              ) : (
-                                <>
-                                  <Button
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleEditWorkspace(ws)}
-                                    sx={{ mr: 1, minWidth: 36 }}
-                                    variant="outlined"
-                                  >
-                                    <MdEdit />
-                                  </Button>
-                                  {ws.id === "9ef07a06-d8cf-458a-80c0-a68eeafd62b2" ? (
-                                    <Tooltip title="Can't delete Main">
-                                      <span>
-                                        <Button
-                                          size="small"
-                                          color="error"
-                                          sx={{ minWidth: 36 }}
-                                          variant="outlined"
-                                          disabled
-                                        >
-                                          <MdDelete />
-                                        </Button>
-                                      </span>
-                                    </Tooltip>
-                                  ) : (
-                                    <Button
-                                      size="small"
-                                      color="error"
-                                      onClick={() => handleDeleteWorkspace(ws)}
-                                      sx={{ minWidth: 36 }}
-                                      variant="outlined"
-                                    >
-                                      <MdDelete />
-                                    </Button>
-                                  )}
-                                </>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Box>
-            </GlassCard>
-          </motion.div>
-
-          {/* User Profiles Tile */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
-            <GlassCard
-              title="User Profiles"
-              icon={<FaUsers size={16} />}
-              delay={0.2}
-              sx={{ width: "100%", maxWidth: "100%" }}
-              whileHover={{}} // Disable hover effect
-            >
-              <Box sx={{ p: 2.5 }}>
-                {/* Filters */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: { xs: "flex-start", sm: "center" },
-                    flexDirection: { xs: "column", sm: "row" },
-                    gap: 2,
-                    mb: 2,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 2,
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: { xs: "flex-start", sm: "flex-end" },
-                    }}
-                  >
-                    <TextField
-                      label="Search by Email"
-                      value={searchEmail}
-                      onChange={e => setSearchEmail(e.target.value)}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        bgcolor: "background.default",
-                        borderRadius: 2,
-                      }}
-                    />
-                    <Select
-                      value={sortField}
-                      onChange={e => setSortField(e.target.value)}
-                      size="small"
-                      displayEmpty
-                      sx={{ 
-                        minWidth: 160,
-                        bgcolor: "background.default",
-                        borderRadius: 2,
-                      }}
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: "1600px", 
+              mx: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: { xs: 2, md: 3 },
+              px: { xs: 0.5, sm: 2, md: 4 },
+              boxSizing: "border-box",
+            }}
+          >
+            {/* Stats Cards */}
+            <motion.div variants={itemVariants}>
+              <Grid container spacing={1.8}>
+                {statsCards.map((card, index) => (
+                  <Grid item xs={12} sm={6} md={4} lg={2} key={card.title}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ type: "spring", stiffness: 300 }}
                     >
-                      <MenuItem value="">Sort By...</MenuItem>
-                      <MenuItem value="totalTime">Total Time</MenuItem>
-                      <MenuItem value="created">Created Date</MenuItem>
-                    </Select>
-                    {sortField && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                      <GlassCard
+                        delay={index * 0.1}
                         sx={{
-                          borderRadius: 2,
-                          fontWeight: 600,
+                          height: "100%",
+                          minHeight: 120,
                         }}
                       >
-                        {sortOrder === "asc" ? "Ascending" : "Descending"}
-                      </Button>
-                    )}
-                    {sortField && (
-                      <Button
-                        variant="text"
-                        size="small"
-                        color="inherit"
-                        onClick={() => { setSortField(""); setSortOrder("desc"); }}
-                        sx={{
-                          borderRadius: 2,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Clear Sort
-                      </Button>
-                    )}
-                  </Box>
-                </Box>
-                <Divider sx={{ mb: 2 }} />
-                <TableContainer 
-                  sx={{ 
-                    borderRadius: 2,
-                    bgcolor: "background.default",
-                    border: 1,
-                    borderColor: "divider",
+                        <Box sx={{ p: 2 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                            <Avatar
+                              sx={{
+                                bgcolor: `${card.color}.main`,
+                                width: 40,
+                                height: 40,
+                              }}
+                            >
+                              {card.icon}
+                            </Avatar>
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="h4" sx={{ fontWeight: 700, color: "primary.main", lineHeight: 1 }}>
+                                {card.value}
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                                {card.title}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500 }}>
+                            {card.change}
+                          </Typography>
+                        </Box>
+                      </GlassCard>
+                    </motion.div>
+                  </Grid>
+                ))}
+              </Grid>
+            </motion.div>
+
+            {/* Tabs Navigation */}
+            <motion.div variants={itemVariants}>
+              <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+                <Tabs
+                  value={currentTab}
+                  onChange={(_, newValue) => setCurrentTab(newValue)}
+                  sx={{
+                    bgcolor: "background.paper",
+                    "& .MuiTab-root": {
+                      minHeight: 64,
+                      fontWeight: 600,
+                    }
                   }}
+                  variant="fullWidth"
                 >
-                  <Table 
-                    size="small" 
-                    aria-label="user profiles table"
-                    sx={{
-                      '& .MuiTableCell-root': {
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
-                      }
-                    }}
+                  <Tab
+                    icon={<FaUsers size={18} />}
+                    label="User Management"
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<MdBusiness size={18} />}
+                    label="Workspace Management"
+                    iconPosition="start"
+                  />
+                  <Tab
+                    icon={<MdDashboard size={18} />}
+                    label="System Overview"
+                    iconPosition="start"
+                  />
+                </Tabs>
+              </Paper>
+            </motion.div>
+
+            {/* Tab Content */}
+            <AnimatePresence mode="wait">
+              {currentTab === 0 && (
+                <motion.div
+                  key="users"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <GlassCard
+                    title="User Management"
+                    icon={<FaUsers size={16} />}
+                    sx={{ width: "100%", maxWidth: "100%" }}
+                    whileHover={{}}
                   >
-                    <TableHead>
-                      <TableRow sx={{ bgcolor: "background.paper" }}>
-                        <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>User</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "24%", textAlign: "center" }}>Email</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "10%", textAlign: "center" }}>Role</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>Workspace</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "14%", textAlign: "center" }}>Total Time</TableCell>
-                        <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Created</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {paginatedProfiles.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={6} align="center" sx={{ color: "text.disabled" }}>
-                            No profiles found.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        paginatedProfiles.map((profile) => (
-                          <TableRow key={profile.id} hover>
-                            <TableCell align="center">
-                              <Tooltip title="View user's entries" arrow>
+                    <Box sx={{ p: 2.5 }}>
+                      {/* Enhanced Filters */}
+                      <Paper sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: "background.default" }}>
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item xs={12} sm={6} md={3}>
+                            <TextField
+                              label="Search Users"
+                              value={searchEmail}
+                              onChange={e => setSearchEmail(e.target.value)}
+                              size="small"
+                              fullWidth
+                              InputProps={{
+                                startAdornment: <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />,
+                              }}
+                              sx={{ bgcolor: "background.paper", borderRadius: 1 }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6} md={2}>
+                            <Select
+                              value={sortField}
+                              onChange={e => setSortField(e.target.value)}
+                              size="small"
+                              fullWidth
+                              displayEmpty
+                              sx={{ bgcolor: "background.paper", borderRadius: 1 }}
+                            >
+                              <MenuItem value="">Sort By...</MenuItem>
+                              <MenuItem value="totalTime">Total Time</MenuItem>
+                              <MenuItem value="created">Created Date</MenuItem>
+                            </Select>
+                          </Grid>
+                          <Grid item xs={12} sm={6} md={2}>
+                            {sortField && (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                onClick={() => setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))}
+                                sx={{ borderRadius: 1 }}
+                              >
+                                {sortOrder === "asc" ? "↑ Ascending" : "↓ Descending"}
+                              </Button>
+                            )}
+                          </Grid>
+                          <Grid item xs={12} sm={6} md={5}>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={showInactiveUsers}
+                                    onChange={(e) => setShowInactiveUsers(e.target.checked)}
+                                    color="primary"
+                                  />
+                                }
+                                label="Show Inactive"
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={compactView}
+                                    onChange={(e) => setCompactView(e.target.checked)}
+                                    color="primary"
+                                  />
+                                }
+                                label="Compact View"
+                              />
+                              {sortField && (
                                 <Button
                                   variant="text"
-                                  onClick={() => handleShowEntries(profile)}
-                                  sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
+                                  size="small"
+                                  onClick={() => { setSortField(""); setSortOrder("desc"); }}
+                                  sx={{ borderRadius: 1 }}
                                 >
-                                  {profile.full_name || profile.email || profile.id}
+                                  Clear
                                 </Button>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Typography variant="body2">{profile.email || ""}</Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Chip
-                                label={profile.role}
-                                color={profile.role === "admin" ? "warning" : "default"}
-                                size="small"
-                                sx={{
-                                  fontWeight: 600,
-                                  bgcolor: profile.role === "admin"
-                                    ? "warning.light"
-                                    : (mode === "dark" ? "grey.800" : "grey.200"),
-                                  color: profile.role === "admin"
-                                    ? "warning.dark"
-                                    : (mode === "dark" ? "#fff" : "text.primary"),
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell align="center">
-                              <Select
-                                value={profile.workspace_id || ""}
-                                onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
-                                size="small"
-                                sx={{ 
-                                  minWidth: 120, 
-                                  bgcolor: "background.default",
-                                  borderRadius: 1,
-                                }}
-                              >
-                                <MenuItem value="">None</MenuItem>
-                                {workspaces.map((ws) => (
-                                  <MenuItem key={ws.id} value={ws.id}>
-                                    {ws.name}
-                                  </MenuItem>
+                              )}
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      </Paper>
+
+                      <TableContainer 
+                        sx={{ 
+                          borderRadius: 2,
+                          bgcolor: "background.default",
+                          border: 1,
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Table 
+                          size={compactView ? "small" : "medium"}
+                          aria-label="user profiles table"
+                          sx={{
+                            '& .MuiTableCell-root': {
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                            }
+                          }}
+                        >
+                          <TableHead>
+                            <TableRow sx={{ bgcolor: "background.paper" }}>
+                              <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>User</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "24%", textAlign: "center" }}>Email</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "10%", textAlign: "center" }}>Role</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "18%", textAlign: "center" }}>Workspace</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "14%", textAlign: "center" }}>Total Time</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "16%", textAlign: "center" }}>Created</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {paginatedProfiles.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ color: "text.disabled", py: 4 }}>
+                                  No profiles found.
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              paginatedProfiles.map((profile, index) => (
+                                <motion.tr
+                                  key={profile.id}
+                                  component={TableRow}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: index * 0.05 }}
+                                  style={{ cursor: "pointer" }}
+                                  whileHover={{ backgroundColor: theme.palette.action.hover }}
+                                >
+                                  <TableCell align="center">
+                                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
+                                      <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main", fontSize: 14 }}>
+                                        {(profile.full_name || profile.email || "U")[0].toUpperCase()}
+                                      </Avatar>
+                                      <Tooltip title="View user's entries" arrow>
+                                        <Button
+                                          variant="text"
+                                          onClick={() => handleShowEntries(profile)}
+                                          sx={{ textTransform: "none", fontWeight: 500, color: "primary.main" }}
+                                        >
+                                          {profile.full_name || profile.email || profile.id}
+                                        </Button>
+                                      </Tooltip>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Typography variant="body2">{profile.email || ""}</Typography>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Chip
+                                      label={profile.role}
+                                      color={profile.role === "admin" ? "warning" : "default"}
+                                      size="small"
+                                      sx={{
+                                        fontWeight: 600,
+                                        bgcolor: profile.role === "admin"
+                                          ? "warning.light"
+                                          : (mode === "dark" ? "grey.800" : "grey.200"),
+                                        color: profile.role === "admin"
+                                          ? "warning.dark"
+                                          : (mode === "dark" ? "#fff" : "text.primary"),
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Select
+                                      value={profile.workspace_id || ""}
+                                      onChange={(e) => handleWorkspaceChange(profile.id, e.target.value)}
+                                      size="small"
+                                      sx={{ 
+                                        minWidth: 120, 
+                                        bgcolor: "background.default",
+                                        borderRadius: 1,
+                                      }}
+                                    >
+                                      <MenuItem value="">None</MenuItem>
+                                      {workspaces.map((ws) => (
+                                        <MenuItem key={ws.id} value={ws.id}>
+                                          {ws.name}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                      {userTimes[profile.id]
+                                        ? formatSecondsToHMS(userTimes[profile.id])
+                                        : "00:00:00"}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell align="center">
+                                    <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                                      {profile.created_at
+                                        ? new Date(profile.created_at).toLocaleDateString()
+                                        : "—"}
+                                    </Typography>
+                                  </TableCell>
+                                </motion.tr>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                      
+                      {/* Enhanced Pagination */}
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          Showing {Math.min(filteredProfiles.length, (page - 1) * rowsPerPage + 1)}-{Math.min(filteredProfiles.length, page * rowsPerPage)} of {filteredProfiles.length} users
+                        </Typography>
+                        <Pagination
+                          count={Math.ceil(filteredProfiles.length / rowsPerPage)}
+                          page={page}
+                          onChange={(_, value) => setPage(value)}
+                          color="primary"
+                          size={compactView ? "small" : "medium"}
+                        />
+                      </Box>
+                    </Box>
+                  </GlassCard>
+                </motion.div>
+              )}
+
+              {currentTab === 1 && (
+                <motion.div
+                  key="workspaces"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <GlassCard
+                    title="Workspace Management"
+                    icon={<FaCog size={16} />}
+                    sx={{ width: "100%", maxWidth: "100%" }}
+                    whileHover={{}}
+                  >
+                    <Box sx={{ p: 2.5 }}>
+                      <Paper sx={{ p: 2, mb: 3, borderRadius: 2, bgcolor: "background.default" }}>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <TextField
+                            label="Workspace Name"
+                            value={newWorkspace}
+                            onChange={e => setNewWorkspace(e.target.value)}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              bgcolor: "background.paper",
+                              borderRadius: 1,
+                              flexGrow: 1,
+                            }}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && newWorkspace.trim()) {
+                                handleCreateWorkspace();
+                              }
+                            }}
+                          />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={handleCreateWorkspace}
+                            disabled={!newWorkspace.trim()}
+                            sx={{
+                              borderRadius: 2,
+                              fontWeight: 600,
+                              px: 3,
+                              py: 1,
+                            }}
+                          >
+                            Create Workspace
+                          </Button>
+                        </Stack>
+                      </Paper>
+
+                      <TableContainer 
+                        component={Paper} 
+                        variant="outlined" 
+                        sx={{ 
+                          borderRadius: 2, 
+                          boxShadow: "none",
+                          bgcolor: "background.default",
+                          border: 1,
+                          borderColor: "divider",
+                        }}
+                      >
+                        <Table 
+                          size="small" 
+                          aria-label="workspace table"
+                          sx={{
+                            '& .MuiTableCell-root': {
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                            }
+                          }}
+                        >
+                          <TableHead>
+                            <TableRow sx={{ bgcolor: "background.paper" }}>
+                              <TableCell sx={{ fontWeight: 700, width: "15%" }}>Icon</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "50%" }}>Name</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "20%" }}>Users</TableCell>
+                              <TableCell sx={{ fontWeight: 700, width: "15%" }} align="right">
+                                Actions
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {workspaces.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={4} align="center" sx={{ color: "text.disabled", py: 4 }}>
+                                  No workspaces found.
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              workspaces.map((ws, index) => {
+                                const userCount = profiles.filter(p => p.workspace_id === ws.id).length;
+                                return (
+                                  <motion.tr
+                                    key={ws.id}
+                                    component={TableRow}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    whileHover={{ backgroundColor: theme.palette.action.hover }}
+                                  >
+                                    <TableCell>
+                                      <Avatar sx={{ bgcolor: "primary.main", width: 36, height: 36 }}>
+                                        <MdBusiness size={20} />
+                                      </Avatar>
+                                    </TableCell>
+                                    <TableCell>
+                                      {editingWorkspace?.id === ws.id ? (
+                                        <TextField
+                                          value={editWorkspaceName}
+                                          onChange={e => setEditWorkspaceName(e.target.value)}
+                                          size="small"
+                                          variant="standard"
+                                          autoFocus
+                                          fullWidth
+                                          sx={{ minWidth: 120 }}
+                                        />
+                                      ) : (
+                                        <Box>
+                                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {ws.name}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            Workspace ID: {ws.id.slice(0, 8)}...
+                                          </Typography>
+                                        </Box>
+                                      )}
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge badgeContent={userCount} color="primary">
+                                        <Chip
+                                          label={`${userCount} users`}
+                                          size="small"
+                                          color={userCount > 0 ? "primary" : "default"}
+                                          variant="outlined"
+                                        />
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                      {editingWorkspace?.id === ws.id ? (
+                                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                          <Button
+                                            size="small"
+                                            color="primary"
+                                            onClick={handleSaveWorkspace}
+                                            disabled={!editWorkspaceName.trim()}
+                                            sx={{ minWidth: 36 }}
+                                            variant="contained"
+                                          >
+                                            <MdSave />
+                                          </Button>
+                                          <Button
+                                            size="small"
+                                            color="inherit"
+                                            onClick={handleCancelEditWorkspace}
+                                            sx={{ minWidth: 36 }}
+                                            variant="outlined"
+                                          >
+                                            <MdCancel />
+                                          </Button>
+                                        </Stack>
+                                      ) : (
+                                        <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                          <Button
+                                            size="small"
+                                            color="primary"
+                                            onClick={() => handleEditWorkspace(ws)}
+                                            sx={{ minWidth: 36 }}
+                                            variant="outlined"
+                                          >
+                                            <MdEdit />
+                                          </Button>
+                                          {ws.id === "9ef07a06-d8cf-458a-80c0-a68eeafd62b2" ? (
+                                            <Tooltip title="Can't delete Main workspace">
+                                              <span>
+                                                <Button
+                                                  size="small"
+                                                  color="error"
+                                                  sx={{ minWidth: 36 }}
+                                                  variant="outlined"
+                                                  disabled
+                                                >
+                                                  <MdDelete />
+                                                </Button>
+                                              </span>
+                                            </Tooltip>
+                                          ) : (
+                                            <Button
+                                              size="small"
+                                              color="error"
+                                              onClick={() => handleDeleteWorkspace(ws)}
+                                              sx={{ minWidth: 36 }}
+                                              variant="outlined"
+                                            >
+                                              <MdDelete />
+                                            </Button>
+                                          )}
+                                        </Stack>
+                                      )}
+                                    </TableCell>
+                                  </motion.tr>
+                                );
+                              })
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Box>
+                  </GlassCard>
+                </motion.div>
+              )}
+
+              {currentTab === 2 && (
+                <motion.div
+                  key="overview"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <GlassCard
+                    title="System Overview"
+                    icon={<MdDashboard size={16} />}
+                    sx={{ width: "100%", maxWidth: "100%" }}
+                    whileHover={{}}
+                  >
+                    <Box sx={{ p: 2.5 }}>
+                      <Grid container spacing={3}>
+                        {/* Recent Activity */}
+                        <Grid item xs={12} md={6}>
+                          <Paper sx={{ p: 3, borderRadius: 2, height: "100%" }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                              <FaCalendarAlt /> Recent Activity
+                            </Typography>
+                            <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
+                              {profiles.slice(0, 5).map((profile, index) => (
+                                <Box key={profile.id} sx={{ py: 1, borderBottom: index < 4 ? "1px solid" : "none", borderColor: "divider" }}>
+                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    {profile.full_name || profile.email}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {profile.role} • {getWorkspaceName(profile.workspace_id)}
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Box>
+                          </Paper>
+                        </Grid>
+
+                        {/* Top Users */}
+                        <Grid item xs={12} md={6}>
+                          <Paper sx={{ p: 3, borderRadius: 2, height: "100%" }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                              <FaChartBar /> Top Users by Hours
+                            </Typography>
+                            <Box sx={{ maxHeight: 300, overflowY: "auto" }}>
+                              {profiles
+                                .sort((a, b) => (userTimes[b.id] || 0) - (userTimes[a.id] || 0))
+                                .slice(0, 5)
+                                .map((profile, index) => (
+                                  <Box key={profile.id} sx={{ py: 1, borderBottom: index < 4 ? "1px solid" : "none", borderColor: "divider" }}>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                      <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                          {profile.full_name || profile.email}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          Rank #{index + 1}
+                                        </Typography>
+                                      </Box>
+                                      <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
+                                        {userTimes[profile.id] ? formatSecondsToHMS(userTimes[profile.id]) : "00:00:00"}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
                                 ))}
-                              </Select>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                {userTimes[profile.id]
-                                  ? formatSecondsToHMS(userTimes[profile.id])
-                                  : "00:00:00"}
-                              </Typography>
-                            </TableCell>
-                            <TableCell align="center">
-                              <Typography variant="body2" sx={{ fontWeight: 400 }}>
-                                {profile.created_at
-                                  ? new Date(profile.created_at).toLocaleDateString()
-                                  : "—"}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                {/* Pagination controls */}
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                  <Pagination
-                    count={Math.ceil(filteredProfiles.length / rowsPerPage)}
-                    page={page}
-                    onChange={(_, value) => setPage(value)}
-                    color="warning"
-                  />
-                </Box>
-              </Box>
-            </GlassCard>
-          </motion.div>
-        </Box>
+                            </Box>
+                          </Paper>
+                        </Grid>
+
+                        {/* Workspace Distribution */}
+                        <Grid item xs={12}>
+                          <Paper sx={{ p: 3, borderRadius: 2 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+                              <MdBusiness /> Workspace Distribution
+                            </Typography>
+                            <Grid container spacing={2}>
+                              {workspaces.map((workspace) => {
+                                const userCount = profiles.filter(p => p.workspace_id === workspace.id).length;
+                                const percentage = profiles.length > 0 ? Math.round((userCount / profiles.length) * 100) : 0;
+                                return (
+                                  <Grid item xs={12} sm={6} md={4} key={workspace.id}>
+                                    <Box sx={{ p: 2, borderRadius: 1, bgcolor: "background.default" }}>
+                                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                        {workspace.name}
+                                      </Typography>
+                                      <Typography variant="body2" color="text.secondary">
+                                        {userCount} users ({percentage}%)
+                                      </Typography>
+                                      <Box sx={{ mt: 1, height: 4, bgcolor: "grey.300", borderRadius: 2, overflow: "hidden" }}>
+                                        <Box
+                                          sx={{
+                                            height: "100%",
+                                            width: `${percentage}%`,
+                                            bgcolor: "primary.main",
+                                            transition: "width 0.3s ease",
+                                          }}
+                                        />
+                                      </Box>
+                                    </Box>
+                                  </Grid>
+                                );
+                              })}
+                            </Grid>
+                          </Paper>
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </GlassCard>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Box>
+        </motion.div>
         
         {/* Snackbar for feedback */}
         <Snackbar
@@ -716,16 +1180,16 @@ export default function AdminPanel() {
           </Alert>
         </Snackbar>
 
-        {/* User Entries Dialog */}
+        {/* Enhanced User Entries Dialog */}
         <Dialog
           open={entriesDialogOpen}
-          onClose={() => setEntriesDialogOpen(false)}
-          maxWidth="md"
+          onClose={handleCloseDialog}
+          maxWidth="lg"
           fullWidth
           PaperProps={{
             sx: {
               borderRadius: 4,
-              maxHeight: "80vh",
+              maxHeight: "85vh",
               bgcolor: "background.paper",
             },
           }}
@@ -736,30 +1200,42 @@ export default function AdminPanel() {
               fontSize: 22,
               display: "flex",
               flexDirection: "column",
-              alignItems: "flex-start", 
+              alignItems: "flex-start",
+              background: `linear-gradient(135deg, ${theme.palette.primary.main}20 0%, ${theme.palette.primary.light}10 100%)`,
             }}
           >
             <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
-              Entries for {selectedUserName}
+              <Avatar sx={{ bgcolor: "primary.main", mr: 2, width: 40, height: 40 }}>
+                <FaUsers size={20} />
+              </Avatar>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  Entries for {selectedUserName}
+                </Typography>
+                {selectedUserEntries.length > 0 && (
+                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                    {selectedUserEntries.length} entries • User ID: {selectedUserEntries[0].user_id.slice(0, 8)}...
+                  </Typography>
+                )}
+              </Box>
               <IconButton
                 aria-label="close"
-                onClick={() => setEntriesDialogOpen(false)}
-                sx={{ position: "absolute", right: 8, top: 8 }}
+                onClick={handleCloseDialog}
+                sx={{ color: "text.secondary" }}
               >
                 <CloseIcon />
               </IconButton>
             </Box>
-            {/* Show user ID under the title */}
-            {selectedUserEntries.length > 0 && (
-              <Typography variant="caption" sx={{ color: "text.secondary", mt: 0.5 }}>
-                User ID: {selectedUserEntries[0].user_id}
-              </Typography>
-            )}
           </DialogTitle>
           <DialogContent dividers sx={{ p: 0 }}>
             {selectedUserEntries.length === 0 ? (
-              <Box sx={{ p: 3 }}>
-                <Typography>No entries found.</Typography>
+              <Box sx={{ p: 4, textAlign: "center" }}>
+                <Typography variant="h6" color="text.secondary">
+                  No entries found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  This user hasn't created any time entries yet.
+                </Typography>
               </Box>
             ) : (
               <TableContainer sx={{ maxHeight: "60vh", minWidth: 400 }}>
@@ -770,19 +1246,37 @@ export default function AdminPanel() {
                       <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Start</TableCell>
                       <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>End</TableCell>
                       <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Duration</TableCell>
-                      <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 180 }}>Description</TableCell>
+                      <TableCell sx={{ fontWeight: 700, bgcolor: "background.default", maxWidth: 200 }}>Description</TableCell>
                       <TableCell sx={{ fontWeight: 700, bgcolor: "background.default" }}>Project</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {selectedUserEntries.map((entry) => (
-                      <TableRow key={entry.id} hover>
-                        <TableCell>{entry.date}</TableCell>
+                    {selectedUserEntries.map((entry, index) => (
+                      <motion.tr
+                        key={entry.id}
+                        component={TableRow}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.02 }}
+                        whileHover={{ backgroundColor: theme.palette.action.hover }}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {new Date(entry.date).toLocaleDateString()}
+                          </Typography>
+                        </TableCell>
                         <TableCell>{entry.start}</TableCell>
                         <TableCell>{entry.end}</TableCell>
-                        <TableCell>{entry.duration}</TableCell>
-                        <TableCell sx={{ maxWidth: 180, p: 0.5 }}>
-                          <Tooltip title={entry.description || ""} arrow>
+                        <TableCell>
+                          <Chip
+                            label={entry.duration}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 200, p: 0.5 }}>
+                          <Tooltip title={entry.description || "No description"} arrow>
                             <Typography
                               variant="body2"
                               sx={{
@@ -792,10 +1286,10 @@ export default function AdminPanel() {
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "normal",
-                                maxWidth: 180,
+                                maxWidth: 200,
                               }}
                             >
-                              {entry.description}
+                              {entry.description || "No description"}
                             </Typography>
                           </Tooltip>
                         </TableCell>
@@ -812,7 +1306,7 @@ export default function AdminPanel() {
                             }}
                           />
                         </TableCell>
-                      </TableRow>
+                      </motion.tr>
                     ))}
                   </TableBody>
                 </Table>
