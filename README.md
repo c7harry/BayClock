@@ -2,7 +2,7 @@
 
 A modern, feature-rich time tracking application built with React, Vite, and Supabase. BayClock helps individuals and teams track their productivity with beautiful visualizations, project management, and comprehensive analytics.
 
-![BayClock Landing Page](public/Header.png)
+Hosted at: https://bayclock.netlify.app/
 
 ## ✨ Features
 
