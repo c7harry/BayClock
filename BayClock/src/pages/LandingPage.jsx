@@ -1,7 +1,7 @@
 import { FaRegClock, FaFolderOpen, FaChartBar, FaMoon, FaDatabase } from "react-icons/fa";
 import styled from 'styled-components';
 import { useNavigate } from "react-router-dom";
-import { useSpring, animated, useTrail } from 'react-spring';
+import { useSpring, useTrail } from 'react-spring';
 import { useInView } from 'react-intersection-observer';
 import { TypeAnimation } from 'react-type-animation';
 import { GlassCard } from '../components/Theme';
