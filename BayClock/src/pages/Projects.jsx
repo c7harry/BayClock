@@ -32,8 +32,15 @@ const SNACKBAR_MESSAGES = {
   ADMIN_ONLY: "Only admins can add projects.",
   SELECT_WORKSPACE: "Please select a workspace.",
   PROJECT_DELETED: "Project deleted. You can restore it.",
-  PROJECT_RESTORED: "Project restored!"
+  PROJECT_RESTORED: "Project restored!",
+  PROTECTED_PROJECT: "This project cannot be deleted as it's a protected system project."
 };
+
+// Protected project IDs that cannot be deleted
+const PROTECTED_PROJECT_IDS = [
+  "52c2fd1b-4603-4c97-b5b2-1998838a8025", // individual
+  "c3e4c110-af65-4329-a7ef-13a69fe48928"  // academy
+];
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -277,6 +284,12 @@ export default function Projects() {
 
   // Project actions
   const handleDelete = useCallback(async (id) => {
+    // Check if project is protected
+    if (PROTECTED_PROJECT_IDS.includes(id)) {
+      showSnackbar(SNACKBAR_MESSAGES.PROTECTED_PROJECT, "error");
+      return;
+    }
+
     try {
       const projectToDelete = projects.find(p => p.id === id);
       if (!projectToDelete) return;
@@ -321,40 +334,54 @@ export default function Projects() {
   }, [showSnackbar, refreshProjects]);
 
   // Table row component
-  const ProjectTableRow = ({ project, isAdmin }) => (
-    <TableRow key={project.id} hover>
-      <TableCell sx={{ fontWeight: 500 }}>{project.name}</TableCell>
-      <TableCell>{project.client || "—"}</TableCell>
-      <TableCell>
-        <StatusChip status={project.status} />
-      </TableCell>
-      <TableCell>{getWorkspaceName(project.workspace_id)}</TableCell>
-      {isAdmin && (
-        <TableCell align="right">
-          <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
-            <Tooltip title="Edit" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleOpenDialog(project)}
-                color="primary"
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleDelete(project.id)}
-                color="error"
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+  const ProjectTableRow = ({ project, isAdmin }) => {
+    const isProtected = PROTECTED_PROJECT_IDS.includes(project.id);
+    
+    return (
+      <TableRow key={project.id} hover>
+        <TableCell sx={{ fontWeight: 500 }}>{project.name}</TableCell>
+        <TableCell>{project.client || "—"}</TableCell>
+        <TableCell>
+          <StatusChip status={project.status} />
         </TableCell>
-      )}
-    </TableRow>
-  );
+        <TableCell>{getWorkspaceName(project.workspace_id)}</TableCell>
+        {isAdmin && (
+          <TableCell align="right">
+            <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
+              <Tooltip title="Edit" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => handleOpenDialog(project)}
+                  color="primary"
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip 
+                title={isProtected ? "Protected project - cannot be deleted" : "Delete"} 
+                arrow
+              >
+                <span>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(project.id)}
+                    color="error"
+                    disabled={isProtected}
+                    sx={{
+                      opacity: isProtected ? 0.5 : 1,
+                      cursor: isProtected ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          </TableCell>
+        )}
+      </TableRow>
+    );
+  };
 
   // Deleted project row component
   const DeletedProjectRow = ({ project }) => (
