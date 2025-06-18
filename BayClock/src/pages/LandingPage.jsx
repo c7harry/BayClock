@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import { useNavigate } from "react-router-dom";
 import { useSpring, animated, useTrail } from 'react-spring';
 import { useInView } from 'react-intersection-observer';
-import { TypeAnimation } from 'react-type-animation'; 
+import { TypeAnimation } from 'react-type-animation';
+import { GlassCard } from '../components/Theme';
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -98,31 +99,6 @@ const StyledWrapper = styled.div`
   }
 `;
 
-// Glassmorphism containers
-const GlassHero = styled(animated.div)`
-  background: 
-    linear-gradient(120deg, rgba(15, 45, 82, 0.55) 60%, rgba(60, 120, 200, 0.35) 100%),
-    rgba(15, 45, 82, 0.42);
-  border-radius: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(15, 45, 82, 0.45);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 5px solid rgba(255,255,255,0.18);
-  padding: 3rem 2.5rem 2.5rem 2.5rem;
-  max-width: 520px;
-  width: 100%;
-  margin: 3rem auto 2rem auto;
-  color: #fff;
-  text-align: center;
-  transition: box-shadow 0.3s;
-  @media (max-width: 600px) {
-    padding: 0.7rem 0.3rem 0.7rem 0.3rem;
-    margin: 0.8rem 0 1rem 0;
-    max-width: 80vw;
-    border-radius: 0.8rem;
-  }
-`;
-
 const FeaturesGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -137,28 +113,6 @@ const FeaturesGrid = styled.div`
   }
   @media (min-width: 1100px) {
     grid-template-columns: 1fr 1fr 1fr;
-  }
-`;
-
-const GlassFeature = styled(animated.div)`
-  background: rgba(255,255,255,0.10);
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.18);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1.5px solid rgba(255,255,255,0.13);
-  padding: 2.5rem 1.5rem 2rem 1.5rem;
-  color: #fff;
-  text-align: center;
-  transition: box-shadow 0.3s, border 0.3s;
-  &:hover {
-    box-shadow: 0 8px 32px 0 #0f2d52bb, 0 1.5px 8px 0 #fff2;
-    border: 1.5px solid #0f2d52;
-  }
-  @media (max-width: 600px) {
-    padding: 0.9rem 0.5rem 0.9rem 0.5rem;
-    border-radius: 0.8rem;
-    font-size: 0.92rem;
   }
 `;
 
@@ -271,7 +225,23 @@ export default function LandingPage() {
         minHeight: "60vh",
         padding: "0 0.5rem"
       }}>
-        <GlassHero ref={heroRef} style={heroSpring}>
+        <GlassCard
+          ref={heroRef}
+          style={{
+            ...heroSpring,
+            maxWidth: "520px",
+            width: "100%",
+            margin: "3rem auto 2rem auto",
+            color: "#fff",
+            textAlign: "center",
+            padding: "3rem 2.5rem 2.5rem 2.5rem",
+            '@media (max-width: 600px)': {
+              padding: "0.7rem 0.3rem 0.7rem 0.3rem",
+              margin: "0.8rem 0 1rem 0",
+              maxWidth: "80vw",
+            }
+          }}
+        >
           <div style={{
             fontSize: "2.5rem",
             fontWeight: 900,
@@ -318,7 +288,7 @@ export default function LandingPage() {
             />
           </div>
           <Button />
-        </GlassHero>
+        </GlassCard>
       </div>
 
       {/* Features Section */}
@@ -351,7 +321,25 @@ export default function LandingPage() {
         </div>
         <FeaturesGrid>
           {featuresTrail.map((style, idx) => (
-            <GlassFeature key={features[idx].title} style={style}>
+            <GlassCard
+              key={features[idx].title}
+              style={{
+                ...style,
+                color: "#fff",
+                textAlign: "center",
+                padding: "2.5rem 1.5rem 2rem 1.5rem",
+                '@media (max-width: 600px)': {
+                  padding: "0.9rem 0.5rem 0.9rem 0.5rem",
+                  fontSize: "0.92rem"
+                }
+              }}
+              sx={{
+                '&:hover': {
+                  boxShadow: "0 8px 32px 0 #0f2d52bb, 0 1.5px 8px 0 #fff2",
+                  border: "1.5px solid #0f2d52"
+                }
+              }}
+            >
               <div>{features[idx].icon}</div>
               <div style={{
                 fontWeight: 700,
@@ -368,7 +356,7 @@ export default function LandingPage() {
               }}>
                 {features[idx].desc}
               </div>
-            </GlassFeature>
+            </GlassCard>
           ))}
         </FeaturesGrid>
       </section>
