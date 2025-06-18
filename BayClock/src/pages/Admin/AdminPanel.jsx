@@ -6,7 +6,7 @@ import {
   Grid, Avatar, Switch, FormControlLabel, Tab, Tabs, Badge, CircularProgress } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaCog, FaUsers, FaProjectDiagram, FaListAlt } from "react-icons/fa";
+import { FaCog, FaUsers} from "react-icons/fa";
 import { MdBusiness } from "react-icons/md";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";

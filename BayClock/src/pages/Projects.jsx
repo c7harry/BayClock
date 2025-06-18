@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  Card, CardContent, Typography, Box, Button, TextField, Dialog, DialogTitle,
+  Box, Button, TextField, Dialog, DialogTitle,
   DialogContent, DialogActions, Table, TableHead, TableRow, TableCell, TableBody,
   IconButton, Tooltip, Divider, Snackbar, Alert, MenuItem, Chip
 } from "@mui/material";
 import { ThemeProvider, createTheme, CssBaseline } from "@mui/material";
-import { motion } from "framer-motion";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";

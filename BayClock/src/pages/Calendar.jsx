@@ -17,7 +17,6 @@ import {
   CardContent,
   Divider,
   Grid,
-  Paper,
   Switch,
   FormControlLabel,
   Tooltip,
