@@ -534,7 +534,31 @@ export default function LoginPage() {
                             </ul>
                           </div>
                         )}
-                        <button className="flip-card__btn" type="submit">Confirm!</button>
+                        <button
+                          className="flip-card__btn"
+                          type="submit"
+                          disabled={
+                            !passwordStrength.requirements.length ||
+                            !passwordStrength.requirements.special ||
+                            !passwordStrength.requirements.forbidden
+                          }
+                          style={{
+                            opacity:
+                              !passwordStrength.requirements.length ||
+                              !passwordStrength.requirements.special ||
+                              !passwordStrength.requirements.forbidden
+                                ? 0.5
+                                : 1,
+                            cursor:
+                              !passwordStrength.requirements.length ||
+                              !passwordStrength.requirements.special ||
+                              !passwordStrength.requirements.forbidden
+                                ? "not-allowed"
+                                : "pointer"
+                          }}
+                        >
+                          Confirm!
+                        </button>
                       </form>
                     </div>
                   </div>
