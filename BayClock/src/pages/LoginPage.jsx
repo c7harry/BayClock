@@ -172,6 +172,37 @@ export default function LoginPage() {
     }));
   };
 
+  // Password strength check for signup
+  const forbiddenStrings = ["password", "123", "1234", "12345", "123456"];
+  const password = signupData.password;
+
+  function getPasswordStrength(password) {
+    let score = 0;
+    let requirements = {
+      length: password.length >= 12,
+      special: /[^A-Za-z0-9]/.test(password),
+      forbidden: !forbiddenStrings.some(str =>
+        password.toLowerCase().includes(str)
+      ),
+    };
+    if (requirements.length) score++;
+    if (requirements.special) score++;
+    if (requirements.forbidden) score++;
+
+    let label = "Weak";
+    let color = "#ef4444"; // red
+    if (score === 3) {
+      label = "Strong";
+      color = "#22c55e"; // green
+    } else if (score === 2) {
+      label = "Medium";
+      color = "#f59e42"; // orange
+    }
+    return { score, label, color, requirements };
+  }
+
+  const passwordStrength = getPasswordStrength(password);
+
   // Helper for pop-up notifications
   const PopupNotification = ({ message, onClose, top = 40 }) => (
     <Fade in={!!message}>
@@ -467,9 +498,42 @@ export default function LoginPage() {
                             value={signupData.confirmPassword}
                             onChange={handleSignupChange}
                             required
-                            style={{ paddingRight: 10 }}
+                            style={{ width: "83%" }}
                           />
                         </div>
+                        {/* Password strength bar */}
+                        {password && (
+                          <div style={{ width: 250, margin: "6px 0 0 0" }}>
+                            <div style={{
+                              height: 8,
+                              borderRadius: 4,
+                              background: "#e5e7eb",
+                              overflow: "hidden",
+                              marginBottom: 4,
+                            }}>
+                              <div style={{
+                                width: `${(passwordStrength.score / 3) * 100}%`,
+                                height: "100%",
+                                background: passwordStrength.color,
+                                transition: "width 0.3s"
+                              }} />
+                            </div>
+                            <div style={{ fontSize: 13, color: passwordStrength.color, fontWeight: 600 }}>
+                              {passwordStrength.label}
+                            </div>
+                            <ul style={{ fontSize: 12, margin: "4px 0 0 0", padding: 0, listStyle: "none", color: "#fff" }}>
+                              <li style={{ color: passwordStrength.requirements.length ? "#22c55e" : "#ef4444" }}>
+                                • At least 12 characters
+                              </li>
+                              <li style={{ color: passwordStrength.requirements.special ? "#22c55e" : "#ef4444" }}>
+                                • Includes a special character
+                              </li>
+                              <li style={{ color: passwordStrength.requirements.forbidden ? "#22c55e" : "#ef4444" }}>
+                                • Does not contain "password", "123", "1234", "12345", or "123456"
+                              </li>
+                            </ul>
+                          </div>
+                        )}
                         <button className="flip-card__btn" type="submit">Confirm!</button>
                       </form>
                     </div>
