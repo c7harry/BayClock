@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Box, IconButton, Fade } from "@mui/material";
+import { Box, IconButton, Fade, InputAdornment } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { FaRegClock } from "react-icons/fa";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styled from 'styled-components';
 import { supabase } from "../supabaseClient";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -30,6 +31,9 @@ export default function LoginPage() {
   const [loginMessage, setLoginMessage] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotMessage, setForgotMessage] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showSignupConfirm, setShowSignupConfirm] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -299,15 +303,49 @@ export default function LoginPage() {
                           onChange={handleLoginChange}
                           required
                         />
-                        <input 
-                          className="flip-card__input" 
-                          name="password" 
-                          placeholder="Password" 
-                          type="password" 
-                          value={loginData.password}
-                          onChange={handleLoginChange}
-                          required
-                        />
+                        <div style={{ position: "relative", width: "100%" }}>
+                          <input 
+                            className="flip-card__input" 
+                            name="password" 
+                            placeholder="Password" 
+                            type={showLoginPassword ? "text" : "password"}
+                            value={loginData.password}
+                            onChange={handleLoginChange}
+                            required
+                            style={{ paddingRight: 10 }}
+                          />
+                          <IconButton
+                            aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowLoginPassword(v => !v);
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onMouseUp={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            edge="end"
+                            size="small"
+                            tabIndex={-1}
+                            style={{
+                              position: "absolute",
+                              right: 10,
+                              top: "55%",
+                              transform: "translateY(-50%)",
+                              color: "#fb923c",
+                              pointerEvents: "auto"
+                            }}
+                          >
+                            <div style={{ pointerEvents: "none" }}>
+                              {showLoginPassword ? <VisibilityOff /> : <Visibility />}
+                            </div>
+                          </IconButton>
+                        </div>
                         <button className="flip-card__btn" type="submit">Let's go!</button>
                       </form>
                       {/* Forgot password link */}
@@ -376,24 +414,62 @@ export default function LoginPage() {
                           onChange={handleSignupChange}
                           required
                         />
-                        <input 
-                          className="flip-card__input" 
-                          name="password" 
-                          placeholder="Password" 
-                          type="password" 
-                          value={signupData.password}
-                          onChange={handleSignupChange}
-                          required
-                        />
-                        <input 
-                          className="flip-card__input" 
-                          name="confirmPassword" 
-                          placeholder="Re-enter Password" 
-                          type="password" 
-                          value={signupData.confirmPassword}
-                          onChange={handleSignupChange}
-                          required
-                        />
+                        <div style={{ position: "relative", width: "100%" }}>
+                          <input 
+                            className="flip-card__input" 
+                            name="password" 
+                            placeholder="Password" 
+                            type={showSignupPassword ? "text" : "password"}
+                            value={signupData.password}
+                            onChange={handleSignupChange}
+                            required
+                            style={{ paddingRight: 10 }}
+                          />
+                          <IconButton
+                            aria-label={showSignupPassword ? "Hide password" : "Show password"}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowSignupPassword(v => !v);
+                            }}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onMouseUp={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            edge="end"
+                            size="small"
+                            tabIndex={-1}
+                            style={{
+                              position: "absolute",
+                              right: 25,
+                              top: "55%",
+                              transform: "translateY(-50%)",
+                              color: "#fb923c",
+                              background: "none",
+                              pointerEvents: "auto"
+                            }}
+                          >
+                            <div style={{ pointerEvents: "none" }}>
+                              {showSignupPassword ? <VisibilityOff /> : <Visibility />}
+                            </div>
+                          </IconButton>
+                        </div>
+                        <div style={{ position: "relative", width: "100%" }}>
+                          <input 
+                            className="flip-card__input" 
+                            name="confirmPassword" 
+                            placeholder="Re-enter Password" 
+                            type={showSignupPassword ? "text" : "password"}
+                            value={signupData.confirmPassword}
+                            onChange={handleSignupChange}
+                            required
+                            style={{ paddingRight: 10 }}
+                          />
+                        </div>
                         <button className="flip-card__btn" type="submit">Confirm!</button>
                       </form>
                     </div>
@@ -619,10 +695,8 @@ const StyledWrapper = styled.div`
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     background: var(--bg-color);
-    gap: 20px;
-    border-radius: 5px;
-    border: 2px solid var(--main-color);
-    box-shadow: 4px 4px var(--main-color);
+    gap: 10px;
+    box-shadow: 0 0 12px 0 #fff;
     z-index: 5;
   }
 
