@@ -27,9 +27,24 @@ import {
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, ChartTooltip, Legend, ChartDataLabels);
 
-// Animated stat card with glass morphism (smaller for overview card)
+// Enhanced StatCard
 const StatCard = ({ title, value, icon, color, delay, isTime = false, compact = false, mode, ...props }) => (
-  <Box sx={{ textAlign: "center", position: "relative", overflow: "hidden", p: compact ? 2 : 3 }}>
+  <Box
+    sx={{
+      textAlign: "center",
+      position: "relative",
+      overflow: "hidden",
+      p: compact ? 2 : 3,
+      borderRadius: 3,
+      background: mode === "dark"
+        ? "rgba(40,40,50,0.85)"
+        : "rgba(255,255,255,0.85)",
+      border: `1.5px solid ${color}33`,
+      boxShadow: `0 4px 24px 0 ${color}22`,
+      minWidth: 0,
+      transition: "background 0.2s",
+    }}
+  >
     {/* Animated background gradient */}
     <motion.div
       animate={{ rotate: 360 }}
@@ -40,24 +55,49 @@ const StatCard = ({ title, value, icon, color, delay, isTime = false, compact = 
         left: "-50%",
         width: "200%",
         height: "200%",
-        background: `conic-gradient(from 0deg, ${color}15, transparent, ${color}15)`,
+        background: `conic-gradient(from 0deg, ${color}22, transparent, ${color}22)`,
         zIndex: -1,
+        filter: "blur(12px)",
       }}
     />
-    
+
     <motion.div
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       transition={{ delay: delay + 0.3, type: "spring", stiffness: 200 }}
+      style={{
+        marginBottom: 4,
+        filter: `drop-shadow(0 2px 8px ${color}55)`,
+      }}
     >
       {icon}
     </motion.div>
-    
-    <Typography variant={compact ? "subtitle2" : "subtitle1"} sx={{ mt: 1.5, fontWeight: 600, color, fontSize: compact ? "0.8rem" : "0.95rem" }}>
+
+    <Typography
+      variant={compact ? "subtitle2" : "subtitle1"}
+      sx={{
+        mt: 1.5,
+        fontWeight: 700,
+        color,
+        fontSize: compact ? "0.9rem" : "1.05rem",
+        textShadow: "0 1px 4px rgba(0,0,0,0.10)",
+        letterSpacing: 0.2,
+      }}
+    >
       {title}
     </Typography>
-    
-    <Typography variant={compact ? "h5" : "h4"} sx={{ mt: 0.5, fontWeight: 700, color, fontSize: compact ? "1.4rem" : "1.8rem" }}>
+
+    <Typography
+      variant={compact ? "h5" : "h4"}
+      sx={{
+        mt: 0.5,
+        fontWeight: 800,
+        color: mode === "dark" ? "#fff" : "#18181b",
+        fontSize: compact ? "1.6rem" : "2.1rem",
+        textShadow: `0 2px 8px ${color}33`,
+        letterSpacing: 0.5,
+      }}
+    >
       {value}
     </Typography>
   </Box>
@@ -401,7 +441,7 @@ export default function Dashboard() {
                         fontWeight: 700, 
                         color: "#fb923c",
                         fontFamily: "Montserrat, 'Segoe UI', Arial, sans-serif",
-                        fontSize: "0.9rem"
+                        fontSize: "1rem"
                       }}
                     >
                       <FaChartBar style={{ marginRight: 6, verticalAlign: "middle" }} />
@@ -451,11 +491,18 @@ export default function Dashboard() {
                       </motion.button>
                     </Box>
                   </Box>
-                  <Box sx={{ 
-                    maxHeight: "160px", 
+                  <Box sx={{
+                    maxHeight: "180px",
                     overflowY: "auto",
                     overflowX: "hidden",
-                    width: "100%"
+                    width: "100%",
+                    background: mode === "dark"
+                      ? "rgba(40,40,50,0.85)"
+                      : "rgba(255,255,255,0.85)",
+                    border: "1.5px solid #fb923c33",
+                    borderRadius: 2,
+                    boxShadow: "0 2px 12px 0 #fb923c22",
+                    p: 1,
                   }}>
                     {mostTracked
                       .slice(0, showTop10 ? 5 : mostTracked.length)
@@ -471,16 +518,20 @@ export default function Dashboard() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: idx * 0.05 }}
-                            whileHover={{ x: 3, backgroundColor: "rgba(251, 146, 60, 0.1)" }}
+                            whileHover={{ x: 3, backgroundColor: "rgba(251, 146, 60, 0.13)" }}
                           >
-                            <Box sx={{ 
-                              display: "flex", 
-                              alignItems: "center", 
-                              mb: 0.6, 
-                              p: 0.3, 
+                            <Box sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 0.6,
+                              p: 0.7,
                               borderRadius: 1,
                               width: "100%",
-                              minWidth: 0
+                              minWidth: 0,
+                              border: "1px solid #fb923c22",
+                              background: mode === "dark"
+                                ? "rgba(251,146,60,0.07)"
+                                : "rgba(251,146,60,0.05)",
                             }}>
                               <motion.div
                                 whileHover={{ scale: 1.2, rotate: 360 }}
@@ -498,42 +549,44 @@ export default function Dashboard() {
                                   }}
                                 />
                               </motion.div>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  fontWeight: 600, 
-                                  mr: 0.8, 
-                                  color: getTextColor(mode), 
-                                  fontSize: "0.7rem", 
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 700,
+                                  mr: 0.8,
+                                  color: getTextColor(mode),
+                                  fontSize: "0.8rem",
                                   flex: 1,
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
                                   whiteSpace: "nowrap",
-                                  minWidth: 0
+                                  minWidth: 0,
+                                  textShadow: "0 1px 4px rgba(0,0,0,0.10)",
                                 }}
                               >
                                 {item.project}
                               </Typography>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  mr: 0.8, 
-                                  color: getSecondaryTextColor(mode), 
-                                  fontSize: "0.65rem",
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  mr: 0.8,
+                                  color: getSecondaryTextColor(mode),
+                                  fontSize: "0.7rem",
+                                  fontWeight: 600,
                                   flexShrink: 0,
-                                  whiteSpace: "nowrap"
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 {`${pad(h)}:${pad(m)}:${pad(s)}`}
                               </Typography>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  color: "#fb923c", 
-                                  fontWeight: 600, 
-                                  fontSize: "0.65rem",
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: "#fb923c",
+                                  fontWeight: 700,
+                                  fontSize: "0.7rem",
                                   flexShrink: 0,
-                                  whiteSpace: "nowrap"
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 ({item.percent.toFixed(1)}%)
@@ -568,7 +621,21 @@ export default function Dashboard() {
               icon={<FaChartBar size={16} />} 
               delay={0.4}
             >
-              <Box sx={{ height: 250 }}>
+              <Box
+                sx={{
+                  background: mode === "dark"
+                    ? "rgba(40,40,50,0.92)"
+                    : "rgba(255,255,255,0.92)",
+                  border: "1.5px solid #60a5fa33",
+                  borderRadius: 3,
+                  boxShadow: "0 4px 24px 0 #60a5fa22",
+                  p: 2,
+                  height: 250,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
                 <Bar
                   data={barChartData}
                   options={{
@@ -709,9 +776,19 @@ export default function Dashboard() {
               >
                 <Box
                   sx={{
+                    background: mode === "dark"
+                      ? "rgba(40,40,50,0.92)"
+                      : "rgba(255,255,255,0.92)",
+                    border: "1.5px solid #fb923c33",
+                    borderRadius: 3,
+                    boxShadow: "0 4px 24px 0 #fb923c22",
                     width: { xs: "100%", md: 150 },
                     height: 150,
                     position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    p: 1,
                   }}
                 >
                   <Doughnut
@@ -779,8 +856,24 @@ export default function Dashboard() {
                   />
                 </Box>
                 
-                {/* Legend */}
-                <Box sx={{ flex: 1, minWidth: 150 }}>
+                {/* Legend with background */}
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 150,
+                    background: mode === "dark"
+                      ? "rgba(40,40,50,0.92)"
+                      : "rgba(255,255,255,0.92)",
+                    border: "1.5px solid #fb923c33",
+                    borderRadius: 3,
+                    boxShadow: "0 4px 24px 0 #fb923c22",
+                    p: 2,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-start",
+                  }}
+                >
                   <Typography variant="subtitle2" sx={{ mb: 1.5, color: getSecondaryTextColor(mode), fontSize: "0.85rem" }}>
                     Project Breakdown
                   </Typography>
