@@ -433,7 +433,7 @@ export default function Dashboard() {
                 />
 
                 {/* Most Tracked Activities */}
-                <Box sx={{ p: 1 }}>
+                <Box sx={{ p: 0.0 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
                     <Typography 
                       variant="subtitle2" 
