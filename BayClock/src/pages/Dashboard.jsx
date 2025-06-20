@@ -90,10 +90,10 @@ const StatCard = ({ title, value, icon, color, delay, isTime = false, compact = 
     <Typography
       variant={compact ? "h5" : "h4"}
       sx={{
-        mt: 0.5,
+        mt: 0.8,
         fontWeight: 800,
         color: mode === "dark" ? "#fff" : "#18181b",
-        fontSize: compact ? "1.6rem" : "2.1rem",
+        fontSize: compact ? "1.5rem" : "1.6rem",
         textShadow: `0 2px 8px ${color}33`,
         letterSpacing: 0.5,
       }}
