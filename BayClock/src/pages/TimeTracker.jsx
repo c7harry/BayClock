@@ -816,7 +816,12 @@ export default function TimeTracker() {
                       size="small"
                       startIcon={<FaPlay size={12} />}
                       onClick={handleStart}
-                      disabled={isRunning}
+                      disabled={
+                        isRunning ||
+                        !description.trim() ||
+                        !project ||
+                        !date
+                      }
                       sx={{
                         borderRadius: 2,
                         px: 2,
